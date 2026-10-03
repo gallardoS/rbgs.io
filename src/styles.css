@@ -1,0 +1,14 @@
+:root { font-family: Inter, system-ui, sans-serif; color: #e9edf4; background: #10141c; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+a { color: #80b7ff; }
+.app-shell { min-height: 100vh; }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem max(1.5rem, calc((100vw - 70rem) / 2)); border-bottom: 1px solid #303a49; }
+.brand { color: #fff; font-weight: 800; font-size: 1.25rem; text-decoration: none; }
+nav { display: flex; gap: 1.5rem; }
+nav a { text-decoration: none; }
+nav a:hover, nav a:focus-visible { text-decoration: underline; }
+.content { max-width: 70rem; margin: 0 auto; padding: clamp(3rem, 9vw, 8rem) 1.5rem; }
+h1 { max-width: 48rem; font-size: clamp(2.25rem, 6vw, 4.5rem); line-height: 1.08; margin: 0 0 1.5rem; }
+p { max-width: 43rem; color: #b5c0cf; font-size: 1.125rem; line-height: 1.6; }
+@media (max-width: 600px) { .header { align-items: flex-start; flex-direction: column; } }
