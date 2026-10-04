@@ -11,6 +11,8 @@ import { BrandText } from './BrandText';
 import { BackToTop } from './BackToTop';
 import { LanguageMenu } from './LanguageMenu';
 import './styles.css';
+import pageTitles from './page-titles.json';
+import pageDescriptions from './page-descriptions.json';
 
 function useSession() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -118,6 +120,17 @@ function App() {
   const session = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  useEffect(() => {
+    const pathname = location.pathname.replace(/\/+$/, '') || '/';
+    const title = pageTitles[pathname as keyof typeof pageTitles] ?? pageTitles['/'];
+    document.title = title;
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
+    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
+    const description = pageDescriptions[pathname as keyof typeof pageDescriptions] ?? pageDescriptions['/'];
+    for (const selector of ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']) {
+      document.querySelector(selector)?.setAttribute('content', description);
+    }
+  }, [location.pathname]);
   useEffect(() => {
     setMenuOpen(false);
     const frame = requestAnimationFrame(() => {
