@@ -2,13 +2,14 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
-import { t } from './locales/en';
+import { LanguageProvider, useLocale } from './locales';
 import type { MessageKey } from './locales/en';
 import { HeroBackground } from './HeroBackground';
 import { Leaderboard } from './Leaderboard';
 import { MatchJourney } from './MatchJourney';
 import { BrandText } from './BrandText';
 import { BackToTop } from './BackToTop';
+import { LanguageMenu } from './LanguageMenu';
 import './styles.css';
 
 function useSession() {
@@ -48,6 +49,7 @@ function useSession() {
 type Session = ReturnType<typeof useSession>;
 
 function Home({ profile, loading, authError }: Session) {
+  const { t } = useLocale();
   const heroRef = useRef<HTMLElement>(null);
   useEffect(() => {
     const hero = heroRef.current;
@@ -88,6 +90,7 @@ function Home({ profile, loading, authError }: Session) {
 type Profile = { id: string; displayName: string; region: string; role: string };
 
 function Status() {
+  const { t } = useLocale();
   const [message, setMessage] = useState<MessageKey>('statusChecking');
   useEffect(() => {
     const controller = new AbortController();
@@ -106,10 +109,12 @@ function Status() {
 }
 
 function NotFound() {
+  const { t } = useLocale();
   return <main className="content"><h1>{t('notFoundHeading')}</h1><Link to="/">{t('notFoundAction')}</Link></main>;
 }
 
 function App() {
+  const { t } = useLocale();
   const session = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
@@ -144,6 +149,7 @@ function App() {
             </div></details>
           : <a className="nav-login" href="/oauth2/authorization/battle-net"><img src="/battle-net.svg" width="20" height="20" alt="" />{t('navigationLogin')}</a>}
       </nav>
+      <LanguageMenu />
     </header>
     <Routes><Route path="/" element={<Home {...session} />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
@@ -168,9 +174,10 @@ function App() {
 }
 
 function InfoPage({ heading, introduction, children }: { heading: MessageKey; introduction?: MessageKey; children: React.ReactNode }) {
+  const { t } = useLocale();
   return <main className="content info-page"><h1><BrandText text={t(heading)} /></h1>{introduction && <p className="page-introduction"><BrandText text={t(introduction)} /></p>}{children}</main>;
 }
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode><BrowserRouter><App /></BrowserRouter></StrictMode>,
+  <StrictMode><LanguageProvider><BrowserRouter><App /></BrowserRouter></LanguageProvider></StrictMode>,
 );

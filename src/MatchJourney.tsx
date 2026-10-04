@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { t } from './locales/en';
+import { useLocale } from './locales';
 import { BrandText } from './BrandText';
 
 const steps = [
@@ -9,6 +9,7 @@ const steps = [
 ] as const;
 
 export function MatchJourney() {
+  const { t } = useLocale();
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     const section = ref.current;
@@ -35,3 +36,4 @@ export function MatchJourney() {
     </div>
   </section>;
 }
+

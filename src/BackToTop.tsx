@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { t } from './locales/en';
+import { useLocale } from './locales';
 
 export function BackToTop() {
+  const { t } = useLocale();
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const update = () => setVisible(window.scrollY > Math.max(600, window.innerHeight));

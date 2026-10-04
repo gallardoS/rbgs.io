@@ -1,5 +1,6 @@
 export const messages = {
   appName: 'rbgs.io',
+  languageLabel: 'Language',
   backToTop: 'Back to top',
   navigationHome: 'Home',
   navigationLabel: 'Main navigation',
@@ -77,6 +78,3 @@ export const messages = {
 } as const;
 
 export type MessageKey = keyof typeof messages;
-export function t(key: MessageKey): string {
-  return messages[key];
-}

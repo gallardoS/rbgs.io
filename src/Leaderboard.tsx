@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from 'react';
-import { t } from './locales/en';
+import { useLocale } from './locales';
 
 const players = [
   { name: 'Moonveil', className: 'Druid', color: '#ff9c45', raceIcon: 'tauren_female', raceLabel: 'Tauren female' },
@@ -21,6 +21,7 @@ const records = {
 };
 
 export function Leaderboard({ preview = false }: { preview?: boolean }) {
+  const { t, language } = useLocale();
   const [queue, setQueue] = useState<'solo' | 'premade'>('solo');
   const [search, setSearch] = useState('');
   const ranked = records[queue].map((player, index) => ({ ...player, rank: index + 1 }));
@@ -47,7 +48,7 @@ export function Leaderboard({ preview = false }: { preview?: boolean }) {
             <div className="character-icons"><img src={`/media/character/class_${player.className.toLowerCase()}.jpg`} alt={player.className} title={player.className} width="28" height="28" /><img src={`/media/character/race_${player.raceIcon}.jpg`} alt={player.raceLabel} title={player.raceLabel} width="28" height="28" /></div>
             <span className="player-name">{player.name}</span>
           </div></th>
-          <td className="rating-cell">{player.rating.toLocaleString('en-US')}</td><td className="wins-cell">{player.wins}</td><td>{player.losses}</td><td>{Math.round(player.wins / (player.wins + player.losses) * 100)}%</td>
+          <td className="rating-cell">{player.rating.toLocaleString(language === 'es' ? 'es-ES' : 'en-US')}</td><td className="wins-cell">{player.wins}</td><td>{player.losses}</td><td>{Math.round(player.wins / (player.wins + player.losses) * 100)}%</td>
         </tr>)}</tbody>
       </table>
       {visible.length === 0 && <p className="leaderboard-empty" role="status">{t('leaderboardEmpty')}</p>}
