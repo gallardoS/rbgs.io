@@ -101,6 +101,8 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .leaderboard-heading h1 { margin-bottom: .8rem; }
 .leaderboard-heading h2 { margin: 0 0 .8rem; font-size: clamp(2.25rem, 6vw, 4.5rem); line-height: 1.08; letter-spacing: -.045em; }
 .leaderboard-preview { padding-top: 3rem; padding-bottom: 5rem; }
+.leaderboard-preview .leaderboard-heading { justify-content: flex-end; text-align: right; }
+.leaderboard-preview .leaderboard-heading > div { margin-left: auto; }
 .leaderboard-preview .standings-scroll { height: 500px; overflow-y: hidden; mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%); }
 .leaderboard-preview .demo-note { margin: .35rem 0 0; }
 .leaderboard-preview .leaderboard-toolbar { align-items: center; }
