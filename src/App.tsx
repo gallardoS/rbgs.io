@@ -12,6 +12,7 @@ import { BackToTop } from './BackToTop';
 import { LanguageMenu } from './LanguageMenu';
 import pageTitles from './page-titles.json';
 import pageDescriptions from './page-descriptions.json';
+import internalRoutes from './internal-routes.json';
 
 function useSession() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -123,11 +124,13 @@ export function App() {
   useEffect(() => {
     const pathname = localizedPath(location.pathname, language);
     const homepage = localizedPath('/', language) as keyof typeof pageTitles;
-    const title = pageTitles[pathname as keyof typeof pageTitles] ?? pageTitles[homepage];
+    const isKnownRoute = Object.hasOwn(pageTitles, pathname) || internalRoutes.includes(basePath(pathname)) || basePath(pathname) === '/how-it-works';
+    const title = isKnownRoute ? pageTitles[pathname as keyof typeof pageTitles] ?? pageTitles[homepage] : `${t('notFoundHeading')} | rbgs.io`;
     document.title = title;
+    document.querySelector('meta[name="robots"]')?.setAttribute('content', isKnownRoute ? 'index, follow' : 'noindex, follow');
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
     document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
-    const description = pageDescriptions[pathname as keyof typeof pageDescriptions] ?? pageDescriptions[homepage];
+    const description = isKnownRoute ? pageDescriptions[pathname as keyof typeof pageDescriptions] ?? pageDescriptions[homepage] : t('notFoundHeading');
     document.querySelector('meta[property="og:locale"]')?.setAttribute('content', language === 'es' ? 'es_ES' : 'en_US');
     document.querySelectorAll('link[rel="alternate"][hreflang]').forEach(link => link.remove());
     for (const selector of ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']) {
