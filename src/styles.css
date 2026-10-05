@@ -31,6 +31,7 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .particle-layer-2 { --depth: 1; }
 .particle { position: absolute; top: calc(100% + 16px); width: var(--size); height: var(--size); border-radius: 50%; background: var(--color); box-shadow: 0 0 6px var(--color); opacity: 0; animation: particle-rise var(--duration) var(--delay) linear infinite; }
 .particle-layer-0 { filter: blur(.35px); }
+.hero-background.is-paused .particle { animation-play-state: paused; }
 @keyframes particle-rise {
   0% { transform: translate3d(0, 0, 0); opacity: 0; }
   15% { opacity: var(--opacity); }

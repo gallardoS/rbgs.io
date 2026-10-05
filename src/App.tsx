@@ -59,11 +59,19 @@ function Home({ profile, loading, authError }: Session) {
     if (!hero) return;
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let frame = 0;
+    let lastOpacity = '';
     const update = () => {
       frame = 0;
-      const bounds = hero.getBoundingClientRect();
-      const progress = Math.max(0, Math.min(1, -bounds.top / (bounds.height * .85)));
-      hero.style.setProperty('--hero-opacity', String(motion.matches ? 1 : 1 - progress));
+      let opacity = '1';
+      if (!motion.matches) {
+        const bounds = hero.getBoundingClientRect();
+        const progress = Math.max(0, Math.min(1, -bounds.top / (bounds.height * .85)));
+        opacity = String(1 - progress);
+      }
+      if (opacity !== lastOpacity) {
+        hero.style.setProperty('--hero-opacity', opacity);
+        lastOpacity = opacity;
+      }
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
     window.addEventListener('scroll', schedule, { passive: true });

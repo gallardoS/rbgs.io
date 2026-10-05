@@ -26,6 +26,25 @@ export function HeroBackground() {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const element = ref.current;
+    const hero = element?.parentElement;
+    if (!element || !hero) return;
+    let inView = true;
+    const update = () => element.classList.toggle('is-paused', !inView || document.hidden);
+    const observer = 'IntersectionObserver' in window ? new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      update();
+    }) : null;
+    observer?.observe(hero);
+    document.addEventListener('visibilitychange', update);
+    update();
+    return () => {
+      observer?.disconnect();
+      document.removeEventListener('visibilitychange', update);
+      element.classList.remove('is-paused');
+    };
+  }, []);
+  useEffect(() => {
+    const element = ref.current;
     if (!element) return;
     const observer = new ResizeObserver(([entry]) => {
       element.style.setProperty('--rise', `${-entry.contentRect.height - 32}px`);
@@ -52,7 +71,7 @@ export function HeroBackground() {
     };
     const reset = () => { x = 0; y = 0; schedule(); };
     const move = (event: PointerEvent) => {
-      if (motion.matches || !pointer.matches || event.pointerType !== 'mouse') return;
+      if (motion.matches || !pointer.matches || event.pointerType !== 'mouse' || element.classList.contains('is-paused')) return;
       const bounds = hero.getBoundingClientRect();
       x = Math.max(-1, Math.min(1, (event.clientX - bounds.left) / bounds.width * 2 - 1)) * 16;
       y = Math.max(-1, Math.min(1, (event.clientY - bounds.top) / bounds.height * 2 - 1)) * 12;
