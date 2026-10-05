@@ -10,6 +10,7 @@ import { MatchJourney } from './MatchJourney';
 import { BrandText } from './BrandText';
 import { BackToTop } from './BackToTop';
 import { LanguageMenu } from './LanguageMenu';
+import { CharacterSelection } from './CharacterSelection';
 import pageTitles from './page-titles.json';
 import pageDescriptions from './page-descriptions.json';
 import internalRoutes from './internal-routes.json';
@@ -213,11 +214,21 @@ export function App() {
         <article><h2>{t('addonHeading')}</h2><p>{t('addonDescription')}</p><span className="availability">{t('releasePending')}</span></article>
       </div><Link className="button" to="/#how-it-works">{t('navigationGuide')}</Link></InfoPage>} />
       <Route path="/how-it-works" element={<Navigate to={`${localizedPath('/', language)}#how-it-works`} replace />} />
-      <Route path="/play" element={<InfoPage heading="navigationPlay" introduction="playIntro"><div className="info-grid">
-        <article><h2>{t('soloHeading')}</h2><p>{t('soloDescription')}</p></article><article><h2>{t('premadeHeading')}</h2><p>{t('premadeDescription')}</p></article>
-      </div><p>{t('queuePending')}</p><Link className="button" to="/#how-it-works">{t('navigationGuide')}</Link></InfoPage>} />
+      <Route path="/play" element={<main className="content play-page">
+        <header className="play-heading"><h1>{t('navigationPlay')}</h1><p>{t('playIntro')}</p></header>
+        <div className="play-lobby"><div className="play-character-stage">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
+        ? <CharacterSelection key={session.profile.id} accountId={session.profile.id} />
+        : <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>}
+        {session.authError && <p role="alert">{t('authError')}</p>}
+        </div>
+        <div className="play-match-action"><button className="find-match" disabled aria-describedby="queue-availability">{t('findMatch')}</button>
+          <p id="queue-availability" className="availability">{t('queuePending')}</p></div>
+      </div><div className="play-mode-info">
+        <details><summary>{t('soloHeading')}</summary><p>{t('soloDescription')}</p></details>
+        <details><summary>{t('premadeHeading')}</summary><p>{t('premadeDescription')}</p></details>
+      </div></main>} />
       <Route path="/account" element={<InfoPage heading="navigationProfile" introduction="accountIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
-        ? <><p>{t('signedInAs')} <strong>{session.profile.displayName}</strong></p><button onClick={() => void session.logout()}>{t('logout')}</button></>
+        ? <><p>{t('signedInAs')} <strong>{session.profile.displayName}</strong></p><CharacterSelection key={session.profile.id} accountId={session.profile.id} /><button onClick={() => void session.logout()}>{t('logout')}</button></>
         : <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>}{session.authError && <p role="alert">{t('authError')}</p>}</InfoPage>} />
       <Route path="/match-history" element={<InfoPage heading="navigationHistory" introduction="historyIntro"><p>{t('historyPending')}</p></InfoPage>} />
       <Route path="/my-group" element={<InfoPage heading="navigationGroup" introduction="groupIntro"><p>{t('groupPending')}</p></InfoPage>} />
