@@ -24,12 +24,13 @@ for (const [path, title] of Object.entries(titles)) {
   const englishPath = spanish ? path.slice(3) || '/' : path;
   const spanishPath = englishPath === '/' ? '/es/' : `/es${englishPath}`;
   const structuredData = englishPath === '/' ? `    <script type="application/ld+json">${websiteData}</script>\n` : '';
+  const heroPreload = englishPath === '/' ? '    <link rel="preload" href="/hero-banner.webp" as="image" type="image/webp" fetchpriority="high" />\n' : '';
   const alternates = [['en', englishPath], ['es', spanishPath], ['x-default', englishPath]]
     .map(([language, alternatePath]) => `    <link rel="alternate" hreflang="${language}" href="${escapeHtml(new URL(alternatePath, 'https://rbgs.io').href)}" />`).join('\n');
   const html = template
     .replace('<html lang="en">', `<html lang="${spanish ? 'es' : 'en'}">`)
     .replace('property="og:locale" content="en_US"', `property="og:locale" content="${spanish ? 'es_ES' : 'en_US'}"`)
-    .replace('</head>', () => `  <link rel="canonical" href="${canonicalUrl}" />\n    <meta property="og:url" content="${canonicalUrl}" />\n${alternates}\n${structuredData}  </head>`)
+    .replace('</head>', () => `  <link rel="canonical" href="${canonicalUrl}" />\n    <meta property="og:url" content="${canonicalUrl}" />\n${alternates}\n${heroPreload}${structuredData}  </head>`)
     .replace('<div id="root"></div>', () => `<div id="root" data-prerender-path="${escapeHtml(path)}">${render(path)}</div>`)
     .replace(/<title>[^<]*<\/title>/, `<title>${escapedTitle}</title>`)
     .replace(/(<meta property="og:title" content=")[^"]*("\s*\/>)/, `$1${escapedTitle}$2`)

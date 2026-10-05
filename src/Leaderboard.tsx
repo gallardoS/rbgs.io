@@ -45,7 +45,7 @@ export function Leaderboard({ preview = false }: { preview?: boolean }) {
         <tbody>{visible.map(player => <tr key={player.name} className={player.rank <= 3 ? 'top-ranked' : ''}>
           <td className="rank-cell">#{player.rank}</td>
           <th scope="row"><div className="player-identity" style={{ '--class-color': player.color } as CSSProperties}>
-            <div className="character-icons"><img src={`/media/character/class_${player.className.toLowerCase()}.jpg`} alt={player.className} title={player.className} width="28" height="28" /><img src={`/media/character/race_${player.raceIcon}.jpg`} alt={player.raceLabel} title={player.raceLabel} width="28" height="28" /></div>
+            <div className="character-icons"><img src={`/media/character/class_${player.className.toLowerCase()}.jpg`} alt={player.className} title={player.className} width="28" height="28" loading="lazy" decoding="async" /><img src={`/media/character/race_${player.raceIcon}.jpg`} alt={player.raceLabel} title={player.raceLabel} width="28" height="28" loading="lazy" decoding="async" /></div>
             <span className="player-name">{player.name}</span>
           </div></th>
           <td className="rating-cell">{player.rating.toLocaleString(language === 'es' ? 'es-ES' : 'en-US')}</td><td className="wins-cell">{player.wins}</td><td>{player.losses}</td><td>{Math.round(player.wins / (player.wins + player.losses) * 100)}%</td>
