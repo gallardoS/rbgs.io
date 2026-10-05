@@ -128,6 +128,27 @@ export function App() {
     for (const selector of ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']) {
       document.querySelector(selector)?.setAttribute('content', description);
     }
+    const isPublicPage = Object.hasOwn(pageTitles, pathname);
+    if (isPublicPage) {
+      const url = new URL(pathname, 'https://rbgs.io').href;
+      let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+      if (!canonical) {
+        canonical = document.createElement('link');
+        canonical.rel = 'canonical';
+        document.head.append(canonical);
+      }
+      canonical.href = url;
+      let socialUrl = document.querySelector<HTMLMetaElement>('meta[property="og:url"]');
+      if (!socialUrl) {
+        socialUrl = document.createElement('meta');
+        socialUrl.setAttribute('property', 'og:url');
+        document.head.append(socialUrl);
+      }
+      socialUrl.content = url;
+    } else {
+      document.querySelector('link[rel="canonical"]')?.remove();
+      document.querySelector('meta[property="og:url"]')?.remove();
+    }
   }, [location.pathname]);
   useEffect(() => {
     setMenuOpen(false);

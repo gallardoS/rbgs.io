@@ -9,7 +9,9 @@ const escapeHtml = (value) => value.replaceAll('&', '&amp;').replaceAll('"', '&q
 for (const [path, title] of Object.entries(titles)) {
   const escapedTitle = escapeHtml(title);
   const escapedDescription = escapeHtml(descriptions[path]);
+  const canonicalUrl = escapeHtml(new URL(path, 'https://rbgs.io').href);
   const html = template
+    .replace('</head>', () => `  <link rel="canonical" href="${canonicalUrl}" />\n    <meta property="og:url" content="${canonicalUrl}" />\n  </head>`)
     .replace('<div id="root"></div>', () => `<div id="root" data-prerender-path="${escapeHtml(path)}">${render(path)}</div>`)
     .replace(/<title>[^<]*<\/title>/, `<title>${escapedTitle}</title>`)
     .replace(/(<meta property="og:title" content=")[^"]*("\s*\/>)/, `$1${escapedTitle}$2`)
