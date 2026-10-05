@@ -1,4 +1,6 @@
-import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, NavLink } from './LocalizedLink';
+import { basePath, localizedPath } from './locale-routing';
 import { useEffect, useRef, useState } from 'react';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
@@ -114,17 +116,20 @@ function NotFound() {
 }
 
 export function App() {
-  const { t } = useLocale();
+  const { t, language } = useLocale();
   const session = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   useEffect(() => {
-    const pathname = location.pathname.replace(/\/+$/, '') || '/';
-    const title = pageTitles[pathname as keyof typeof pageTitles] ?? pageTitles['/'];
+    const pathname = localizedPath(location.pathname, language);
+    const homepage = localizedPath('/', language) as keyof typeof pageTitles;
+    const title = pageTitles[pathname as keyof typeof pageTitles] ?? pageTitles[homepage];
     document.title = title;
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
     document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
-    const description = pageDescriptions[pathname as keyof typeof pageDescriptions] ?? pageDescriptions['/'];
+    const description = pageDescriptions[pathname as keyof typeof pageDescriptions] ?? pageDescriptions[homepage];
+    document.querySelector('meta[property="og:locale"]')?.setAttribute('content', language === 'es' ? 'es_ES' : 'en_US');
+    document.querySelectorAll('link[rel="alternate"][hreflang]').forEach(link => link.remove());
     for (const selector of ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']) {
       document.querySelector(selector)?.setAttribute('content', description);
     }
@@ -145,11 +150,18 @@ export function App() {
         document.head.append(socialUrl);
       }
       socialUrl.content = url;
+      for (const [code, path] of [['en', localizedPath(pathname, 'en')], ['es', localizedPath(pathname, 'es')], ['x-default', localizedPath(pathname, 'en')]]) {
+        const alternate = document.createElement('link');
+        alternate.rel = 'alternate';
+        alternate.hreflang = code;
+        alternate.href = new URL(path, 'https://rbgs.io').href;
+        document.head.append(alternate);
+      }
     } else {
       document.querySelector('link[rel="canonical"]')?.remove();
       document.querySelector('meta[property="og:url"]')?.remove();
     }
-  }, [location.pathname]);
+  }, [location.pathname, language]);
   useEffect(() => {
     setMenuOpen(false);
     const frame = requestAnimationFrame(() => {
@@ -183,13 +195,13 @@ export function App() {
       </nav>
       <LanguageMenu />
     </header>
-    <Routes><Route path="/" element={<Home {...session} />} />
+    <Routes location={{ ...location, pathname: basePath(location.pathname) }}><Route path="/" element={<Home {...session} />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
       <Route path="/downloads" element={<InfoPage heading="navigationDownloads" introduction="downloadsIntro"><div className="info-grid">
         <article><h2>{t('companionHeading')}</h2><p>{t('companionDescription')}</p><span className="availability">{t('releasePending')}</span></article>
         <article><h2>{t('addonHeading')}</h2><p>{t('addonDescription')}</p><span className="availability">{t('releasePending')}</span></article>
       </div><Link className="button" to="/#how-it-works">{t('navigationGuide')}</Link></InfoPage>} />
-      <Route path="/how-it-works" element={<Navigate to="/#how-it-works" replace />} />
+      <Route path="/how-it-works" element={<Navigate to={`${localizedPath('/', language)}#how-it-works`} replace />} />
       <Route path="/play" element={<InfoPage heading="navigationPlay" introduction="playIntro"><div className="info-grid">
         <article><h2>{t('soloHeading')}</h2><p>{t('soloDescription')}</p></article><article><h2>{t('premadeHeading')}</h2><p>{t('premadeDescription')}</p></article>
       </div><p>{t('queuePending')}</p><Link className="button" to="/#how-it-works">{t('navigationGuide')}</Link></InfoPage>} />

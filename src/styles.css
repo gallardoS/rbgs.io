@@ -171,9 +171,7 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 
 
 .language-switch { position: relative; display: flex; align-items: center; flex-shrink: 0; }
-.language-flag { width: 32px; height: 40px; min-height: 40px; padding: 0; border: 0; border-radius: .2rem; background: transparent; box-shadow: none; }
+.language-flag { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 40px; min-height: 40px; padding: 0; border: 0; border-radius: .2rem; background: transparent; box-shadow: none; }
 .language-flag:hover { background: transparent; box-shadow: none; }
 .language-flag img { display: block; border-radius: 1px; }
-.language-options { position: absolute; right: 0; top: calc(100% + .4rem); padding: .25rem; background: #151817; border-radius: .2rem; box-shadow: 0 4px 18px #0006; }
-.language-alternative img { opacity: .5; transition: opacity .2s; }
-.language-alternative:hover img, .language-alternative:focus-visible img { opacity: 1; }
+.language-options { position: absolute; left: 50%; transform: translateX(-50%); top: calc(100% + .4rem); padding: .25rem; background: #151817; border-radius: .2rem; box-shadow: 0 4px 18px #0006; }

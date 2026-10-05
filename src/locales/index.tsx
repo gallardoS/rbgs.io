@@ -1,23 +1,20 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { localizedPath, pathLanguage, type Language } from '../locale-routing';
 import { messages as en, type MessageKey } from './en';
 import { messages as es } from './es';
 
-type Language = 'en' | 'es';
 const LanguageContext = createContext({ language: 'en' as Language, setLanguage: (_language: Language) => {} });
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>('en');
-  const [preferenceLoaded, setPreferenceLoaded] = useState(false);
-  useEffect(() => {
-    try { setLanguage(localStorage.getItem('rbgs-language') === 'es' ? 'es' : 'en'); }
-    catch { /* Storage may be disabled. */ }
-    setPreferenceLoaded(true);
-  }, []);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const language = pathLanguage(location.pathname);
+  const setLanguage = (next: Language) => navigate(localizedPath(location.pathname, next) + location.search + location.hash);
   useEffect(() => {
     document.documentElement.lang = language;
-    if (!preferenceLoaded) return;
     try { localStorage.setItem('rbgs-language', language); } catch { /* Storage may be disabled. */ }
-  }, [language, preferenceLoaded]);
+  }, [language]);
   return <LanguageContext.Provider value={{ language, setLanguage }}>{children}</LanguageContext.Provider>;
 }
 

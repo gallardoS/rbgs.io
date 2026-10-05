@@ -2,5 +2,9 @@
   "/": "SoloQ or Premade matchmaking, player ratings, competitive seasons.",
   "/leaderboard": "Explore SoloQ and Premade player ratings for WoW: Forever.",
   "/downloads": "Download the WoW: Forever addon and Windows companion for rbgs.io.",
-  "/play": "Join SoloQ or Premade rated battlegrounds for WoW: Forever."
+  "/play": "Join SoloQ or Premade rated battlegrounds for WoW: Forever.",
+  "/es/": "Campos de batalla puntuados para WoW: Forever, matchmaking SoloQ o Premade, puntuaciones de jugadores y temporadas competitivas.",
+  "/es/leaderboard": "Consulta las puntuaciones de jugadores de SoloQ y Premade para WoW: Forever.",
+  "/es/downloads": "Descarga el addon de WoW: Forever y la aplicación companion para Windows de rbgs.io.",
+  "/es/play": "Participa en campos de batalla puntuados de SoloQ o Premade para WoW: Forever."
 }

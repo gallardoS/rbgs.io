@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocale } from './locales';
+import { Link, useLocation } from 'react-router-dom';
+import { localizedPath } from './locale-routing';
 
 export function LanguageMenu() {
-  const { language, setLanguage, t } = useLocale();
+  const { language, t } = useLocale();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -29,9 +32,9 @@ export function LanguageMenu() {
       <img src={`/flag-${language}.svg`} width="20" height="14" alt="" />
     </button>
     {open && <div id="language-options" className="language-options">
-      <button type="button" className="language-flag language-alternative" aria-label={other === 'en' ? 'English' : 'Español'} title={other === 'en' ? 'English' : 'Español'} onClick={() => {
-        setLanguage(other); setOpen(false); trigger.current?.focus();
-      }}><img src={`/flag-${other}.svg`} width="20" height="14" alt="" /></button>
+      <Link to={localizedPath(location.pathname, other) + location.search + location.hash} className="language-flag language-alternative" aria-label={other === 'en' ? 'English' : 'Español'} title={other === 'en' ? 'English' : 'Español'} onClick={() => {
+        setOpen(false); trigger.current?.focus();
+      }}><img src={`/flag-${other}.svg`} width="20" height="14" alt="" /></Link>
     </div>}
   </div>;
 }

@@ -1,17 +1,25 @@
-import { readFile, writeFile, rm } from 'node:fs/promises';
+import { readFile, mkdir, writeFile, rm } from 'node:fs/promises';
 import { render } from '../dist/server/prerender.js';
 
 const titles = JSON.parse(await readFile(new URL('../src/page-titles.json', import.meta.url), 'utf8'));
 const descriptions = JSON.parse(await readFile(new URL('../src/page-descriptions.json', import.meta.url), 'utf8'));
 const template = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
 const escapeHtml = (value) => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+await mkdir(new URL('../dist/es/', import.meta.url), { recursive: true });
 
 for (const [path, title] of Object.entries(titles)) {
   const escapedTitle = escapeHtml(title);
   const escapedDescription = escapeHtml(descriptions[path]);
   const canonicalUrl = escapeHtml(new URL(path, 'https://rbgs.io').href);
+  const spanish = path.startsWith('/es/');
+  const englishPath = spanish ? path.slice(3) || '/' : path;
+  const spanishPath = englishPath === '/' ? '/es/' : `/es${englishPath}`;
+  const alternates = [['en', englishPath], ['es', spanishPath], ['x-default', englishPath]]
+    .map(([language, alternatePath]) => `    <link rel="alternate" hreflang="${language}" href="${escapeHtml(new URL(alternatePath, 'https://rbgs.io').href)}" />`).join('\n');
   const html = template
-    .replace('</head>', () => `  <link rel="canonical" href="${canonicalUrl}" />\n    <meta property="og:url" content="${canonicalUrl}" />\n  </head>`)
+    .replace('<html lang="en">', `<html lang="${spanish ? 'es' : 'en'}">`)
+    .replace('property="og:locale" content="en_US"', `property="og:locale" content="${spanish ? 'es_ES' : 'en_US'}"`)
+    .replace('</head>', () => `  <link rel="canonical" href="${canonicalUrl}" />\n    <meta property="og:url" content="${canonicalUrl}" />\n${alternates}\n  </head>`)
     .replace('<div id="root"></div>', () => `<div id="root" data-prerender-path="${escapeHtml(path)}">${render(path)}</div>`)
     .replace(/<title>[^<]*<\/title>/, `<title>${escapedTitle}</title>`)
     .replace(/(<meta property="og:title" content=")[^"]*("\s*\/>)/, `$1${escapedTitle}$2`)
@@ -19,7 +27,7 @@ for (const [path, title] of Object.entries(titles)) {
     .replace(/(<meta name="description" content=")[^"]*("\s*\/>)/, (_, start, end) => `${start}${escapedDescription}${end}`)
     .replace(/(<meta property="og:description" content=")[^"]*("\s*\/>)/, (_, start, end) => `${start}${escapedDescription}${end}`)
     .replace(/(<meta name="twitter:description" content=")[^"]*("\s*\/>)/, (_, start, end) => `${start}${escapedDescription}${end}`);
-  const output = path === '/' ? '../dist/index.html' : `../dist${path}.html`;
+  const output = path === '/' ? '../dist/index.html' : path === '/es/' ? '../dist/es/index.html' : `../dist${path}.html`;
   await writeFile(new URL(output, import.meta.url), html);
 }
 

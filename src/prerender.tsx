@@ -4,5 +4,5 @@ import { App } from './App';
 import { LanguageProvider } from './locales';
 
 export function render(path: string) {
-  return renderToString(<LanguageProvider><StaticRouter location={path}><App /></StaticRouter></LanguageProvider>);
+  return renderToString(<StaticRouter location={path}><LanguageProvider><App /></LanguageProvider></StaticRouter>);
 }
