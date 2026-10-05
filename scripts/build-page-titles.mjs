@@ -39,6 +39,7 @@ for (const prefix of ['', '/es']) {
     const path = prefix + route;
     const html = template
       .replace('<html lang="en">', `<html lang="${spanish ? 'es' : 'en'}">`)
+      .replace('content="index, follow"', 'content="noindex, follow"')
       .replace('<div id="root"></div>', () => `<div id="root" data-prerender-path="${path}">${render(path)}</div>`);
     await writeFile(new URL(`../dist${path}.html`, import.meta.url), html);
   }
