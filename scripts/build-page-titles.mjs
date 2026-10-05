@@ -6,6 +6,14 @@ const descriptions = JSON.parse(await readFile(new URL('../src/page-descriptions
 const internalRoutes = JSON.parse(await readFile(new URL('../src/internal-routes.json', import.meta.url), 'utf8'));
 const template = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
 const escapeHtml = (value) => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+const websiteData = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': 'https://rbgs.io/#website',
+  name: 'rbgs.io',
+  url: 'https://rbgs.io/',
+  inLanguage: ['en', 'es'],
+});
 await mkdir(new URL('../dist/es/', import.meta.url), { recursive: true });
 
 for (const [path, title] of Object.entries(titles)) {
@@ -15,12 +23,13 @@ for (const [path, title] of Object.entries(titles)) {
   const spanish = path.startsWith('/es/');
   const englishPath = spanish ? path.slice(3) || '/' : path;
   const spanishPath = englishPath === '/' ? '/es/' : `/es${englishPath}`;
+  const structuredData = englishPath === '/' ? `    <script type="application/ld+json">${websiteData}</script>\n` : '';
   const alternates = [['en', englishPath], ['es', spanishPath], ['x-default', englishPath]]
     .map(([language, alternatePath]) => `    <link rel="alternate" hreflang="${language}" href="${escapeHtml(new URL(alternatePath, 'https://rbgs.io').href)}" />`).join('\n');
   const html = template
     .replace('<html lang="en">', `<html lang="${spanish ? 'es' : 'en'}">`)
     .replace('property="og:locale" content="en_US"', `property="og:locale" content="${spanish ? 'es_ES' : 'en_US'}"`)
-    .replace('</head>', () => `  <link rel="canonical" href="${canonicalUrl}" />\n    <meta property="og:url" content="${canonicalUrl}" />\n${alternates}\n  </head>`)
+    .replace('</head>', () => `  <link rel="canonical" href="${canonicalUrl}" />\n    <meta property="og:url" content="${canonicalUrl}" />\n${alternates}\n${structuredData}  </head>`)
     .replace('<div id="root"></div>', () => `<div id="root" data-prerender-path="${escapeHtml(path)}">${render(path)}</div>`)
     .replace(/<title>[^<]*<\/title>/, `<title>${escapedTitle}</title>`)
     .replace(/(<meta property="og:title" content=")[^"]*("\s*\/>)/, `$1${escapedTitle}$2`)
