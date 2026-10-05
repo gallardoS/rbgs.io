@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build && node scripts/build-page-titles.mjs",
+    "build": "tsc --noEmit && vite build && vite build --ssr src/prerender.tsx --outDir dist/server && node scripts/build-page-titles.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },

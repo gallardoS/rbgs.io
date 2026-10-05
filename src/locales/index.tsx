@@ -6,14 +6,18 @@ type Language = 'en' | 'es';
 const LanguageContext = createContext({ language: 'en' as Language, setLanguage: (_language: Language) => {} });
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>(() => {
-    try { return localStorage.getItem('rbgs-language') === 'es' ? 'es' : 'en'; }
-    catch { return 'en'; }
-  });
+  const [language, setLanguage] = useState<Language>('en');
+  const [preferenceLoaded, setPreferenceLoaded] = useState(false);
+  useEffect(() => {
+    try { setLanguage(localStorage.getItem('rbgs-language') === 'es' ? 'es' : 'en'); }
+    catch { /* Storage may be disabled. */ }
+    setPreferenceLoaded(true);
+  }, []);
   useEffect(() => {
     document.documentElement.lang = language;
+    if (!preferenceLoaded) return;
     try { localStorage.setItem('rbgs-language', language); } catch { /* Storage may be disabled. */ }
-  }, [language]);
+  }, [language, preferenceLoaded]);
   return <LanguageContext.Provider value={{ language, setLanguage }}>{children}</LanguageContext.Provider>;
 }
 
