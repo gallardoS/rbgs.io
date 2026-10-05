@@ -14,7 +14,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid #facc15; outline-offs
 h1 { font-size: clamp(2.25rem, 6vw, 4.5rem); line-height: 1.08; margin: 0 0 1.5rem; }
 p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .hero { position: relative; isolation: isolate; display: grid; place-items: center; min-height: calc(100svh - 84px); padding: 6rem 1.5rem 9rem; overflow: hidden; }
-.hero-background { position: absolute; z-index: -1; inset: 0; pointer-events: none; overflow: hidden; container-type: size; --rise: -100vh; background: linear-gradient(#070808a6, #070808cc), url('/hero-banner.jpg') center / cover no-repeat; }
+.hero-background { position: absolute; z-index: -1; inset: 0; pointer-events: none; overflow: hidden; container-type: size; --rise: -100vh; background: linear-gradient(#070808a6, #070808cc), url('/hero-banner.webp') center / cover no-repeat; }
 .hero-glow { position: absolute; inset: 0; background: radial-gradient(ellipse 55% 65% at 50% -8%, #facc1529 0%, #eab30814 28%, #eab30805 58%, transparent 85%); }
 .particle-field { position: absolute; inset: 0; mask-image: linear-gradient(to bottom, transparent, #000 15%, #000 75%, transparent), linear-gradient(to right, transparent, #000 12%, #000 88%, transparent); mask-composite: intersect; }
 .particle-layer { position: absolute; inset: 0; transform: translate3d(calc(var(--pointer-x, 0px) * var(--depth)), calc(var(--pointer-y, 0px) * var(--depth)), 0); transition: transform .8s ease-out; }
