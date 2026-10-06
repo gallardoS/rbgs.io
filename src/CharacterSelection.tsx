@@ -30,8 +30,10 @@ export function CharacterSelection({ accountId, editable = true }: { accountId: 
           return;
         }
         const data = await response.json() as AccountProfile;
-        const choices = data.wow_accounts.flatMap(account => account.characters.filter(character => character.level === 60).map(character => ({
-          key: `${account.id}:${character.realm.id}:${character.id}`, character,
+        const choices = data.wow_accounts.flatMap(account => account.characters.filter(character => character.level >= 60).map(character => ({
+          key: character.namespace === 'profile-classic-eu'
+            ? `${character.namespace}:${account.id}:${character.realm.id}:${character.id}`
+            : `${account.id}:${character.realm.id}:${character.id}`, character,
         }))).sort((a, b) => a.character.name.localeCompare(b.character.name));
         if (controller.signal.aborted) return;
         setCharacters(choices);

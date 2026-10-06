@@ -3,6 +3,7 @@ import { useLocale } from './locales';
 
 export type Character = {
   id: number; name: string; level: number;
+  namespace?: 'profile-classic1x-eu' | 'profile-classic-eu';
   realm: { id: number; name: string; slug: string };
   playable_class?: { id?: number; name: string }; playable_race?: { name: string }; faction?: { name: string };
   avatarUrl?: string | null;
