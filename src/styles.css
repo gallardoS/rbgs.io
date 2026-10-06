@@ -237,7 +237,7 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .profile-settings .character-option { position: relative; flex-direction: column; flex: 0 0 200px; gap: .7rem; padding: .8rem; background: linear-gradient(150deg, #262a28, #101311); border-radius: .8rem; }
 .character-option-header { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: .4rem; }
 .character-option-header > strong { font-size: .85rem; overflow-wrap: anywhere; min-width: 0; }
-.profile-settings .character-option .character-avatar { width: 72px; height: 72px; border-radius: 50%; }
+.profile-settings .character-option .character-avatar { width: 80px; height: 80px; border-radius: 50%; }
 .profile-settings .character-option-details { text-align: center; }
 .profile-settings .character-option-details > span { font-size: .7rem; }
 .profile-settings .character-option .profile-card-rating strong { font-size: 1rem; }
@@ -248,10 +248,11 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .profile-card:hover { border-color: #e6cc77; }
 .profile-card:focus-visible { outline: 2px solid #e6cc77; outline-offset: 4px; }
 .profile-card-header { display: flex; align-items: center; justify-content: space-between; gap: .5rem; width: 100%; }
-.profile-card .character-avatar { width: 96px; height: 96px; margin: .75rem 0; border-radius: 50%; border-width: 2px; }
+.profile-card .character-avatar { width: 108px; height: 108px; margin: .75rem 0 0; border-radius: 50%; border-width: 2px; }
 .profile-card .character-avatar:not(.is-class-icon) img { object-fit: contain; }
-.profile-card-name { font-size: 1rem; overflow-wrap: anywhere; min-width: 0; text-align: left; }
-.profile-card-realm { color: #b6b7bb; font-size: .8rem; }
+.profile-card-name { font-size: 1rem; overflow-wrap: anywhere; min-width: 0; max-width: 100%; text-align: center; }
+.profile-card-realm { color: #b6b7bb; font-size: .8rem; min-width: 0; overflow-wrap: anywhere; text-align: left; }
+.profile-card-guild { max-width: 100%; color: #e6cc77; font-size: .8rem; text-align: center; overflow-wrap: anywhere; }
 .profile-card-icons { display: flex; gap: .4rem; align-items: center; flex-shrink: 0; }
 .profile-card-icons img { width: 18px; height: 18px; border-radius: 2px; }
 .profile-card-ratings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; padding-top: 1rem; border-top: 1px solid #ffffff15; }
@@ -312,11 +313,13 @@ html { scrollbar-color: #facc15 #0c0e0d; scrollbar-width: thin; }
 .player-card-compact { gap: .7rem; padding: .8rem; border-radius: .8rem; }
 .player-card-compact .profile-card-name { font-size: .85rem; }
 .player-card-compact .profile-card-realm { font-size: .7rem; }
+.player-card-compact .profile-card-guild { font-size: .7rem; }
 .player-card-skeleton { cursor: default; pointer-events: none; }
 .skeleton-block { display: block; background: #ffffff0c; animation: player-card-pulse 1.6s ease-in-out infinite; border-radius: .25rem; }
 .skeleton-name { width: 7rem; height: 1.2rem; }
 .skeleton-icons { width: 2.65rem; height: 1.2rem; }
 .skeleton-realm { width: 8rem; height: 1.2rem; }
+.skeleton-guild { width: 9rem; height: 1.2rem; }
 .skeleton-stat-label { width: 85%; height: 1.65rem; margin-inline: auto; }
 .skeleton-stat-value { width: 1.5rem; height: 1.15rem; margin-inline: auto; }
 .skeleton-rating { width: 4.5rem; height: 1.45rem; }

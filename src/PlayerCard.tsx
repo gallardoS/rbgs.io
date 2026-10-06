@@ -8,14 +8,16 @@ export type Character = {
   playable_class?: { id?: number; name: string }; playable_race?: { name: string }; faction?: { name: string };
   avatarUrl?: string | null;
   insetUrl?: string | null;
+  guild?: { name: string | null } | null;
 };
 export function PlayerCardSkeleton() {
   const { t } = useLocale();
   return <div className="character-picker" role="status" aria-label={t('charactersLoading')}>
     <div className="profile-card player-card player-card-skeleton" aria-hidden="true">
-      <span className="profile-card-header"><span className="skeleton-block skeleton-name" /><span className="skeleton-block skeleton-icons" /></span>
+      <span className="profile-card-header"><span className="skeleton-block skeleton-realm" /><span className="skeleton-block skeleton-icons" /></span>
       <span className="character-avatar skeleton-block" />
-      <span className="skeleton-block skeleton-realm" />
+      <span className="skeleton-block skeleton-name" />
+      <span className="skeleton-block skeleton-guild" />
       <span className="profile-card-stats">{[0, 1, 2].map(column => <span key={column}><span className="skeleton-block skeleton-stat-label" /><span className="skeleton-block skeleton-stat-value" /></span>)}</span>
       <span className="profile-card-ratings">{[0, 1].map(column => <span className="profile-card-rating" key={column}><span className="skeleton-block skeleton-rating" /></span>)}</span>
     </div>
@@ -41,9 +43,10 @@ export function PlayerCard({ character, compact = false, tilt = false }: { chara
       card.style.setProperty('--card-rotate-x', '0deg');
       card.style.setProperty('--card-rotate-y', '0deg');
     }}>
-      <span className="profile-card-header"><strong className="profile-card-name">{character.name}</strong><CharacterIcons character={character} /></span>
+      <span className="profile-card-header"><span className="profile-card-realm">EU · {character.realm.name || character.realm.slug} · {character.level}</span><CharacterIcons character={character} /></span>
       <CharacterAvatar character={character} />
-      <span className="profile-card-realm">{character.realm.name || character.realm.slug} · EU</span>
+      <strong className="profile-card-name">{character.name}</strong>
+      {character.guild?.name && <span className="profile-card-guild">{`< ${character.guild.name} >`}</span>}
       <CharacterStats />
       {ratings}
     </div>
