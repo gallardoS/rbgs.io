@@ -218,7 +218,7 @@ export function App() {
       <Route path="/play" element={<main className="content play-page">
         <header className="play-heading"><h1>{t('navigationPlay')}</h1><p>{t('playIntro')}</p></header>
         <div className="play-lobby"><div className="play-character-stage">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
-        ? <CharacterSelection key={session.profile.id} accountId={session.profile.id} />
+        ? <CharacterSelection key={session.profile.id} accountId={session.profile.id} editable={false} />
         : <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>}
         {session.authError && <p role="alert">{t('authError')}</p>}
         </div>
@@ -228,8 +228,21 @@ export function App() {
         <details><summary>{t('soloHeading')}</summary><p>{t('soloDescription')}</p></details>
         <details><summary>{t('premadeHeading')}</summary><p>{t('premadeDescription')}</p></details>
       </div></main>} />
-      <Route path="/account" element={<InfoPage heading="navigationProfile" introduction="accountIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
-        ? <><p>{t('signedInAs')} <strong>{session.profile.displayName}</strong></p><CharacterSelection key={session.profile.id} accountId={session.profile.id} /><button onClick={() => void session.logout()}>{t('logout')}</button></>
+      <Route path="/account" element={<InfoPage heading="navigationProfile" introduction="profileIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
+        ? <div className="profile-settings">
+          <section className="profile-settings-section" aria-labelledby="profile-account-title">
+            <div className="profile-section-heading"><h2 id="profile-account-title">{t('profileAccountHeading')}</h2><p>{t('profileAccountDescription')}</p></div>
+            <dl className="profile-account-details"><div><dt>Battle.net</dt><dd>{session.profile.displayName}</dd></div><div><dt>{t('profileRegion')}</dt><dd>{session.profile.region.toUpperCase()}</dd></div></dl>
+          </section>
+          <section className="profile-settings-section" aria-labelledby="profile-character-title">
+            <div className="profile-section-heading"><h2 id="profile-character-title">{t('charactersHeading')}</h2><p>{t('profileCharacterDescription')}</p><p className="profile-character-notice">{t('charactersBetaNotice')}</p></div>
+            <div><CharacterSelection key={session.profile.id} accountId={session.profile.id} /></div>
+          </section>
+          <section className="profile-settings-section" aria-labelledby="profile-session-title">
+            <div className="profile-section-heading"><h2 id="profile-session-title">{t('profileSessionHeading')}</h2><p>{t('profileSessionDescription')}</p></div>
+            <div><button onClick={() => void session.logout()}>{t('logout')}</button></div>
+          </section>
+        </div>
         : <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>}{session.authError && <p role="alert">{t('authError')}</p>}</InfoPage>} />
       <Route path="/match-history" element={<InfoPage heading="navigationHistory" introduction="historyIntro"><p>{t('historyPending')}</p></InfoPage>} />
       <Route path="/my-group" element={<InfoPage heading="navigationGroup" introduction="groupIntro"><p>{t('groupPending')}</p></InfoPage>} />
