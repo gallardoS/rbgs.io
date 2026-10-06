@@ -59,6 +59,7 @@ function Home({ profile, loading, authError }: Session) {
     const hero = heroRef.current;
     if (!hero) return;
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const scroller = document.getElementById('page-scroll');
     let frame = 0;
     let lastOpacity = '';
     const update = () => {
@@ -66,7 +67,8 @@ function Home({ profile, loading, authError }: Session) {
       let opacity = '1';
       if (!motion.matches) {
         const bounds = hero.getBoundingClientRect();
-        const progress = Math.max(0, Math.min(1, -bounds.top / (bounds.height * .85)));
+        const viewportTop = scroller?.getBoundingClientRect().top ?? 0;
+        const progress = Math.max(0, Math.min(1, (viewportTop - bounds.top) / (bounds.height * .85)));
         opacity = String(1 - progress);
       }
       if (opacity !== lastOpacity) {
@@ -75,13 +77,13 @@ function Home({ profile, loading, authError }: Session) {
       }
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
-    window.addEventListener('scroll', schedule, { passive: true });
+    scroller?.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule);
     motion.addEventListener('change', schedule);
     update();
     return () => {
       cancelAnimationFrame(frame);
-      window.removeEventListener('scroll', schedule);
+      scroller?.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
       motion.removeEventListener('change', schedule);
     };
@@ -178,7 +180,13 @@ export function App() {
     setMenuOpen(false);
     const frame = requestAnimationFrame(() => {
       if (location.hash === '#how-it-works') {
-        document.getElementById('how-it-works')?.scrollIntoView({ block: 'start' });
+        const scroller = document.getElementById('page-scroll');
+        const target = document.getElementById('how-it-works');
+        if (scroller && target) {
+          const viewportTop = scroller.getBoundingClientRect().top;
+          const destination = scroller.scrollTop + target.getBoundingClientRect().top - viewportTop;
+          scroller.scrollTo({ top: destination, behavior: 'instant' });
+        }
       } else {
         document.getElementById('page-scroll')?.scrollTo(0, 0);
       }
@@ -209,47 +217,47 @@ export function App() {
       <LanguageMenu />
     </header>
     <div id="page-scroll" className="page-scroll">
-    <Routes location={{ ...location, pathname: basePath(location.pathname) }}><Route path="/" element={<Home {...session} />} />
-      <Route path="/leaderboard" element={<Leaderboard />} />
-      <Route path="/downloads" element={<InfoPage heading="navigationDownloads" introduction="downloadsIntro"><div className="info-grid">
-        <article><h2>{t('companionHeading')}</h2><p>{t('companionDescription')}</p><span className="availability">{t('releasePending')}</span></article>
-        <article><h2>{t('addonHeading')}</h2><p>{t('addonDescription')}</p><span className="availability">{t('releasePending')}</span></article>
-      </div><Link className="button" to="/#how-it-works">{t('navigationGuide')}</Link></InfoPage>} />
-      <Route path="/how-it-works" element={<Navigate to={`${localizedPath('/', language)}#how-it-works`} replace />} />
-      <Route path="/play" element={<main className="content play-page">
-        <header className="play-heading"><h1>{t('navigationPlay')}</h1><p>{t('playIntro')}</p></header>
-        <div className="play-lobby"><div className="play-character-stage">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
-        ? <CharacterSelection key={session.profile.id} accountId={session.profile.id} editable={false} />
-        : <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>}
-        {session.authError && <p role="alert">{t('authError')}</p>}
-        </div>
-        <div className="play-match-action"><button className="find-match" disabled aria-describedby="queue-availability">{t('findMatch')}</button>
-          <p id="queue-availability" className="availability">{t('queuePending')}</p></div>
-      </div><div className="play-mode-info">
-        <details><summary>{t('soloHeading')}</summary><p>{t('soloDescription')}</p></details>
-        <details><summary>{t('premadeHeading')}</summary><p>{t('premadeDescription')}</p></details>
-      </div></main>} />
-      <Route path="/account" element={<InfoPage heading="navigationProfile" introduction="profileIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
-        ? <div className="profile-settings">
-          <section className="profile-settings-section" aria-labelledby="profile-account-title">
-            <div className="profile-section-heading"><h2 id="profile-account-title">{t('profileAccountHeading')}</h2><p>{t('profileAccountDescription')}</p></div>
-            <dl className="profile-account-details"><div><dt>Battle.net</dt><dd>{session.profile.displayName}</dd></div><div><dt>{t('profileRegion')}</dt><dd>{session.profile.region.toUpperCase()}</dd></div></dl>
-          </section>
-          <section className="profile-settings-section" aria-labelledby="profile-character-title">
-            <div className="profile-section-heading"><h2 id="profile-character-title">{t('charactersHeading')}</h2><p>{t('profileCharacterDescription')}</p><p className="profile-character-notice">{t('charactersBetaNotice')}</p></div>
-            <div><CharacterSelection key={session.profile.id} accountId={session.profile.id} /></div>
-          </section>
-          <section className="profile-settings-section" aria-labelledby="profile-session-title">
-            <div className="profile-section-heading"><h2 id="profile-session-title">{t('profileSessionHeading')}</h2><p>{t('profileSessionDescription')}</p></div>
-            <div><button onClick={() => void session.logout()}>{t('logout')}</button></div>
-          </section>
-        </div>
-        : <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>}{session.authError && <p role="alert">{t('authError')}</p>}</InfoPage>} />
-      <Route path="/match-history" element={<InfoPage heading="navigationHistory" introduction="historyIntro"><p>{t('historyPending')}</p></InfoPage>} />
-      <Route path="/my-group" element={<InfoPage heading="navigationGroup" introduction="groupIntro"><p>{t('groupPending')}</p></InfoPage>} />
-      <Route path="/settings" element={<InfoPage heading="navigationSettings" introduction="settingsIntro"><p>{t('settingsPending')}</p></InfoPage>} />
-      <Route path="/status" element={<Status />} /><Route path="*" element={<NotFound />} /></Routes>
-    <footer className="footer"><span className="brand">{t('appName')}</span><Link to="/status">{t('navigationStatus')}</Link></footer>
+      <Routes location={{ ...location, pathname: basePath(location.pathname) }}><Route path="/" element={<Home {...session} />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/downloads" element={<InfoPage heading="navigationDownloads" introduction="downloadsIntro"><div className="info-grid">
+          <article><h2>{t('companionHeading')}</h2><p>{t('companionDescription')}</p><span className="availability">{t('releasePending')}</span></article>
+          <article><h2>{t('addonHeading')}</h2><p>{t('addonDescription')}</p><span className="availability">{t('releasePending')}</span></article>
+        </div><Link className="button" to="/#how-it-works">{t('navigationGuide')}</Link></InfoPage>} />
+        <Route path="/how-it-works" element={<Navigate to={`${localizedPath('/', language)}#how-it-works`} replace />} />
+        <Route path="/play" element={<main className="content play-page">
+          <header className="play-heading"><h1>{t('navigationPlay')}</h1><p>{t('playIntro')}</p></header>
+          <div className="play-lobby"><div className="play-character-stage">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
+            ? <CharacterSelection key={session.profile.id} accountId={session.profile.id} editable={false} />
+            : <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>}
+            {session.authError && <p role="alert">{t('authError')}</p>}
+          </div>
+            <div className="play-match-action"><button className="find-match" disabled aria-describedby="queue-availability">{t('findMatch')}</button>
+              <p id="queue-availability" className="availability">{t('queuePending')}</p></div>
+          </div><div className="play-mode-info">
+            <details><summary>{t('soloHeading')}</summary><p>{t('soloDescription')}</p></details>
+            <details><summary>{t('premadeHeading')}</summary><p>{t('premadeDescription')}</p></details>
+          </div></main>} />
+        <Route path="/account" element={<InfoPage heading="navigationProfile" introduction="profileIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
+          ? <div className="profile-settings">
+            <section className="profile-settings-section" aria-labelledby="profile-account-title">
+              <div className="profile-section-heading"><h2 id="profile-account-title">{t('profileAccountHeading')}</h2><p>{t('profileAccountDescription')}</p></div>
+              <dl className="profile-account-details"><div><dt>Battle.net</dt><dd>{session.profile.displayName}</dd></div><div><dt>{t('profileRegion')}</dt><dd>{session.profile.region.toUpperCase()}</dd></div></dl>
+            </section>
+            <section className="profile-settings-section" aria-labelledby="profile-character-title">
+              <div className="profile-section-heading"><h2 id="profile-character-title">{t('charactersHeading')}</h2><p>{t('profileCharacterDescription')}</p><p className="profile-character-notice">{t('charactersBetaNotice')}</p></div>
+              <div><CharacterSelection key={session.profile.id} accountId={session.profile.id} /></div>
+            </section>
+            <section className="profile-settings-section" aria-labelledby="profile-session-title">
+              <div className="profile-section-heading"><h2 id="profile-session-title">{t('profileSessionHeading')}</h2><p>{t('profileSessionDescription')}</p></div>
+              <div><button onClick={() => void session.logout()}>{t('logout')}</button></div>
+            </section>
+          </div>
+          : <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>}{session.authError && <p role="alert">{t('authError')}</p>}</InfoPage>} />
+        <Route path="/match-history" element={<InfoPage heading="navigationHistory" introduction="historyIntro"><p>{t('historyPending')}</p></InfoPage>} />
+        <Route path="/my-group" element={<InfoPage heading="navigationGroup" introduction="groupIntro"><p>{t('groupPending')}</p></InfoPage>} />
+        <Route path="/settings" element={<InfoPage heading="navigationSettings" introduction="settingsIntro"><p>{t('settingsPending')}</p></InfoPage>} />
+        <Route path="/status" element={<Status />} /><Route path="*" element={<NotFound />} /></Routes>
+      <footer className="footer"><span className="brand">{t('appName')}</span><Link to="/status">{t('navigationStatus')}</Link></footer>
     </div>
     <BackToTop />
   </div>;
