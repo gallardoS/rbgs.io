@@ -7,6 +7,7 @@ export const messages = {
   navigationMenu: 'Menu',
   navigationLeaderboard: 'Leaderboard',
   navigationDownloads: 'Downloads',
+  navigationCommunity: 'Community',
   navigationGuide: 'How it works',
   navigationPlay: 'Play',
   navigationLogin: 'Log in',

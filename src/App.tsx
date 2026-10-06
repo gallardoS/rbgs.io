@@ -192,6 +192,7 @@ export function App() {
         <NavLink to="/leaderboard">{t('navigationLeaderboard')}</NavLink>
         <NavLink to="/downloads">{t('navigationDownloads')}</NavLink>
         <Link to="/#how-it-works">{t('navigationGuide')}</Link>
+        <a className="nav-community" href="https://discord.gg/RfBgfszUPM" target="_blank" rel="noopener noreferrer">{t('navigationCommunity')}<img src="/external-link.svg" width="14" height="14" alt="" aria-hidden="true" /></a>
         <NavLink className="nav-play" to="/play">{t('navigationPlay')}</NavLink>
         {session.loading ? <span role="status">{t('authChecking')}</span> : session.profile
           ? <details className="account-menu" key={location.pathname}><summary>

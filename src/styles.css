@@ -17,6 +17,9 @@ a { color: #facc15; }
 nav { display: flex; gap: 1.75rem; }
 nav a { color: #a4a49a; font-size: .875rem; text-decoration: none; transition: color .2s; }
 nav a:hover { color: #facc15; }
+.nav-community { position: relative; }
+.nav-community img { position: absolute; left: calc(100% + .2rem); top: 50%; transform: translateY(-50%); opacity: 0; filter: brightness(0) saturate(100%) invert(86%) sepia(76%) saturate(886%) hue-rotate(350deg); }
+.nav-community:hover img, .nav-community:focus-visible img { opacity: 1; }
 a:focus-visible, button:focus-visible { outline: 2px solid #facc15; outline-offset: 5px; }
 .content { max-width: 70rem; margin: 0 auto; padding: clamp(3rem, 9vw, 8rem) 1.5rem; }
 h1 { font-size: clamp(2.25rem, 6vw, 4.5rem); line-height: 1.08; margin: 0 0 1.5rem; }

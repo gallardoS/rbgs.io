@@ -38,6 +38,7 @@ export const messages: Record<MessageKey, string> = {
   settingsIntro: 'Gestiona las preferencias de tu cuenta y la aplicación companion vinculada.',
   settingsPending: 'Los ajustes de cuenta estarán disponibles en una futura actualización.',
   leaderboardHeading: 'Clasificación',
+  navigationCommunity: 'Comunidad',
   leaderboardIntro: 'sigue la competición en las temporadas de soloq y premades.',
   leaderboardPreviewSeason: 'Temporada 3',
   leaderboardDemo: 'Temporada de ejemplo',
