@@ -8,6 +8,19 @@ export type Character = {
   avatarUrl?: string | null;
   insetUrl?: string | null;
 };
+export function PlayerCardSkeleton() {
+  const { t } = useLocale();
+  return <div className="character-picker" role="status" aria-label={t('charactersLoading')}>
+    <div className="profile-card player-card player-card-skeleton" aria-hidden="true">
+      <span className="profile-card-header"><span className="skeleton-block skeleton-name" /><span className="skeleton-block skeleton-icons" /></span>
+      <span className="character-avatar skeleton-block" />
+      <span className="skeleton-block skeleton-realm" />
+      <span className="profile-card-stats">{[0, 1, 2].map(column => <span key={column}><span className="skeleton-block skeleton-stat-label" /><span className="skeleton-block skeleton-stat-value" /></span>)}</span>
+      <span className="profile-card-ratings">{[0, 1].map(column => <span className="profile-card-rating" key={column}><span className="skeleton-block skeleton-rating" /></span>)}</span>
+    </div>
+  </div>;
+}
+
 export function PlayerCard({ character, compact = false, tilt = false }: { character: Character; compact?: boolean; tilt?: boolean }) {
   const ratings = <span className="profile-card-ratings">
     <CharacterRating />

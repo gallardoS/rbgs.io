@@ -297,3 +297,13 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .player-card-compact { gap: .7rem; padding: .8rem; border-radius: .8rem; }
 .player-card-compact .profile-card-name { font-size: .85rem; }
 .player-card-compact .profile-card-realm { font-size: .7rem; }
+.player-card-skeleton { cursor: default; pointer-events: none; }
+.skeleton-block { display: block; background: #ffffff0c; animation: player-card-pulse 1.6s ease-in-out infinite; border-radius: .25rem; }
+.skeleton-name { width: 7rem; height: 1.2rem; }
+.skeleton-icons { width: 2.65rem; height: 1.2rem; }
+.skeleton-realm { width: 8rem; height: 1.2rem; }
+.skeleton-stat-label { width: 85%; height: 1.65rem; margin-inline: auto; }
+.skeleton-stat-value { width: 1.5rem; height: 1.15rem; margin-inline: auto; }
+.skeleton-rating { width: 4.5rem; height: 1.45rem; }
+@keyframes player-card-pulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .skeleton-block { animation: none; } }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PlayerCard, type Character } from './PlayerCard';
+import { PlayerCard, PlayerCardSkeleton, type Character } from './PlayerCard';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
 
@@ -58,7 +58,7 @@ export function CharacterSelection({ accountId, editable = true }: { accountId: 
 
   const current = characters.find(choice => choice.key === selected)?.character;
   return <section className="character-selection" aria-label={t('charactersHeading')}>
-    {loading ? <p role="status">{t('charactersLoading')}</p> : error ? <>
+    {loading ? <PlayerCardSkeleton /> : error ? <>
       <p role="alert">{t(error)}</p>
       {error === 'charactersAuthorization'
         ? <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>
