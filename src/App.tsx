@@ -195,7 +195,11 @@ export function App() {
   }, [location.pathname, location.hash, location.key]);
   return <div className="app-shell">
     <header className="header"><Link className="brand" to="/">{t('appName')}</Link>
-      <button className="menu-toggle" aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(!menuOpen)}>{t('navigationMenu')}</button>
+      <button type="button" className="menu-toggle" aria-label={t('navigationMenu')} aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(open => !open)}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+          {menuOpen ? <path d="m6 6 12 12M6 18 18 6" /> : <path d="M4 6h16M4 12h16M4 18h16" />}
+        </svg>
+      </button>
       <nav id="main-navigation" className={menuOpen ? 'main-navigation is-open' : 'main-navigation'} aria-label={t('navigationLabel')}>
         <NavLink to="/leaderboard">{t('navigationLeaderboard')}</NavLink>
         <NavLink to="/downloads">{t('navigationDownloads')}</NavLink>
@@ -213,8 +217,8 @@ export function App() {
               <button onClick={() => void session.logout()}>{t('logout')}</button>
             </div></details>
           : <a className="nav-login" href="/oauth2/authorization/battle-net"><img src="/battle-net.svg" width="20" height="20" alt="" />{t('navigationLogin')}</a>}
+        <LanguageMenu />
       </nav>
-      <LanguageMenu />
     </header>
     <div id="page-scroll" className="page-scroll">
       <Routes location={{ ...location, pathname: basePath(location.pathname) }}><Route path="/" element={<Home {...session} />} />

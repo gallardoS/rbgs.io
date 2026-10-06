@@ -101,12 +101,14 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .info-grid p, .guide-steps { font-size: 1rem; line-height: 1.8; color: #b5b5ab; }
 .availability { display: inline-block; color: #e6cc77; font-size: .8rem; }
 @media (max-width: 1000px) {
-  .menu-toggle { display: inline-flex; min-height: 40px; padding: .5rem .8rem; }
+  .menu-toggle { display: inline-flex; width: 44px; height: 44px; min-height: 44px; padding: 0; }
   .header > .menu-toggle { margin-left: auto; }
-  .main-navigation { display: none; position: absolute; top: 100%; left: 0; right: 0; padding: 1.5rem; background: #0c0e0d; border-bottom: 1px solid #ffffff26; flex-direction: column; align-items: stretch; gap: 1.25rem; margin-left: 0; }
+  .main-navigation { display: none; position: absolute; top: 100%; left: 0; right: 0; padding: 1.5rem; max-height: calc(100dvh - 84px); overflow-y: auto; background: #0c0e0d; border-bottom: 1px solid #ffffff26; flex-direction: column; align-items: stretch; gap: 1.25rem; margin-left: 0; }
   .main-navigation .nav-play { margin-left: 0; }
   .main-navigation.is-open { display: flex; }
   .main-navigation a { font-size: .95rem; }
+  .main-navigation .language-switch { padding-top: .75rem; border-top: 1px solid #ffffff12; }
+  .main-navigation .language-options { position: static; transform: none; margin-left: .5rem; }
   .account-menu > div { position: static; margin-top: 1rem; }
 }
 @media (max-width: 600px) { .info-grid { grid-template-columns: 1fr; } }
