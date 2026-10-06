@@ -180,7 +180,7 @@ export function App() {
       if (location.hash === '#how-it-works') {
         document.getElementById('how-it-works')?.scrollIntoView({ block: 'start' });
       } else {
-        window.scrollTo(0, 0);
+        document.getElementById('page-scroll')?.scrollTo(0, 0);
       }
     });
     return () => cancelAnimationFrame(frame);
@@ -208,6 +208,7 @@ export function App() {
       </nav>
       <LanguageMenu />
     </header>
+    <div id="page-scroll" className="page-scroll">
     <Routes location={{ ...location, pathname: basePath(location.pathname) }}><Route path="/" element={<Home {...session} />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
       <Route path="/downloads" element={<InfoPage heading="navigationDownloads" introduction="downloadsIntro"><div className="info-grid">
@@ -249,6 +250,7 @@ export function App() {
       <Route path="/settings" element={<InfoPage heading="navigationSettings" introduction="settingsIntro"><p>{t('settingsPending')}</p></InfoPage>} />
       <Route path="/status" element={<Status />} /><Route path="*" element={<NotFound />} /></Routes>
     <footer className="footer"><span className="brand">{t('appName')}</span><Link to="/status">{t('navigationStatus')}</Link></footer>
+    </div>
     <BackToTop />
   </div>;
 }

@@ -101,3 +101,4 @@ export function CharacterSelection({ accountId, editable = true }: { accountId: 
     </>}
   </section>;
 }
+
