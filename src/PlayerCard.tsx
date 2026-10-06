@@ -9,6 +9,7 @@ export type Character = {
   avatarUrl?: string | null;
   insetUrl?: string | null;
   guild?: { name: string | null } | null;
+  gender?: { type: string | null; name?: string | null } | null;
 };
 export function PlayerCardSkeleton() {
   const { t } = useLocale();
@@ -91,9 +92,11 @@ function CharacterIcons({ character }: { character: Character }) {
   const className = classAvatars[character.playable_class?.id ?? 0]?.[0];
   const race = character.playable_race?.name;
   const raceIcon = race ? raceIcons[race] : undefined;
+  const gender = character.gender?.type === 'FEMALE' ? 'female'
+    : character.gender?.type === 'MALE' ? 'male' : undefined;
   return <span className="profile-card-icons">
+    {raceIcon && gender && <img src={`/media/character/race_${raceIcon}_${gender}.jpg`} width="18" height="18" alt={race} title={race} />}
     {className && <img src={`/media/character/class_${className}.jpg`} width="18" height="18" alt={character.playable_class?.name} title={character.playable_class?.name} />}
-    {raceIcon && <img src={`/media/character/race_${raceIcon}_male.jpg`} width="18" height="18" alt={race} title={race} />}
   </span>;
 }
 
