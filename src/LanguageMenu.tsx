@@ -28,6 +28,11 @@ export function LanguageMenu() {
   return <div className="language-switch" ref={ref} onBlur={event => {
     if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
   }}>
+    <div className="mobile-language-options">
+      {(['en', 'es'] as const).map(code => <Link key={code} to={localizedPath(location.pathname, code) + location.search + location.hash} className="language-flag" aria-label={code === 'en' ? 'English' : 'Español'} title={code === 'en' ? 'English' : 'Español'} aria-current={language === code ? 'page' : undefined}>
+        <img src={`/flag-${code}.svg`} width="20" height="14" alt="" />
+      </Link>)}
+    </div>
     <button ref={trigger} type="button" className="language-flag" aria-label={`${t('languageLabel')}: ${language === 'en' ? 'English' : 'Español'}`} aria-expanded={open} aria-controls="language-options" onClick={() => setOpen(!open)}>
       <img src={`/flag-${language}.svg`} width="20" height="14" alt="" />
     </button>

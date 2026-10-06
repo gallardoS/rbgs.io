@@ -327,3 +327,10 @@ html { scrollbar-color: #facc15 #0c0e0d; scrollbar-width: thin; }
 .skeleton-rating { width: 4.5rem; height: 1.45rem; }
 @keyframes player-card-pulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .skeleton-block { animation: none; } }
+
+.mobile-language-options { display: none; }
+@media (max-width: 1000px) {
+  .mobile-language-options { display: flex; align-items: center; gap: .5rem; }
+  .language-switch > .language-flag, .language-switch > .language-options { display: none; }
+  .mobile-language-options .language-flag[aria-current="page"] { background: #ffffff0a; }
+}
