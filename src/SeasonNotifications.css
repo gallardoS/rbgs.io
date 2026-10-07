@@ -21,6 +21,7 @@
   max-height: calc(100dvh - 140px - var(--season-toggle-size));
   padding: 1.5rem;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   overscroll-behavior: contain;
   color: #fafaf6;
   background: #121514;
