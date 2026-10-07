@@ -12,7 +12,7 @@ import { BackToTop } from './BackToTop';
 import { LanguageMenu } from './LanguageMenu';
 import { CharacterSelection } from './CharacterSelection';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
-import { SeasonNotificationsProvider } from './SeasonNotifications';
+import { SeasonNotificationsProvider, useSeasonNotice } from './SeasonNotifications';
 import pageTitles from './page-titles.json';
 import pageDescriptions from './page-descriptions.json';
 import internalRoutes from './internal-routes.json';
@@ -55,6 +55,7 @@ function useSession() {
 type Session = ReturnType<typeof useSession>;
 
 function Home({ profile, loading, authError }: Session) {
+  const openSeasonNotice = useSeasonNotice();
   const { t } = useLocale();
   const heroRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -96,7 +97,7 @@ function Home({ profile, loading, authError }: Session) {
     <p className="hero-features"><BrandText text={t('heroDescription')} /></p>
     <div className="hero-actions">
       {loading ? <p role="status">{t('authChecking')}</p> : profile
-        ? <Link className="button hero-play" to="/play">{t('navigationPlay')}</Link>
+        ? <Link className="button hero-play" to="/play" onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) openSeasonNotice(); }}>{t('navigationPlay')}</Link>
         : <BattleNetLoginButton />}
       {authError && <p role="alert">{t('authError')}</p>}
     </div>
@@ -134,6 +135,7 @@ export function App() {
 }
 
 function AppContent() {
+  const openSeasonNotice = useSeasonNotice();
   const { t, language } = useLocale();
   const session = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -211,7 +213,7 @@ function AppContent() {
         <NavLink to="/downloads">{t('navigationDownloads')}</NavLink>
         <Link to="/#how-it-works">{t('navigationGuide')}</Link>
         <a className="nav-community" href="https://discord.gg/RfBgfszUPM" target="_blank" rel="noopener noreferrer">{t('navigationCommunity')}<img src="/external-link.svg" width="14" height="14" alt="" aria-hidden="true" /></a>
-        <NavLink className="nav-play" to="/play">{t('navigationPlay')}</NavLink>
+        <NavLink className="nav-play" to="/play" onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) openSeasonNotice(); }}>{t('navigationPlay')}</NavLink>
         {session.loading ? <span role="status">{t('authChecking')}</span> : session.profile
           ? <details className="account-menu" key={location.pathname}><summary>
             <svg className="user-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21v-2a8 8 0 0 1 16 0v2" /></svg>

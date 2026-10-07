@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { createContext, useContext, useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
@@ -6,6 +6,14 @@ import './SeasonNotifications.css';
 
 type Status = { emailEnabled: boolean; seasonLive: boolean; subscriptionsAvailable: boolean };
 type LinkState = { kind: 'confirm' | 'unsubscribe'; token: string };
+const SeasonNoticeContext = createContext<(() => void) | null>(null);
+
+export function useSeasonNotice() {
+  const open = useContext(SeasonNoticeContext);
+  if (!open) throw new Error('Season notice provider is required');
+  return open;
+}
+
 async function post(path: string, body: object) {
   // Establish a fresh CSRF cookie even for visitors without a Battle.net session.
   const status = await fetch('/api/v1/season-notifications', { credentials: 'same-origin' });
@@ -72,7 +80,12 @@ export function SeasonNotificationsProvider({ children }: { children: ReactNode 
     }
   }, [location.pathname, location.search, location.hash, navigate]);
 
-  return <>
+  const openNotice = useCallback(() => {
+    refreshStatus();
+    setExpanded(true);
+  }, [refreshStatus]);
+
+  return <SeasonNoticeContext.Provider value={openNotice}>
     {children}
     {status?.emailEnabled && (!status.seasonLive || action) && <div className={`season-widget${expanded ? ' is-expanded' : ''}`} onKeyDown={event => {
       if (event.key === 'Escape' && expanded) { setExpanded(false); toggle.current?.focus(); }
@@ -96,7 +109,7 @@ export function SeasonNotificationsProvider({ children }: { children: ReactNode 
       <img src="/quest-exclamation.svg" alt="" aria-hidden="true" />
     </button>
     </div>}
-  </>;
+  </SeasonNoticeContext.Provider>;
 }
 
 function NotificationForm({ available, onPrivacyChange }: { available: boolean; onPrivacyChange: (opening: boolean) => void }) {
