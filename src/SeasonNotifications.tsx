@@ -4,7 +4,7 @@ import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
 import './SeasonNotifications.css';
 
-type Status = { seasonLive: boolean; subscriptionsAvailable: boolean };
+type Status = { emailEnabled: boolean; seasonLive: boolean; subscriptionsAvailable: boolean };
 type LinkState = { kind: 'confirm' | 'unsubscribe'; token: string };
 
 async function post(path: string, body: object) {
@@ -40,11 +40,13 @@ export function SeasonNotificationsProvider({ children }: { children: ReactNode 
     statusRequest.current = controller;
     const refresh = () => { void fetch('/api/v1/season-notifications', { credentials: 'same-origin', signal: controller.signal })
       .then(async response => {
-        if (!response.ok) return;
+        if (!response.ok) { if (!controller.signal.aborted) setStatus(null); return; }
         const value: unknown = await response.json();
-        if (value && typeof value === 'object' && 'seasonLive' in value && 'subscriptionsAvailable' in value
-          && typeof value.seasonLive === 'boolean' && typeof value.subscriptionsAvailable === 'boolean') setStatus(value as Status);
-      }).catch(() => { /* Keep the notice available without claiming that signup succeeded. */ }); };
+        if (controller.signal.aborted) return;
+        if (value && typeof value === 'object' && 'emailEnabled' in value && 'seasonLive' in value && 'subscriptionsAvailable' in value
+          && typeof value.emailEnabled === 'boolean' && typeof value.seasonLive === 'boolean' && typeof value.subscriptionsAvailable === 'boolean') setStatus(value as Status);
+        else setStatus(null);
+      }).catch(() => { if (!controller.signal.aborted) setStatus(null); }); };
     refresh();
   }, []);
 
@@ -71,7 +73,7 @@ export function SeasonNotificationsProvider({ children }: { children: ReactNode 
 
   return <>
     {children}
-    {(!status?.seasonLive || action) && <div className={`season-widget${expanded ? ' is-expanded' : ''}`} onKeyDown={event => {
+    {status?.emailEnabled && (!status.seasonLive || action) && <div className={`season-widget${expanded ? ' is-expanded' : ''}`} onKeyDown={event => {
       if (event.key === 'Escape' && expanded) { setExpanded(false); toggle.current?.focus(); }
     }}>
     <aside id={`${heading}-panel`} className="season-floating" aria-labelledby={heading} inert={!expanded}>
