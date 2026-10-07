@@ -1,4 +1,5 @@
 export const messages = {
+  cheetahModelLabel: 'Running cheetah carrying the Warsong Flag',
   appName: 'rbgs.io',
   languageLabel: 'Language',
   backToTop: 'Back to top',

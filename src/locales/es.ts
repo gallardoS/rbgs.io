@@ -1,6 +1,7 @@
 import type { MessageKey } from './en';
 
 export const messages: Record<MessageKey, string> = {
+  cheetahModelLabel: 'Cheetah corriendo con la bandera de Grito de Guerra',
   charactersHeading: 'Tu personaje',
   profileIntro: 'Gestiona tu cuenta vinculada y tu sesión.',
   profileAccountHeading: 'Cuenta vinculada',
