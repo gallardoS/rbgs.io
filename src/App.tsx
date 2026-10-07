@@ -11,6 +11,7 @@ import { BrandText } from './BrandText';
 import { BackToTop } from './BackToTop';
 import { LanguageMenu } from './LanguageMenu';
 import { CharacterSelection } from './CharacterSelection';
+import { BattleNetLoginButton } from './BattleNetLoginButton';
 import pageTitles from './page-titles.json';
 import pageDescriptions from './page-descriptions.json';
 import internalRoutes from './internal-routes.json';
@@ -95,7 +96,7 @@ function Home({ profile, loading, authError }: Session) {
     <div className="hero-actions">
       {loading ? <p role="status">{t('authChecking')}</p> : profile
         ? <Link className="button hero-play" to="/play">{t('navigationPlay')}</Link>
-        : <a className="button battle-net-button" href="/oauth2/authorization/battle-net"><img src="/battle-net.svg" width="24" height="24" alt="" />{t('login')}<span className="button-arrow" aria-hidden="true">↗</span></a>}
+        : <BattleNetLoginButton />}
       {authError && <p role="alert">{t('authError')}</p>}
     </div>
   </div></section><MatchJourney /><Leaderboard preview /></main>;
@@ -232,7 +233,7 @@ export function App() {
           <header className="play-heading"><h1>{t('navigationPlay')}</h1><p>{t('playIntro')}</p></header>
           <div className="play-lobby"><div className="play-character-stage">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
             ? <CharacterSelection key={session.profile.id} accountId={session.profile.id} />
-            : <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>}
+            : <BattleNetLoginButton />}
             {session.authError && <p role="alert">{t('authError')}</p>}
           </div>
             <div className="play-match-action"><button className="find-match" disabled aria-describedby="queue-availability">{t('findMatch')}</button>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { CharacterAvatar, CharacterIcons, PlayerCard, PlayerCardSkeleton, type Character } from './PlayerCard';
+import { BattleNetLoginButton } from './BattleNetLoginButton';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
 
@@ -61,7 +62,7 @@ export function CharacterSelection({ accountId }: { accountId: string }) {
     {loading ? <PlayerCardSkeleton /> : error ? <>
       <p role="alert">{t(error)}</p>
       {error === 'charactersAuthorization'
-        ? <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>
+        ? <BattleNetLoginButton />
         : <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('charactersRetry')}</button>}
     </> : characters.length === 0 ? <p role="status">{t('charactersEmpty')}</p> : <>
       <div className="character-picker">
