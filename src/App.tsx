@@ -12,6 +12,7 @@ import { BackToTop } from './BackToTop';
 import { LanguageMenu } from './LanguageMenu';
 import { CharacterSelection } from './CharacterSelection';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
+import { SeasonNotificationsProvider } from './SeasonNotifications';
 import pageTitles from './page-titles.json';
 import pageDescriptions from './page-descriptions.json';
 import internalRoutes from './internal-routes.json';
@@ -129,6 +130,10 @@ function NotFound() {
 }
 
 export function App() {
+  return <SeasonNotificationsProvider><AppContent /></SeasonNotificationsProvider>;
+}
+
+function AppContent() {
   const { t, language } = useLocale();
   const session = useSession();
   const [menuOpen, setMenuOpen] = useState(false);

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 218 798" fill="none">
+  <defs>
+    <linearGradient id="quest-gold" x1="109" y1="0" x2="109" y2="798" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffdf00"/>
+      <stop offset=".28" stop-color="#ffdc00"/>
+      <stop offset=".63" stop-color="#ff8700"/>
+      <stop offset=".8" stop-color="#ffdc00"/>
+      <stop offset="1" stop-color="#ff8a00"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#quest-gold)" d="M109 0C48 0 13 16 5 66C-8 128 4 219 18 307C30 383 45 448 65 480C78 500 94 507 109 505C129 503 144 487 157 460C181 409 196 327 207 246C218 167 224 86 208 45C194 12 158 0 109 0ZM109 639C70 639 45 665 36 701C25 739 38 770 70 790C99 808 137 797 158 775C179 753 189 720 180 693C170 658 144 639 109 639Z"/>
+</svg>
