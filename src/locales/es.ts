@@ -2,7 +2,7 @@ import type { MessageKey } from './en';
 
 export const messages: Record<MessageKey, string> = {
   charactersHeading: 'Tu personaje',
-  profileIntro: 'Configura tu cuenta y prepara tu personaje para el matchmaking.',
+  profileIntro: 'Gestiona tu cuenta vinculada y tu sesión.',
   profileAccountHeading: 'Cuenta vinculada',
   profileAccountDescription: 'Tu identidad de Battle.net en rbgs.io.',
   profileRegion: 'Región',

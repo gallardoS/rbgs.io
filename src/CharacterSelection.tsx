@@ -1,21 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { PlayerCard, PlayerCardSkeleton, type Character } from './PlayerCard';
+import { CharacterAvatar, CharacterIcons, PlayerCard, PlayerCardSkeleton, type Character } from './PlayerCard';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
 
 type AccountProfile = { wow_accounts: { id: number; characters: Character[] }[] };
 type Choice = { key: string; character: Character };
 
-export function CharacterSelection({ accountId, editable = true }: { accountId: string; editable?: boolean }) {
+export function CharacterSelection({ accountId }: { accountId: string }) {
   const { t } = useLocale();
   const [characters, setCharacters] = useState<Choice[]>([]);
   const [selected, setSelected] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<MessageKey | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const [expanded, setExpanded] = useState(false);
-  const drag = useRef<{ x: number; scroll: number; moved: boolean } | null>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
   const storageKey = `rbgs.character.classic1x.eu.${accountId}`;
 
   useEffect(() => {
@@ -37,21 +35,21 @@ export function CharacterSelection({ accountId, editable = true }: { accountId: 
         }))).sort((a, b) => a.character.name.localeCompare(b.character.name));
         if (controller.signal.aborted) return;
         setCharacters(choices);
-        setSelected(editable ? choices[0]?.key ?? '' : '');
+        setSelected(choices[0]?.key ?? '');
         try {
           const saved = localStorage.getItem(storageKey);
-          setSelected(choices.some(choice => choice.key === saved) ? saved! : editable ? choices[0]?.key ?? '' : '');
+          setSelected(choices.some(choice => choice.key === saved) ? saved! : choices[0]?.key ?? '');
           if (saved && !choices.some(choice => choice.key === saved)) localStorage.removeItem(storageKey);
         } catch { /* Selection remains available when storage is disabled. */ }
       })
       .catch(() => { if (!controller.signal.aborted) setError('charactersError'); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [storageKey, attempt, editable]);
+  }, [storageKey, attempt]);
 
   function select(key: string) {
     setSelected(key);
-    setExpanded(false);
+    dialog.current?.close();
     try {
       if (key) localStorage.setItem(storageKey, key);
       else localStorage.removeItem(storageKey);
@@ -65,41 +63,42 @@ export function CharacterSelection({ accountId, editable = true }: { accountId: 
       {error === 'charactersAuthorization'
         ? <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>
         : <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('charactersRetry')}</button>}
-    </> : characters.length === 0 ? <p role="status">{t('charactersEmpty')}</p> : !editable ? current
-      ? <div className="character-picker"><PlayerCard character={current} tilt /></div>
-      : <Link className="button" to="/account">{t('charactersSelectProfile')}</Link> : <>
-      <details className="character-picker" open={expanded} onToggle={event => setExpanded(event.currentTarget.open)}>
-        <summary className="player-card-trigger" aria-label={`${current?.name ?? ''} · ${t('charactersChange')}`}>{current && <PlayerCard character={current} />}</summary>
-      <fieldset className="character-options"
-        onPointerDown={event => {
-          if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    </> : characters.length === 0 ? <p role="status">{t('charactersEmpty')}</p> : <>
+      <div className="character-picker">
+        <button type="button" className="player-card-trigger" aria-haspopup="dialog"
+          aria-label={`${current?.name ?? ''} · ${t('charactersChange')}`} onClick={() => dialog.current?.showModal()}>
+          {current && <PlayerCard character={current} tilt />}
+        </button>
+      </div>
+      <dialog ref={dialog} className="character-selection-dialog" aria-labelledby="character-selection-title"
+        aria-describedby="character-selection-description" onClick={event => {
+          if (event.target !== event.currentTarget) return;
           const bounds = event.currentTarget.getBoundingClientRect();
-          if (event.clientY >= bounds.top + event.currentTarget.clientTop + event.currentTarget.clientHeight) return;
-          drag.current = { x: event.clientX, scroll: event.currentTarget.scrollLeft, moved: false };
-        }}
-        onPointerMove={event => {
-          const state = drag.current;
-          if (!state || event.buttons !== 1) return;
-          const distance = event.clientX - state.x;
-          if (Math.abs(distance) > 5) {
-            state.moved = true;
-            event.currentTarget.setPointerCapture(event.pointerId);
-            event.currentTarget.scrollLeft = state.scroll - distance;
-            event.currentTarget.classList.add('is-dragging');
-          }
-        }}
-        onPointerUp={event => event.currentTarget.classList.remove('is-dragging')}
-        onPointerCancel={event => { drag.current = null; event.currentTarget.classList.remove('is-dragging'); }}
-        onClickCapture={event => {
-          if (drag.current?.moved) { event.preventDefault(); event.stopPropagation(); }
-          drag.current = null;
-        }}><legend>{t('charactersLabel')}</legend>
-        {characters.map(({ key, character }) => <label key={key} className={`character-option${key === selected ? ' is-selected' : ''}`}>
-          <input type="radio" name="profile-character" value={key} checked={selected === key} onChange={() => select(key)} />
-          <PlayerCard character={character} compact />
-        </label>)}
-      </fieldset>
-      </details>
+          if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.current?.close();
+        }}>
+        <header className="character-selection-heading">
+          <div><h2 id="character-selection-title">{t('charactersChange')}</h2>
+            <p id="character-selection-description">{t('charactersIntro')}</p></div>
+          <button type="button" className="character-selection-close" aria-label={t('charactersClose')} onClick={() => dialog.current?.close()} autoFocus>×</button>
+        </header>
+        <ul className="character-selection-list" aria-label={t('charactersLabel')}>
+          {characters.map(({ key, character }) => <li key={key}>
+            <button type="button" className={`character-selection-row${key === selected ? ' is-selected' : ''}`}
+              aria-pressed={key === selected} onClick={() => select(key)}>
+              <CharacterAvatar character={character} />
+              <span className="character-row-details">
+                <span className="character-row-name"><strong>{character.name}</strong>
+                  {character.guild?.name && <span className="character-row-guild" title={character.guild.name}>{`< ${character.guild.name} >`}</span>}
+                </span>
+                <span>EU · {character.realm.name || character.realm.slug} · {t('charactersLevel')} {character.level}</span>
+              </span>
+              <CharacterIcons character={character} />
+              <span className="character-row-check" aria-hidden="true">{key === selected ? '✓' : ''}</span>
+            </button>
+          </li>)}
+        </ul>
+        <p className="character-selection-note">{t('charactersBetaNotice')}</p>
+      </dialog>
     </>}
   </section>;
 }

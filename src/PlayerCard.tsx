@@ -88,7 +88,7 @@ const raceIcons: Record<string, string> = {
   Tauren: 'tauren', Gnome: 'gnome', Troll: 'troll',
 };
 
-function CharacterIcons({ character }: { character: Character }) {
+export function CharacterIcons({ character }: { character: Character }) {
   const className = classAvatars[character.playable_class?.id ?? 0]?.[0];
   const race = character.playable_race?.name;
   const raceIcon = race ? raceIcons[race] : undefined;
@@ -100,7 +100,7 @@ function CharacterIcons({ character }: { character: Character }) {
   </span>;
 }
 
-function CharacterAvatar({ character }: { character: Character }) {
+export function CharacterAvatar({ character }: { character: Character }) {
   const [failedUrls, setFailedUrls] = useState<string[]>([]);
   const [className, color] = classAvatars[character.playable_class?.id ?? 0] ?? ['', '#b6b7bb'];
   const classIcon = className ? `/media/character/class_${className}.jpg` : null;

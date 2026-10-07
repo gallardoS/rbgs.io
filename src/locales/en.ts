@@ -55,7 +55,7 @@ export const messages = {
   queuePending: 'Ranked queues are not open yet.',
   findMatch: 'Find Match',
   accountIntro: 'Your Battle.net account on rbgs.io.',
-  profileIntro: 'Manage your account and prepare your character for matchmaking.',
+  profileIntro: 'Manage your linked account and session.',
   profileAccountHeading: 'Linked account',
   profileAccountDescription: 'Your Battle.net identity on rbgs.io.',
   profileRegion: 'Region',

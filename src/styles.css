@@ -305,9 +305,32 @@ html { scrollbar-color: #facc15 #0c0e0d; scrollbar-width: thin; }
 .lobby-card { position: relative; isolation: isolate; overflow: hidden; cursor: default; transform: perspective(800px) rotateX(var(--card-rotate-x, 0deg)) rotateY(var(--card-rotate-y, 0deg)); transition: transform .25s ease-out; }
 @media (prefers-reduced-motion: reduce) { .lobby-card { transform: none; transition: none; } }
 .player-card { background-image: repeating-linear-gradient(135deg, transparent 0 5px, #ffffff08 5px 6px), linear-gradient(150deg, #262a28, #101311); }
-.player-card-trigger { list-style: none; cursor: pointer; }
-.player-card-trigger::-webkit-details-marker { display: none; }
+.player-card-trigger { display: block; width: 100%; padding: 0; border: 0; border-radius: 1rem; background: transparent; color: inherit; font: inherit; text-align: inherit; cursor: pointer; }
+.player-card-trigger:hover { background: transparent; }
+.player-card-trigger .lobby-card { cursor: pointer; }
 .player-card-trigger:focus-visible { outline: 2px solid #e6cc77; outline-offset: 4px; border-radius: 1rem; }
+.character-selection-dialog { width: min(560px, calc(100vw - 2rem)); max-height: calc(100svh - 2rem); padding: 0; overflow: hidden; border: 1px solid #ffffff26; border-radius: 1rem; background: #121514; color: #f5f5ed; box-shadow: 0 24px 80px #0009; }
+.character-selection-dialog[open] { display: flex; flex-direction: column; }
+.character-selection-dialog::backdrop { background: #0009; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.character-selection-heading { display: flex; flex-shrink: 0; justify-content: space-between; align-items: start; gap: 1rem; padding: 1.4rem; border-bottom: 1px solid #ffffff15; }
+.character-selection-heading h2 { margin: 0; font-size: 1.2rem; }
+.character-selection-heading p { margin: .5rem 0 0; font-size: .85rem; line-height: 1.5; color: #b6b7bb; }
+.character-selection-close { display: grid; place-items: center; flex-shrink: 0; width: 32px; min-height: 32px; padding: 0; border: 0; background: transparent; color: #b6b7bb; font-size: 1.5rem; }
+.character-selection-list { --character-row-height: 5.625rem; --character-list-padding: 1rem; display: grid; grid-auto-rows: var(--character-row-height); align-content: start; gap: .5rem; height: calc(var(--character-row-height) * 3 + 1rem + var(--character-list-padding) * 2); list-style: none; padding: var(--character-list-padding); margin: 0; overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
+.character-selection-row { display: flex; align-items: center; gap: .85rem; width: 100%; height: 100%; padding: .85rem; border: 1px solid #ffffff15; border-radius: .5rem; background: #ffffff03; color: inherit; font: inherit; text-align: left; }
+.character-selection-row:hover { border-color: #e6cc7770; background: #ffffff08; }
+.character-selection-row.is-selected { border-color: #e6cc77; background: #facc1508; }
+.character-selection-row:focus-visible, .character-selection-close:focus-visible { outline: 2px solid #e6cc77; outline-offset: 2px; }
+.character-row-details { display: grid; flex: 1; min-width: 0; gap: .25rem; overflow-wrap: anywhere; }
+.character-row-details strong { font-size: .95rem; }
+.character-row-details > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.character-row-details > span { font-size: .75rem; line-height: 1.4; color: #b6b7bb; }
+.character-row-details > .character-row-name { display: flex; align-items: baseline; gap: .6rem; color: inherit; }
+.character-row-name strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.character-row-guild { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: #e6cc77; }
+.character-row-check { flex-shrink: 0; width: 1rem; color: #e6cc77; }
+.character-selection-note { flex-shrink: 0; margin: 0; padding: 1rem 1.4rem; border-top: 1px solid #ffffff15; font-size: .75rem; line-height: 1.5; color: #e6cc77; }
+@media (max-width: 420px) { .character-selection-heading { padding: 1rem; } .character-selection-list { --character-list-padding: .75rem; } .character-selection-row { gap: .6rem; padding: .65rem; } .character-selection-row .profile-card-icons { flex-direction: column; } .character-selection-note { padding: .85rem 1rem; } }
 .player-card { margin: 0; border-color: #e6cc7750; box-shadow: 0 20px 60px #0006, 0 0 35px #facc1508; }
 .profile-settings .character-option { padding: 0; border: 0; background: none; }
 .profile-settings .character-option .player-card { cursor: pointer; box-shadow: none; }
