@@ -90,6 +90,8 @@ export function SeasonNotificationsProvider({ children }: { children: ReactNode 
     {status?.emailEnabled && (!status.seasonLive || action) && <div className={`season-widget${expanded ? ' is-expanded' : ''}`} onKeyDown={event => {
       if (event.key === 'Escape' && expanded) { setExpanded(false); toggle.current?.focus(); }
     }}>
+    <div className="season-slide">
+    <SeasonNoticeShape />
     <aside ref={panel} id={`${heading}-panel`} className="season-floating" aria-labelledby={heading} inert={!expanded}
       style={panelHeight === null || action ? undefined : { height: panelHeight }}>
       <span className="season-eyebrow"><span className="season-dot" aria-hidden="true" />{t(action ? 'seasonNotificationLabel' : 'seasonBadge')}</span>
@@ -108,8 +110,36 @@ export function SeasonNotificationsProvider({ children }: { children: ReactNode 
       onClick={() => { if (!expanded) refreshStatus(); setExpanded(value => !value); }}>
       <img src="/quest-exclamation.svg" alt="" aria-hidden="true" />
     </button>
+    </div>
     </div>}
   </SeasonNoticeContext.Provider>;
+}
+
+function SeasonNoticeShape() {
+  const outline = useRef<SVGSVGElement>(null);
+  const [size, setSize] = useState({ width: 436, height: 320 });
+
+  useEffect(() => {
+    const container = outline.current?.parentElement;
+    if (!container) return;
+    const observer = new ResizeObserver(() => {
+      setSize({ width: container.clientWidth, height: container.clientHeight });
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  const { width, height } = size;
+  const tabTop = height - 84;
+  const tabBottom = height - 28;
+  const contour = `M ${width + 1} .5 H 68.5 Q 56.5 .5 56.5 12.5
+    V ${tabTop} H 8.5 Q .5 ${tabTop} .5 ${tabTop + 8}
+    V ${tabBottom - 8} Q .5 ${tabBottom} 8.5 ${tabBottom} H 56.5
+    V ${height - 12.5} Q 56.5 ${height - .5} 68.5 ${height - .5} H ${width + 1}`;
+
+  return <svg ref={outline} className="season-outline" aria-hidden="true" focusable="false">
+    <path d={contour} />
+  </svg>;
 }
 
 function NotificationForm({ available, onPrivacyChange }: { available: boolean; onPrivacyChange: (opening: boolean) => void }) {

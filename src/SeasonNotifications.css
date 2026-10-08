@@ -1,16 +1,25 @@
 .season-widget {
   --season-size: min(380px, calc(100vw - 72px));
   --season-toggle-size: 56px;
+  --season-panel-drop: calc(var(--season-toggle-size) / 2);
   position: fixed;
   z-index: 19;
   right: 0;
-  bottom: calc(max(1.25rem, env(safe-area-inset-bottom)) + var(--season-toggle-size));
+  bottom: calc(max(1.25rem, env(safe-area-inset-bottom)) + var(--season-toggle-size) - var(--season-panel-drop));
   width: calc(var(--season-size) + var(--season-toggle-size));
   height: auto;
   max-height: calc(100dvh - 140px - var(--season-toggle-size));
   overflow: hidden;
   pointer-events: none;
 }
+.season-slide {
+  position: relative;
+  transform: translateX(var(--season-size));
+  transition: transform .35s ease;
+}
+.season-widget.is-expanded .season-slide { transform: translateX(0); }
+.season-outline { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.season-outline path { fill: #121514; stroke: #facc15; stroke-width: 1; }
 .season-floating {
   position: relative;
   right: 0;
@@ -24,22 +33,18 @@
   scrollbar-gutter: stable;
   overscroll-behavior: contain;
   color: #fafaf6;
-  background: #121514;
-  border: 1px solid #facc15;
-  border-right: 0;
-  border-radius: .6rem 0 0 0;
+  background: transparent;
+  border: 0;
   box-shadow: none;
   scrollbar-width: thin;
   scrollbar-color: #facc1540 transparent;
   visibility: hidden;
-  transform: translateX(var(--season-size));
-  transition: transform .35s ease, visibility .35s;
+  transition: visibility .35s;
 }
-.season-widget.is-expanded .season-floating { visibility: visible; transform: translateX(0); pointer-events: auto; }
-button.season-quest-toggle { position: absolute; bottom: 0; left: 0; width: calc(var(--season-toggle-size) + 1px); height: var(--season-toggle-size); padding: 9px; display: grid; place-items: center; pointer-events: auto; background: #121514; border: 1px solid #facc15; border-right: 0; border-radius: .5rem 0 0 .5rem; box-shadow: none; transform: translateX(var(--season-size)); transition: transform .35s ease; }
-.season-widget.is-expanded .season-quest-toggle { transform: translateX(0); }
+.season-widget.is-expanded .season-floating { visibility: visible; pointer-events: auto; }
+button.season-quest-toggle { position: absolute; bottom: var(--season-panel-drop); left: 0; width: var(--season-toggle-size); height: var(--season-toggle-size); padding: 9px; display: grid; place-items: center; pointer-events: auto; background: transparent; border: 0; border-radius: .5rem 0 0 .5rem; box-shadow: none; transition: none; }
 .season-quest-toggle img { width: 12px; height: 38px; filter: drop-shadow(0 0 5px #ffbd0033); }
-button.season-quest-toggle:hover { border-color: #facc15; background: #121514; box-shadow: none; }
+button.season-quest-toggle:hover { background: transparent; box-shadow: none; }
 button.season-quest-toggle:focus-visible { outline: 2px solid #facc15; outline-offset: 4px; }
 .season-eyebrow { display: inline-flex; align-items: center; gap: .5rem; color: #e6cc77; font-size: .65rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
 .season-dot { width: 6px; height: 6px; border-radius: 50%; background: #facc15; box-shadow: 0 0 10px #facc1533; }
@@ -65,11 +70,14 @@ button.season-primary:disabled { opacity: .45; cursor: default; box-shadow: none
 .season-success p { margin: .4rem 0 0; font-size: .75rem; line-height: 1.7; }
 button.season-back { margin-top: 1rem; padding: .4rem 0; min-height: 36px; background: transparent; border-color: transparent; color: #a4a49a; font-size: .75rem; }
 body:has(.season-widget) .back-to-top { right: auto; left: max(1.25rem, env(safe-area-inset-left)); }
+@media (min-width: 1800px) {
+  .season-widget { --season-size: min(380px, calc((100vw - var(--content-max-width)) / 2 + var(--content-inline-padding) - var(--season-toggle-size))); }
+}
 @media (max-width: 600px) {
-  .season-widget { bottom: calc(max(1rem, env(safe-area-inset-bottom)) + var(--season-toggle-size)); }
+  .season-widget { bottom: calc(max(1rem, env(safe-area-inset-bottom)) + var(--season-toggle-size) - var(--season-panel-drop)); }
   .season-floating { padding: 1.25rem; }
   .season-floating h2 { font-size: 1.3rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .season-floating, button.season-quest-toggle { transition: none; }
+  .season-slide, .season-floating { transition: none; }
 }
