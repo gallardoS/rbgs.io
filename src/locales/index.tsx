@@ -3,6 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { localizedPath, pathLanguage, type Language } from '../locale-routing';
 import { messages as en, type MessageKey } from './en';
 import { messages as es } from './es';
+import { messages as fr } from './fr';
+
+const catalogs = { en, es, fr };
 
 const LanguageContext = createContext({ language: 'en' as Language, setLanguage: (_language: Language) => {} });
 
@@ -20,6 +23,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
 export function useLocale() {
   const context = useContext(LanguageContext);
-  const messages = context.language === 'es' ? es : en;
+  const messages = catalogs[context.language];
   return { ...context, t: (key: MessageKey): string => messages[key] };
 }

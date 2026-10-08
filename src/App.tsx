@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Link, NavLink } from './LocalizedLink';
-import { basePath, localizedPath } from './locale-routing';
+import { basePath, languages, languageLocales, localizedPath } from './locale-routing';
 import { useEffect, useRef, useState } from 'react';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
@@ -151,7 +151,7 @@ function AppContent() {
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
     document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
     const description = isKnownRoute ? pageDescriptions[pathname as keyof typeof pageDescriptions] ?? pageDescriptions[homepage] : t('notFoundHeading');
-    document.querySelector('meta[property="og:locale"]')?.setAttribute('content', language === 'es' ? 'es_ES' : 'en_US');
+    document.querySelector('meta[property="og:locale"]')?.setAttribute('content', languageLocales[language].replace('-', '_'));
     document.querySelectorAll('link[rel="alternate"][hreflang]').forEach(link => link.remove());
     for (const selector of ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']) {
       document.querySelector(selector)?.setAttribute('content', description);
@@ -172,7 +172,7 @@ function AppContent() {
         document.head.append(socialUrl);
       }
       socialUrl.content = url;
-      for (const [code, path] of [['en', localizedPath(pathname, 'en')], ['es', localizedPath(pathname, 'es')], ['x-default', localizedPath(pathname, 'en')]]) {
+      for (const [code, path] of [...languages.map(code => [code, localizedPath(pathname, code)]), ['x-default', localizedPath(pathname, 'en')]]) {
         const alternate = document.createElement('link');
         alternate.rel = 'alternate';
         alternate.hreflang = code;

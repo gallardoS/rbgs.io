@@ -1,15 +1,18 @@
-export type Language = 'en' | 'es';
+export const languages = ['en', 'es', 'fr'] as const;
+export type Language = typeof languages[number];
+export const languageNames = { en: 'English', es: 'Español', fr: 'Français' };
+export const languageLocales = { en: 'en-US', es: 'es-ES', fr: 'fr-FR' };
 
 export function basePath(pathname: string) {
   const path = pathname.replace(/\/+$/, '') || '/';
-  return path === '/es' ? '/' : path.startsWith('/es/') ? path.slice(3) : path;
+  return path.replace(/^\/(es|fr)(?=\/|$)/, '') || '/';
 }
 
 export function localizedPath(pathname: string, language: Language) {
   const path = basePath(pathname);
-  return language === 'es' ? path === '/' ? '/es/' : `/es${path}` : path;
+  return language === 'en' ? path : path === '/' ? `/${language}/` : `/${language}${path}`;
 }
 
 export function pathLanguage(pathname: string): Language {
-  return /^\/es(?:\/|$)/.test(pathname) ? 'es' : 'en';
+  return pathname.match(/^\/(es|fr)(?:\/|$)/)?.[1] as Language ?? 'en';
 }
