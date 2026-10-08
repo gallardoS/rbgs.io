@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
 import { HeroBackground } from './HeroBackground';
+import { HeroCopy } from './HeroCopy';
 import { Leaderboard } from './Leaderboard';
 import { MatchJourney } from './MatchJourney';
 import { BrandText } from './BrandText';
@@ -93,8 +94,9 @@ function Home({ profile, loading, authError }: Session) {
   }, []);
   return <main><section className="hero" ref={heroRef} aria-labelledby="hero-heading"><HeroBackground /><div className="hero-content">
     <img className="forever-icon" src="/wow-forever.svg" width="80" height="69" alt="" />
-    <h1 id="hero-heading"><BrandText text={t('heroTitle')} /></h1><p className="hero-introduction"><BrandText text={t('heroSolution')} /></p>
-    <p className="hero-features"><BrandText text={t('heroDescription')} /></p>
+    <HeroCopy as="h1" id="hero-heading" message="heroTitle" />
+    <HeroCopy as="p" className="hero-introduction" message="heroSolution" />
+    <HeroCopy as="p" className="hero-features" message="heroDescription" />
     <div className="hero-actions">
       {loading ? <p role="status">{t('authChecking')}</p> : profile
         ? <Link className="button hero-play" to="/play" onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) openSeasonNotice(); }}>{t('navigationPlay')}</Link>

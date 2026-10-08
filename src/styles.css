@@ -155,8 +155,8 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .hero { opacity: var(--hero-opacity, 1); }
 .forever-icon { display: block; margin: 0 auto 1.4rem; filter: drop-shadow(0 0 18px #eab30825); }
 .hero h1 { max-width: 54rem; margin: 0 auto 1.5rem; font-size: clamp(2.75rem, 6.5vw, 5.75rem); line-height: 1.06; letter-spacing: -.055em; text-wrap: balance; }
-.hero-introduction { max-width: 42rem; }
-.hero-features { max-width: 36rem; margin-top: .85rem; line-height: 1.8; color: #c2c4bb; }
+.hero-introduction { max-width: 54rem; }
+.hero-features { max-width: 54rem; margin-top: .85rem; line-height: 1.8; color: #c2c4bb; }
 .hero-background::after { content: ''; position: absolute; inset: 65% 0 0; background: linear-gradient(transparent, #070808); }
 .match-journey { scroll-margin-top: 84px; padding: 6rem max(1.5rem, calc((100vw - 70rem) / 2)) 8rem; }
 .journey-layout { display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(3rem, 7vw, 7rem); align-items: start; }
