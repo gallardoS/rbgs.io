@@ -6,6 +6,9 @@ import './SeasonNotifications.css';
 
 type Status = { emailEnabled: boolean; seasonLive: boolean; subscriptionsAvailable: boolean };
 type LinkState = { kind: 'confirm' | 'unsubscribe'; token: string };
+const CONFIRMED_NOTICE_KEY = 'rbgs:first-season-email-confirmed';
+const DISMISSED_NOTICE_KEY = 'rbgs:first-season-email-dismissed';
+const NOTICE_DISMISSAL_DURATION = 24 * 60 * 60 * 1000;
 const SeasonNoticeContext = createContext<(() => void) | null>(null);
 
 export function useSeasonNotice() {
@@ -35,6 +38,10 @@ export function SeasonNotificationsProvider({ children }: { children: ReactNode 
   const [status, setStatus] = useState<Status | null>(null);
   const [action, setAction] = useState<LinkState | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [noticeConfirmed, setNoticeConfirmed] = useState(false);
+  const [dismissedUntil, setDismissedUntil] = useState(0);
+  const noticeDismissed = dismissedUntil > Date.now();
+  const [closingPermanently, setClosingPermanently] = useState(false);
   const [panelHeight, setPanelHeight] = useState<number | null>(null);
   const panel = useRef<HTMLElement>(null);
   const statusRequest = useRef<AbortController | null>(null);
@@ -42,6 +49,63 @@ export function SeasonNotificationsProvider({ children }: { children: ReactNode 
   const location = useLocation();
   const navigate = useNavigate();
   const heading = useId();
+
+  useEffect(() => {
+    try {
+      setNoticeConfirmed(localStorage.getItem(CONFIRMED_NOTICE_KEY) === 'true');
+      const savedDismissal = localStorage.getItem(DISMISSED_NOTICE_KEY);
+      const expiration = savedDismissal === 'true' ? Date.now() + NOTICE_DISMISSAL_DURATION : Number(savedDismissal);
+      if (Number.isFinite(expiration) && expiration > Date.now()) {
+        setDismissedUntil(expiration);
+        if (savedDismissal === 'true') localStorage.setItem(DISMISSED_NOTICE_KEY, String(expiration));
+      } else localStorage.removeItem(DISMISSED_NOTICE_KEY);
+    }
+    catch { }
+  }, []);
+
+  useEffect(() => {
+    if (!dismissedUntil) return;
+    const timeout = window.setTimeout(() => {
+      setDismissedUntil(0);
+      try { localStorage.removeItem(DISMISSED_NOTICE_KEY); }
+      catch { }
+    }, Math.max(0, dismissedUntil - Date.now()));
+    return () => window.clearTimeout(timeout);
+  }, [dismissedUntil]);
+
+  const rememberConfirmation = useCallback((kind: LinkState['kind']) => {
+    const confirmed = kind === 'confirm';
+    if (confirmed) setPanelHeight(panel.current?.getBoundingClientRect().height ?? null);
+    setNoticeConfirmed(confirmed);
+    try {
+      if (confirmed) localStorage.setItem(CONFIRMED_NOTICE_KEY, 'true');
+      else localStorage.removeItem(CONFIRMED_NOTICE_KEY);
+    } catch { }
+  }, []);
+
+  const dismissNotice = useCallback(() => {
+    const expiration = Date.now() + NOTICE_DISMISSAL_DURATION;
+    setDismissedUntil(expiration);
+    setClosingPermanently(true);
+    setExpanded(false);
+    try { localStorage.setItem(DISMISSED_NOTICE_KEY, String(expiration)); }
+    catch { }
+  }, []);
+
+  const finishPermanentClose = useCallback(() => {
+    setAction(null);
+    setClosingPermanently(false);
+  }, []);
+
+  useEffect(() => {
+    if (!closingPermanently || expanded) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      finishPermanentClose();
+      return;
+    }
+    const timeout = window.setTimeout(finishPermanentClose, 500);
+    return () => window.clearTimeout(timeout);
+  }, [closingPermanently, expanded, finishPermanentClose]);
 
   const refreshStatus = useCallback(() => {
     statusRequest.current?.abort();
@@ -71,6 +135,7 @@ export function SeasonNotificationsProvider({ children }: { children: ReactNode 
     const confirmation = links.get('season-confirm');
     const unsubscribe = links.get('season-unsubscribe');
     if (confirmation || unsubscribe) {
+      setPanelHeight(null);
       setAction({ kind: confirmation ? 'confirm' : 'unsubscribe', token: confirmation ?? unsubscribe! });
       setExpanded(true);
       search.delete('season-confirm');
@@ -81,41 +146,45 @@ export function SeasonNotificationsProvider({ children }: { children: ReactNode 
   }, [location.pathname, location.search, location.hash, navigate]);
 
   const openNotice = useCallback(() => {
+    if (noticeConfirmed || noticeDismissed) return;
     refreshStatus();
     setExpanded(true);
-  }, [refreshStatus]);
+  }, [refreshStatus, noticeConfirmed, noticeDismissed]);
 
   return <SeasonNoticeContext.Provider value={openNotice}>
     {children}
-    {status?.emailEnabled && (!status.seasonLive || action) && <div className={`season-widget${expanded ? ' is-expanded' : ''}`} onKeyDown={event => {
-      if (event.key === 'Escape' && expanded) { setExpanded(false); toggle.current?.focus(); }
+    {status?.emailEnabled && (!status.seasonLive || action) && ((!noticeConfirmed && !noticeDismissed) || action || closingPermanently) && <div className={`season-widget${expanded ? ' is-expanded' : ''}`}>
+    <div className="season-slide" onTransitionEnd={event => {
+      if (closingPermanently && !expanded && event.target === event.currentTarget && event.propertyName === 'transform') finishPermanentClose();
     }}>
-    <div className="season-slide">
-    <SeasonNoticeShape />
+    <SeasonNoticeShape showToggle={!noticeConfirmed} />
     <aside ref={panel} id={`${heading}-panel`} className="season-floating" aria-labelledby={heading} inert={!expanded}
-      style={panelHeight === null || action ? undefined : { height: panelHeight }}>
-      <span className="season-eyebrow"><span className="season-dot" aria-hidden="true" />{t(action ? 'seasonNotificationLabel' : 'seasonBadge')}</span>
+      style={panelHeight === null ? undefined : { height: panelHeight }}>
+      <div className="season-heading-row"><span className="season-eyebrow"><span className="season-dot" aria-hidden="true" />{t(action ? 'seasonNotificationLabel' : 'seasonBadge')}</span></div>
       <h2 id={heading}>{t(action ? action.kind === 'confirm' ? 'seasonConfirmHeading' : 'seasonUnsubscribeHeading' : 'seasonHeading')}</h2>
       {action ? <>
-        <LinkAction key={action.kind + action.token} kind={action.kind} token={action.token} />
-        <button className="season-back" onClick={() => setAction(null)}>{t('seasonBackToNotice')}</button>
+        <LinkAction key={action.kind + action.token} kind={action.kind} token={action.token} onSuccess={rememberConfirmation} />
       </> : <>
         <p className="season-description">{t('seasonDescription')}</p>
         <NotificationForm available={status?.subscriptionsAvailable ?? false}
           onPrivacyChange={opening => setPanelHeight(opening ? panel.current?.getBoundingClientRect().height ?? null : null)} />
       </>}
     </aside>
-    <button ref={toggle} className="season-quest-toggle" type="button" aria-expanded={expanded}
-      aria-controls={`${heading}-panel`} aria-label={t(expanded ? 'seasonHideNotice' : 'seasonShowNotice')}
-      onClick={() => { if (!expanded) refreshStatus(); setExpanded(value => !value); }}>
-      <img src="/quest-exclamation.svg" alt="" aria-hidden="true" />
+    <button className="season-dismiss" type="button" aria-label={t('seasonDismissNotice')} title={t('seasonDismissNotice')}
+      inert={!expanded} onClick={dismissNotice}>
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M 4 4 L 12 12 M 12 4 L 4 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
     </button>
+    {!noticeConfirmed && <button ref={toggle} disabled={expanded || closingPermanently} className="season-quest-toggle" type="button" aria-expanded={expanded}
+      aria-controls={`${heading}-panel`} aria-label={t('seasonShowNotice')}
+      onClick={() => { refreshStatus(); setExpanded(true); }}>
+      <img src="/quest-exclamation.svg" alt="" aria-hidden="true" />
+    </button>}
     </div>
     </div>}
   </SeasonNoticeContext.Provider>;
 }
 
-function SeasonNoticeShape() {
+function SeasonNoticeShape({ showToggle }: { showToggle: boolean }) {
   const outline = useRef<SVGSVGElement>(null);
   const [size, setSize] = useState({ width: 436, height: 320 });
 
@@ -132,10 +201,12 @@ function SeasonNoticeShape() {
   const { width, height } = size;
   const tabTop = height - 84;
   const tabBottom = height - 28;
-  const contour = `M ${width + 1} .5 H 68.5 Q 56.5 .5 56.5 12.5
+  const contour = showToggle ? `M ${width + 1} .5 H 68.5 Q 56.5 .5 56.5 12.5
     V ${tabTop} H 8.5 Q .5 ${tabTop} .5 ${tabTop + 8}
     V ${tabBottom - 8} Q .5 ${tabBottom} 8.5 ${tabBottom} H 56.5
-    V ${height - 12.5} Q 56.5 ${height - .5} 68.5 ${height - .5} H ${width + 1}`;
+    V ${height - 12.5} Q 56.5 ${height - .5} 68.5 ${height - .5} H ${width + 1}`
+    : `M ${width + 1} .5 H 68.5 Q 56.5 .5 56.5 12.5
+      V ${height - 12.5} Q 56.5 ${height - .5} 68.5 ${height - .5} H ${width + 1}`;
 
   return <svg ref={outline} className="season-outline" aria-hidden="true" focusable="false">
     <path d={contour} />
@@ -177,13 +248,13 @@ function NotificationForm({ available, onPrivacyChange }: { available: boolean; 
   </form>;
 }
 
-function LinkAction({ kind, token }: { kind: 'confirm' | 'unsubscribe'; token: string }) {
+function LinkAction({ kind, token, onSuccess }: { kind: 'confirm' | 'unsubscribe'; token: string; onSuccess: (kind: LinkState['kind']) => void }) {
   const { t } = useLocale();
   const [state, setState] = useState<'idle' | 'sending' | 'success'>('idle');
   const [error, setError] = useState<MessageKey | null>(null);
   async function act() {
     setState('sending'); setError(null);
-    try { await post(`/${kind}`, { token }); setState('success'); }
+    try { await post(`/${kind}`, { token }); setState('success'); onSuccess(kind); }
     catch (failure) { setState('idle'); setError(errorKey(failure)); }
   }
   return <div className="season-link-action">

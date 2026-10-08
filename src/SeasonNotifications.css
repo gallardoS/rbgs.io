@@ -1,6 +1,7 @@
 .season-widget {
   --season-size: min(380px, calc(100vw - 72px));
   --season-toggle-size: 56px;
+  --season-padding: 1.5rem;
   --season-panel-drop: calc(var(--season-toggle-size) / 2);
   position: fixed;
   z-index: 19;
@@ -28,7 +29,7 @@
   margin-left: auto;
   height: auto;
   max-height: calc(100dvh - 140px - var(--season-toggle-size));
-  padding: 1.5rem;
+  padding: var(--season-padding);
   overflow-y: auto;
   scrollbar-gutter: stable;
   overscroll-behavior: contain;
@@ -43,9 +44,14 @@
 }
 .season-widget.is-expanded .season-floating { visibility: visible; pointer-events: auto; }
 button.season-quest-toggle { position: absolute; bottom: var(--season-panel-drop); left: 0; width: var(--season-toggle-size); height: var(--season-toggle-size); padding: 9px; display: grid; place-items: center; pointer-events: auto; background: transparent; border: 0; border-radius: .5rem 0 0 .5rem; box-shadow: none; transition: none; }
+button.season-dismiss { position: absolute; top: calc(var(--season-padding) - .5rem); right: .75rem; width: 32px; min-height: 32px; padding: 0; border: 0; border-radius: .2rem; color: #e6cc77; background: transparent; box-shadow: none; visibility: hidden; }
+.season-widget.is-expanded .season-dismiss { visibility: visible; pointer-events: auto; }
+button.season-dismiss:hover { color: #facc15; background: #facc150d; box-shadow: none; }
+button.season-dismiss:focus-visible { outline: 2px solid #facc15; outline-offset: 2px; }
 .season-quest-toggle img { width: 12px; height: 38px; filter: drop-shadow(0 0 5px #ffbd0033); }
 button.season-quest-toggle:hover { background: transparent; box-shadow: none; }
 button.season-quest-toggle:focus-visible { outline: 2px solid #facc15; outline-offset: 4px; }
+.season-heading-row { display: flex; align-items: center; height: 1rem; padding-right: 2rem; }
 .season-eyebrow { display: inline-flex; align-items: center; gap: .5rem; color: #e6cc77; font-size: .65rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
 .season-dot { width: 6px; height: 6px; border-radius: 50%; background: #facc15; box-shadow: 0 0 10px #facc1533; }
 .season-floating h2 { margin: .8rem 0; color: #fafaf6; font-size: 1.45rem; line-height: 1.15; letter-spacing: -.035em; }
@@ -68,14 +74,13 @@ button.season-primary:disabled { opacity: .45; cursor: default; box-shadow: none
 .season-success { display: flex; align-items: flex-start; gap: .7rem; padding: 1rem; border: 1px solid #9ec09e33; border-radius: .4rem; background: #9ec09e08; color: #9ec09e; }
 .season-success strong { color: #fafaf6; font-size: .85rem; }
 .season-success p { margin: .4rem 0 0; font-size: .75rem; line-height: 1.7; }
-button.season-back { margin-top: 1rem; padding: .4rem 0; min-height: 36px; background: transparent; border-color: transparent; color: #a4a49a; font-size: .75rem; }
 body:has(.season-widget) .back-to-top { right: auto; left: max(1.25rem, env(safe-area-inset-left)); }
 @media (min-width: 1800px) {
   .season-widget { --season-size: min(380px, calc((100vw - var(--content-max-width)) / 2 + var(--content-inline-padding) - var(--season-toggle-size))); }
 }
 @media (max-width: 600px) {
   .season-widget { bottom: calc(max(1rem, env(safe-area-inset-bottom)) + var(--season-toggle-size) - var(--season-panel-drop)); }
-  .season-floating { padding: 1.25rem; }
+  .season-widget { --season-padding: 1.25rem; }
   .season-floating h2 { font-size: 1.3rem; }
 }
 @media (prefers-reduced-motion: reduce) {
