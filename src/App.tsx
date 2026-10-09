@@ -113,16 +113,26 @@ function Status() {
   const [message, setMessage] = useState<MessageKey>('statusChecking');
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/api/v1/health', { signal: controller.signal })
-      .then((response) => {
-        setMessage(response.ok ? 'statusAvailable' : 'statusUnavailable');
+    const timeout = window.setTimeout(() => {
+      setMessage('statusUnavailable');
+      controller.abort();
+    }, 10000);
+    fetch('/api/v1/readiness', { signal: controller.signal, cache: 'no-store' })
+      .then(async (response) => {
+        const result: unknown = response.ok ? await response.json() : null;
+        if (!controller.signal.aborted) {
+          const ready = response.ok && typeof result === 'object' && result !== null
+            && 'status' in result && result.status === 'ready';
+          setMessage(ready ? 'statusAvailable' : 'statusUnavailable');
+        }
       })
       .catch((error: unknown) => {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
           setMessage('statusUnavailable');
         }
-      });
-    return () => controller.abort();
+      })
+      .finally(() => window.clearTimeout(timeout));
+    return () => { window.clearTimeout(timeout); controller.abort(); };
   }, []);
   return <main className="content"><h1>{t('statusHeading')}</h1><p role="status">{t(message)}</p></main>;
 }
