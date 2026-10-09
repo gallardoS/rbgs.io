@@ -174,9 +174,9 @@ export function SeasonNotificationsProvider({ children }: { children: ReactNode 
       inert={!expanded} onClick={dismissNotice}>
       <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M 4 4 L 12 12 M 12 4 L 4 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
     </button>
-    {!noticeConfirmed && <button ref={toggle} disabled={expanded || closingPermanently} className="season-quest-toggle" type="button" aria-expanded={expanded}
-      aria-controls={`${heading}-panel`} aria-label={t('seasonShowNotice')}
-      onClick={() => { refreshStatus(); setExpanded(true); }}>
+    {!noticeConfirmed && <button ref={toggle} disabled={closingPermanently} className="season-quest-toggle" type="button" aria-expanded={expanded}
+      aria-controls={`${heading}-panel`} aria-label={t(expanded ? 'seasonHideNotice' : 'seasonShowNotice')}
+      onClick={() => { if (!expanded) refreshStatus(); setExpanded(value => !value); }}>
       <img src="/quest-exclamation.svg" alt="" aria-hidden="true" />
     </button>}
     </div>
