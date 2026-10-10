@@ -1,5 +1,4 @@
 .season-selection { width: 100%; max-width: 28rem; display: grid; gap: 1rem; }
-.selection-notice { margin: 0; color: #a6adad; font-size: .875rem; line-height: 1.5; }
 .season-selection :focus-visible { outline: 2px solid #facc15; outline-offset: 3px; }
 
 .captain-consent { position: relative; justify-self: center; margin-bottom: -1rem; }

@@ -68,7 +68,6 @@ export const messages: Record<MessageKey, string> = {
   selectionChooseRole: "Elige tu rol",
   selectionSavedQueuePending: "Selección guardada. La búsqueda de partidas todavía no está disponible.",
   selectionHeading: "Tu personaje para la partida",
-  selectionNoSeason: "La selección de temporada estará disponible cuando se abra una temporada. La tarjeta Classic es una vista previa.",
   selectionProvisional: "Temporada provisional por cuenta: tu rating pertenece a tu cuenta Battle.net. Este personaje es tu declaración; su propiedad no está verificada por Blizzard.",
   selectionVerificationPending: "La selección verificada de personajes Forever todavía no está disponible. Tu selección guardada se conserva.",
   selectionName: "Nombre del personaje",

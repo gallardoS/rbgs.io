@@ -127,7 +127,6 @@ export const messages = {
   selectionChooseRole: "Choose your role",
   selectionSavedQueuePending: "Selection saved. Matchmaking is not available yet.",
   selectionHeading: "Your match character",
-  selectionNoSeason: "Season selection will be available when a season opens. The Classic card is a preview.",
   selectionProvisional: "Provisional account season: your rating belongs to your Battle.net account. This character is your declaration; Blizzard ownership is not verified.",
   selectionVerificationPending: "Verified Forever character selection is not available yet. Your saved selection is preserved.",
   selectionName: "Character name",

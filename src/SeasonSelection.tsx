@@ -120,11 +120,7 @@ export function SeasonSelection({ accountId }: { accountId: string }) {
     <p role="alert">{t(error ?? 'selectionLoadError')}</p>
     <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('charactersRetry')}</button>
   </>;
-  else if (!context.season) content = <>
-    <CharacterSelection accountId={accountId} />
-    <p className="selection-notice">{t('selectionNoSeason')}</p>
-  </>;
-  else if (context.season.ratingSubjectType === 'CHARACTER') content = <>
+  else if (context.season?.ratingSubjectType === 'CHARACTER') content = <>
     <h2>{context.season.name}</h2>
     {context.selection && <p>{context.selection.name} {"\u00b7"} {context.selection.realm}</p>}
     <p role="status">{t('selectionVerificationPending')}</p>
