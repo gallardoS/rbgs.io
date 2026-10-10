@@ -7,7 +7,10 @@ import type { MessageKey } from './locales/en';
 type AccountProfile = { wow_accounts: { id: number; characters: Character[] }[] };
 type Choice = { key: string; character: Character };
 
-export function CharacterSelection({ accountId }: { accountId: string }) {
+export function CharacterSelection({ accountId, onChange, preferred, disabled = false }: {
+  accountId: string; onChange?: (character: Character | null) => void;
+  preferred?: { name: string; realm: string }; disabled?: boolean;
+}) {
   const { t } = useLocale();
   const [characters, setCharacters] = useState<Choice[]>([]);
   const [selected, setSelected] = useState('');
@@ -15,11 +18,16 @@ export function CharacterSelection({ accountId }: { accountId: string }) {
   const [error, setError] = useState<MessageKey | null>(null);
   const [attempt, setAttempt] = useState(0);
   const dialog = useRef<HTMLDialogElement>(null);
+  const changeListener = useRef(onChange);
+  changeListener.current = onChange;
+  const preferredChoice = useRef(preferred);
+  preferredChoice.current = preferred;
   const storageKey = `rbgs.character.classic1x.eu.${accountId}`;
 
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true); setError(null); setCharacters([]); setSelected('');
+    changeListener.current?.(null);
     fetch('/api/v1/characters/me', { credentials: 'same-origin', signal: controller.signal })
       .then(async response => {
         if (!response.ok) {
@@ -36,12 +44,16 @@ export function CharacterSelection({ accountId }: { accountId: string }) {
         }))).sort((a, b) => a.character.name.localeCompare(b.character.name));
         if (controller.signal.aborted) return;
         setCharacters(choices);
-        setSelected(choices[0]?.key ?? '');
+        let chosen = choices.find(choice => choice.character.name === preferredChoice.current?.name
+          && (choice.character.realm.name || choice.character.realm.slug) === preferredChoice.current?.realm);
         try {
           const saved = localStorage.getItem(storageKey);
-          setSelected(choices.some(choice => choice.key === saved) ? saved! : choices[0]?.key ?? '');
+          chosen ??= choices.find(choice => choice.key === saved);
           if (saved && !choices.some(choice => choice.key === saved)) localStorage.removeItem(storageKey);
         } catch { /* Selection remains available when storage is disabled. */ }
+        chosen ??= choices[0];
+        setSelected(chosen?.key ?? '');
+        changeListener.current?.(chosen?.character ?? null);
       })
       .catch(() => { if (!controller.signal.aborted) setError('charactersError'); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
@@ -50,6 +62,8 @@ export function CharacterSelection({ accountId }: { accountId: string }) {
 
   function select(key: string) {
     setSelected(key);
+    const character = characters.find(choice => choice.key === key)?.character;
+    changeListener.current?.(character ?? null);
     dialog.current?.close();
     try {
       if (key) localStorage.setItem(storageKey, key);
@@ -58,6 +72,24 @@ export function CharacterSelection({ accountId }: { accountId: string }) {
   }
 
   const current = characters.find(choice => choice.key === selected)?.character;
+  const choicesList = (
+        <ul className="character-selection-list" aria-label={t('charactersLabel')}>
+          {characters.map(({ key, character }) => <li key={key}>
+            <button type="button" className={`character-selection-row${key === selected ? ' is-selected' : ''}`}
+              disabled={disabled} aria-pressed={key === selected} onClick={() => select(key)}>
+              <CharacterAvatar character={character} />
+              <span className="character-row-details">
+                <span className="character-row-name"><strong>{character.name}</strong>
+                  {character.guild?.name && <span className="character-row-guild" title={character.guild.name}>{`< ${character.guild.name} >`}</span>}
+                </span>
+                <span>EU · {character.realm.name || character.realm.slug} · {t('charactersLevel')} {character.level}</span>
+              </span>
+              <CharacterIcons character={character} />
+              <span className="character-row-check" aria-hidden="true">{key === selected ? '✓' : ''}</span>
+            </button>
+          </li>)}
+        </ul>
+  );
   return <section className="character-selection" aria-label={t('charactersHeading')}>
     {loading ? <PlayerCardSkeleton /> : error ? <>
       <p role="alert">{t(error)}</p>
@@ -66,7 +98,7 @@ export function CharacterSelection({ accountId }: { accountId: string }) {
         : <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('charactersRetry')}</button>}
     </> : characters.length === 0 ? <p role="status">{t('charactersEmpty')}</p> : <>
       <div className="character-picker">
-        <button type="button" className="player-card-trigger" aria-haspopup="dialog"
+        <button type="button" className="player-card-trigger" disabled={disabled} aria-haspopup="dialog"
           aria-label={`${current?.name ?? ''} · ${t('charactersChange')}`} onClick={() => dialog.current?.showModal()}>
           {current && <PlayerCard character={current} tilt />}
         </button>
@@ -82,22 +114,7 @@ export function CharacterSelection({ accountId }: { accountId: string }) {
             <p id="character-selection-description">{t('charactersIntro')}</p></div>
           <button type="button" className="character-selection-close" aria-label={t('charactersClose')} onClick={() => dialog.current?.close()} autoFocus>×</button>
         </header>
-        <ul className="character-selection-list" aria-label={t('charactersLabel')}>
-          {characters.map(({ key, character }) => <li key={key}>
-            <button type="button" className={`character-selection-row${key === selected ? ' is-selected' : ''}`}
-              aria-pressed={key === selected} onClick={() => select(key)}>
-              <CharacterAvatar character={character} />
-              <span className="character-row-details">
-                <span className="character-row-name"><strong>{character.name}</strong>
-                  {character.guild?.name && <span className="character-row-guild" title={character.guild.name}>{`< ${character.guild.name} >`}</span>}
-                </span>
-                <span>EU · {character.realm.name || character.realm.slug} · {t('charactersLevel')} {character.level}</span>
-              </span>
-              <CharacterIcons character={character} />
-              <span className="character-row-check" aria-hidden="true">{key === selected ? '✓' : ''}</span>
-            </button>
-          </li>)}
-        </ul>
+        {choicesList}
         <p className="character-selection-note">{t('charactersBetaNotice')}</p>
       </dialog>
     </>}

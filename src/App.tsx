@@ -11,7 +11,8 @@ import { MatchJourney } from './MatchJourney';
 import { BrandText } from './BrandText';
 import { BackToTop } from './BackToTop';
 import { LanguageMenu } from './LanguageMenu';
-import { CharacterSelection } from './CharacterSelection';
+import { SeasonSelection } from './SeasonSelection';
+import { Settings } from './Settings';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
 import { SeasonNotificationsProvider, useSeasonNotice } from './SeasonNotifications';
 import pageTitles from './page-titles.json';
@@ -250,13 +251,15 @@ function AppContent() {
         <Route path="/how-it-works" element={<Navigate to={`${localizedPath('/', language)}#how-it-works`} replace />} />
         <Route path="/play" element={<main className="content play-page">
           <header className="play-heading"><h1>{t('navigationPlay')}</h1><p>{t('playIntro')}</p></header>
-          <div className="play-lobby"><div className="play-character-stage">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
-            ? <CharacterSelection key={session.profile.id} accountId={session.profile.id} />
-            : <BattleNetLoginButton />}
-            {session.authError && <p role="alert">{t('authError')}</p>}
-          </div>
-            <div className="play-match-action"><button className="find-match" disabled aria-describedby="queue-availability">{t('findMatch')}</button>
-              <p id="queue-availability" className="availability">{t('queuePending')}</p></div>
+          <div className="play-lobby">{!session.loading && session.profile
+            ? <SeasonSelection key={session.profile.id} accountId={session.profile.id} />
+            : <>
+              <div className="play-character-stage">{session.loading ? <p role="status">{t('authChecking')}</p> : <BattleNetLoginButton />}
+                {session.authError && <p role="alert">{t('authError')}</p>}
+              </div>
+              <div className="play-match-action"><button className="find-match" disabled aria-describedby="queue-availability">{t('findMatch')}</button>
+                <p id="queue-availability" className="availability">{t('queuePending')}</p></div>
+            </>}
           </div><div className="play-mode-info">
             <details><summary>{t('soloHeading')}</summary><p>{t('soloDescription')}</p></details>
             <details><summary>{t('premadeHeading')}</summary><p>{t('premadeDescription')}</p></details>
@@ -275,7 +278,8 @@ function AppContent() {
           : <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>}{session.authError && <p role="alert">{t('authError')}</p>}</InfoPage>} />
         <Route path="/match-history" element={<InfoPage heading="navigationHistory" introduction="historyIntro"><p>{t('historyPending')}</p></InfoPage>} />
         <Route path="/my-group" element={<InfoPage heading="navigationGroup" introduction="groupIntro"><p>{t('groupPending')}</p></InfoPage>} />
-        <Route path="/settings" element={<InfoPage heading="navigationSettings" introduction="settingsIntro"><p>{t('settingsPending')}</p></InfoPage>} />
+        <Route path="/settings" element={<InfoPage heading="navigationSettings" introduction="settingsIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
+          ? <Settings key={session.profile.id} accountId={session.profile.id} /> : <BattleNetLoginButton />}</InfoPage>} />
         <Route path="/status" element={<Status />} /><Route path="*" element={<NotFound />} /></Routes>
       <footer className="footer"><span className="brand">{t('appName')}</span><Link to="/status">{t('navigationStatus')}</Link></footer>
     </div>

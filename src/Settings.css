@@ -1,0 +1,8 @@
+.fc-icon-options { display: flex; flex-wrap: wrap; gap: .75rem; border: 0; padding: 0; margin: 0; min-width: 0; }
+.fc-icon-legend { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.fc-icon-option { display: flex; align-items: center; gap: .65rem; padding: .75rem; border: 1px solid #ffffff30; border-radius: .75rem; cursor: pointer; }
+.fc-icon-option:has(input:checked) { border-color: #facc15; background: #facc1510; }
+.fc-icon-option:has(input:focus-visible) { outline: 2px solid #facc15; outline-offset: 3px; }
+.fc-icon-option input { accent-color: #facc15; margin: 0; }
+.fc-icon-option img { flex-shrink: 0; }
+.fc-icon-storage { color: #b6b6c3; font-size: .875rem; margin-top: .75rem; }
