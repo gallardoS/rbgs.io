@@ -2,9 +2,10 @@ import { useId, useState } from 'react';
 import { useLocale } from './locales';
 import { fcIconAsset, type FcIcon } from './fc-icon-preference';
 import type { MessageKey } from './locales/en';
+import { RoleOutlineIcon, type RoleIcon } from './RoleOutlineIcon';
 
 export type MatchRole = 'FC' | 'DPS' | 'HEALER';
-const roles: { role: MatchRole; icon: string; label: MessageKey }[] = [
+const roles: { role: MatchRole; icon: Exclude<RoleIcon, 'flag'>; label: MessageKey }[] = [
   { role: 'FC', icon: 'tank', label: 'selectionFc' },
   { role: 'DPS', icon: 'dps', label: 'selectionDps' },
   { role: 'HEALER', icon: 'heal', label: 'selectionHealer' },
@@ -26,10 +27,9 @@ export function RoleSelection({ value, disabled, fcIcon, onChange }: {
         aria-label={t(label)} aria-describedby={`${groupId}-${role}`}
         onFocus={() => setDismissed(null)} onChange={() => onChange(role)} />
       <span className="role-icon">
-        <img src={role === 'FC' ? fcIconAsset(fcIcon) : `/media/roles/${icon}.webp`} width="40" height="40" alt="" />
-        {value === role && <svg className="role-check" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-          <path d="m3 8 3 3 7-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>}
+        {value === role
+          ? <img src={role === 'FC' ? fcIconAsset(fcIcon) : `/media/roles/${icon}.webp`} width="40" height="40" alt="" />
+          : <RoleOutlineIcon icon={role === 'FC' ? fcIcon : icon} />}
       </span>
       <span className="role-tooltip" id={`${groupId}-${role}`} role="tooltip">{t(label)}</span>
     </label>)}

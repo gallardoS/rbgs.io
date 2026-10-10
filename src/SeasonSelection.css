@@ -14,12 +14,8 @@
 .role-picker { display: flex; justify-content: center; gap: 1rem; margin: 0; padding: 0; border: 0; min-width: 0; }
 .role-legend, .role-option input { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .role-option { position: relative; cursor: pointer; }
-.role-icon { position: relative; display: grid; place-items: center; width: 48px; height: 48px; box-sizing: border-box; border: 2px solid transparent; border-radius: 50%; }
-.role-icon img { opacity: .65; }
-.role-option:hover .role-icon img, .role-option input:checked + .role-icon img { opacity: 1; }
-.role-option input:checked + .role-icon { border-color: #facc15; background: #facc1510; }
+.role-icon { position: relative; display: grid; place-items: center; width: 48px; height: 48px; box-sizing: border-box; border-radius: .375rem; color: #facc15; }
 .role-option input:focus-visible + .role-icon { outline: 2px solid #facc15; outline-offset: 3px; }
 .role-option input:disabled + .role-icon { opacity: .5; }
 .role-picker:disabled .role-option { cursor: default; }
-.role-check { position: absolute; right: -3px; bottom: -1px; border-radius: .25rem; background: #070808; color: #facc15; }
 .role-option:not([data-tooltip-dismissed=true]):hover .role-tooltip, .role-option:not([data-tooltip-dismissed=true]):has(input:focus-visible) .role-tooltip { visibility: visible; }
