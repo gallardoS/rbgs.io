@@ -89,6 +89,7 @@ export const messages: Record<MessageKey, string> = {
   navigationLeaderboard: 'Classement',
   navigationDownloads: 'Téléchargements',
   navigationCommunity: 'Communauté',
+  navigationModerator: 'Moderator',
   navigationGuide: 'Comment ça marche',
   navigationPlay: 'Jouer',
   navigationLogin: 'Connexion',

@@ -73,6 +73,7 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .main-navigation { align-items: center; flex: 1; margin-left: 2rem; }
 .main-navigation .nav-play { margin-left: auto; }
 .main-navigation a.active { color: #fafaf6; }
+.main-navigation a.nav-moderator { color: #facc15; }
 .main-navigation .nav-play, .hero-play { background: #facc15; color: #151408; border: 1px solid transparent; border-radius: .2rem; padding: .65rem 1.2rem; font-weight: 700; }
 .main-navigation .nav-play:hover, .hero-play:hover { background: #eab308; }
 .main-navigation .nav-login { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .6rem .9rem; border: 1px solid #ffffff26; border-radius: .2rem; background: #151817; color: #f5f5ed; font-size: .8rem; font-weight: 600; transition: background .2s, border-color .2s, box-shadow .2s; }

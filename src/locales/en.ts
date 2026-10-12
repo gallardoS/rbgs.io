@@ -87,6 +87,7 @@ export const messages = {
   navigationLeaderboard: 'Leaderboard',
   navigationDownloads: 'Downloads',
   navigationCommunity: 'Community',
+  navigationModerator: 'Moderator',
   navigationGuide: 'How it works',
   navigationPlay: 'Play',
   navigationLogin: 'Log in',

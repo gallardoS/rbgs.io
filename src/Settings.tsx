@@ -3,10 +3,9 @@ import { useLocale } from './locales';
 import { fcIconAsset, useFcIconPreference, type FcIcon } from './fc-icon-preference';
 import './Settings.css';
 import { DeviceSettings } from './DeviceSettings';
-import { CaptureTestAdmin } from './CaptureTestAdmin';
 import {CompanionStatus} from './CompanionStatus';
 
-export function Settings({ accountId, role }: { accountId: string; role?: string }) {
+export function Settings({ accountId }: { accountId: string }) {
   const { t } = useLocale();
   const { icon, setIcon } = useFcIconPreference(accountId);
   const groupId = useId();
@@ -30,6 +29,5 @@ export function Settings({ accountId, role }: { accountId: string; role?: string
     </section>
     <CompanionStatus accountId={accountId} />
     <DeviceSettings accountId={accountId} />
-    {role === 'MODERATOR' && <CaptureTestAdmin accountId={accountId} />}
   </div>;
 }

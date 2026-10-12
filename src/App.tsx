@@ -13,6 +13,7 @@ import { BackToTop } from './BackToTop';
 import { LanguageMenu } from './LanguageMenu';
 import { SeasonSelection } from './SeasonSelection';
 import { Settings } from './Settings';
+import { CaptureTestAdmin } from './CaptureTestAdmin';
 import {CompanionStatus} from './CompanionStatus';
 import {pendingCompanionLink} from './companion-link';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
@@ -230,6 +231,7 @@ function AppContent() {
         <NavLink to="/downloads">{t('navigationDownloads')}</NavLink>
         <Link to="/#how-it-works">{t('navigationGuide')}</Link>
         <a className="nav-community" href="https://discord.gg/RfBgfszUPM" target="_blank" rel="noopener noreferrer">{t('navigationCommunity')}<img src="/external-link.svg" width="14" height="14" alt="" aria-hidden="true" /></a>
+        {session.profile?.role === 'MODERATOR' && <NavLink className="nav-moderator" to="/moderator">{t('navigationModerator')}</NavLink>}
         <NavLink className="nav-play" to="/play" onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) openSeasonNotice(); }}>{t('navigationPlay')}</NavLink>
         {session.loading ? <span role="status">{t('authChecking')}</span> : session.profile
           ? <details className="account-menu" key={location.pathname}><summary>
@@ -284,7 +286,12 @@ function AppContent() {
         <Route path="/match-history" element={<InfoPage heading="navigationHistory" introduction="historyIntro"><p>{t('historyPending')}</p></InfoPage>} />
         <Route path="/my-group" element={<InfoPage heading="navigationGroup" introduction="groupIntro"><p>{t('groupPending')}</p></InfoPage>} />
         <Route path="/settings" element={<InfoPage heading="navigationSettings" introduction="settingsIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
-          ? <Settings key={session.profile.id} accountId={session.profile.id} role={session.profile.role} /> : <BattleNetLoginButton />}</InfoPage>} />
+          ? <Settings key={session.profile.id} accountId={session.profile.id} /> : <BattleNetLoginButton />}</InfoPage>} />
+        <Route path="/moderator" element={session.loading
+          ? <InfoPage heading="navigationModerator"><p role="status">{t('authChecking')}</p></InfoPage>
+          : session.profile?.role === 'MODERATOR'
+            ? <InfoPage heading="navigationModerator"><div className="profile-settings"><CaptureTestAdmin key={session.profile.id} accountId={session.profile.id} /></div></InfoPage>
+            : <Navigate to={localizedPath('/', language)} replace />} />
         <Route path="/status" element={<Status />} /><Route path="*" element={<NotFound />} /></Routes>
       <footer className="footer"><span className="brand">{t('appName')}</span><Link to="/status">{t('navigationStatus')}</Link></footer>
     </div>
