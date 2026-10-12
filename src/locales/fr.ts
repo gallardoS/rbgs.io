@@ -1,6 +1,23 @@
 import type { MessageKey } from './en';
 
 export const messages: Record<MessageKey, string> = {
+  devicesCaptureConsent: 'Autoriser cet appareil à lire mes matchs assignés et à envoyer les captures enregistrées lorsque le companion demande ces permissions.',
+  devicesHeading: 'Application de bureau',
+  devicesDescription: 'Associez votre application Windows à ce compte Battle.net.',
+  devicesCode: 'Code affiché dans l’application',
+  devicesWarning: 'Approuvez uniquement un code de votre propre application. L’approbation autorise cet appareil à se connecter à votre compte.',
+  devicesApprove: 'Approuver l’appareil',
+  devicesApproved: 'Approuvé. Revenez dans l’application pour terminer l’association.',
+  devicesRevoked: 'Accès de l’appareil révoqué.',
+  devicesCodeExpired: 'Ce code est indisponible ou expiré. Générez un nouveau code dans l’application.',
+  devicesRateLimit: 'Trop de tentatives. Attendez une minute avant de réessayer.',
+  devicesActionError: 'L’opération n’a pas pu être confirmée. Actualisez la liste avant de réessayer.',
+  devicesLoadError: 'Impossible de charger vos appareils.',
+  devicesRefresh: 'Actualiser les appareils',
+  devicesEmpty: 'Aucun appareil associé.',
+  devicesPaired: 'Associé',
+  devicesInactive: 'Révoqué ou expiré',
+  devicesRevoke: 'Révoquer l’accès',
   cheetahModelLabel: 'Guépard courant avec le drapeau des Chanteguerres',
   seasonShowNotice: 'Afficher la notification de saison',
   seasonDismissNotice: 'Masquer pendant 24 heures',

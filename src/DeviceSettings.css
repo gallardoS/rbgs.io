@@ -1,0 +1,9 @@
+.device-pair-form { display: grid; gap: .75rem; max-width: 30rem; }
+.device-pair-form input { width: 100%; min-width: 0; box-sizing: border-box; padding: .75rem; color: #fafaf6; background: #070808; border: 1px solid #ffffff40; border-radius: .5rem; font: inherit; letter-spacing: .12em; }
+.device-pair-form input:focus-visible { outline: 2px solid #facc15; outline-offset: 3px; }
+.device-pair-form p, .device-list p { color: #b6b6c3; font-size: .875rem; margin: 0; }
+.device-list { list-style: none; padding: 0; margin-top: 1.5rem; }
+.device-list li { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border-top: 1px solid #ffffff20; padding: 1rem 0; }
+.device-list strong { overflow-wrap: anywhere; }
+.capture-permission { display: flex; align-items: flex-start; gap: .6rem; }
+.capture-permission input { flex: 0 0 auto; width: auto; margin-top: .2rem; }
