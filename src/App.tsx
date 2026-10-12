@@ -279,7 +279,7 @@ function AppContent() {
         <Route path="/match-history" element={<InfoPage heading="navigationHistory" introduction="historyIntro"><p>{t('historyPending')}</p></InfoPage>} />
         <Route path="/my-group" element={<InfoPage heading="navigationGroup" introduction="groupIntro"><p>{t('groupPending')}</p></InfoPage>} />
         <Route path="/settings" element={<InfoPage heading="navigationSettings" introduction="settingsIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
-          ? <Settings key={session.profile.id} accountId={session.profile.id} /> : <BattleNetLoginButton />}</InfoPage>} />
+          ? <Settings key={session.profile.id} accountId={session.profile.id} role={session.profile.role} /> : <BattleNetLoginButton />}</InfoPage>} />
         <Route path="/status" element={<Status />} /><Route path="*" element={<NotFound />} /></Routes>
       <footer className="footer"><span className="brand">{t('appName')}</span><Link to="/status">{t('navigationStatus')}</Link></footer>
     </div>

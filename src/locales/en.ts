@@ -1,4 +1,12 @@
 export const messages = {
+  captureTestHeading: 'Controlled capture test',
+  captureTestDescription: 'Moderator tool: create a Darkspear test for your account. These are unverified declarations; no rating is applied. The participant issues their private code in the companion before the BG.',
+  captureTestCharacter: 'Own Forever character name',
+  captureTestRealm: 'Observed realm (optional)',
+  captureTestOpponent: 'Expected opposing character name',
+  captureTestCreate: 'Create my controlled test',
+  captureTestCreated: 'Test created. Refresh assignments in the companion and issue your code before entering the next BG.',
+  captureTestError: 'The test could not be created. Check moderator access and whether controlled testing is enabled.',
   devicesCaptureConsent: 'Allow this device to read my assigned matches and upload saved captures when requested by the companion.',
   devicesHeading: 'Desktop companion',
   devicesDescription: 'Connect your Windows companion to this Battle.net account.',

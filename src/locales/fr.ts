@@ -1,6 +1,14 @@
 import type { MessageKey } from './en';
 
 export const messages: Record<MessageKey, string> = {
+  captureTestHeading: 'Test contrôlé de capture',
+  captureTestDescription: 'Outil de modération : créez un test Darkspear pour votre compte. Ces déclarations ne sont pas vérifiées et ne modifient aucun classement. Le participant obtient son code privé dans le companion avant le BG.',
+  captureTestCharacter: 'Nom de votre personnage Forever',
+  captureTestRealm: 'Royaume observé (facultatif)',
+  captureTestOpponent: 'Nom du personnage adverse attendu',
+  captureTestCreate: 'Créer mon test contrôlé',
+  captureTestCreated: 'Test créé. Actualisez les assignations du companion et obtenez votre code avant le prochain BG.',
+  captureTestError: 'Le test n’a pas pu être créé. Vérifiez votre accès de modération et l’activation des tests contrôlés.',
   devicesCaptureConsent: 'Autoriser cet appareil à lire mes matchs assignés et à envoyer les captures enregistrées lorsque le companion demande ces permissions.',
   devicesHeading: 'Application de bureau',
   devicesDescription: 'Associez votre application Windows à ce compte Battle.net.',
