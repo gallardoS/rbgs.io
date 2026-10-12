@@ -4,6 +4,7 @@ import { fcIconAsset, useFcIconPreference, type FcIcon } from './fc-icon-prefere
 import './Settings.css';
 import { DeviceSettings } from './DeviceSettings';
 import { CaptureTestAdmin } from './CaptureTestAdmin';
+import {CompanionStatus} from './CompanionStatus';
 
 export function Settings({ accountId, role }: { accountId: string; role?: string }) {
   const { t } = useLocale();
@@ -27,7 +28,8 @@ export function Settings({ accountId, role }: { accountId: string; role?: string
         <p className="fc-icon-storage">{t('settingsBrowserPreference')}</p>
       </div>
     </section>
-    <DeviceSettings />
+    <CompanionStatus accountId={accountId} />
+    <DeviceSettings accountId={accountId} />
     {role === 'MODERATOR' && <CaptureTestAdmin accountId={accountId} />}
   </div>;
 }

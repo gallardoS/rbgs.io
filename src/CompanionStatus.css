@@ -1,0 +1,8 @@
+.companion-status { border: 1px solid #facc1540; border-radius: .75rem; padding: 1rem; margin: 1rem 0; background: #14140f; }
+.companion-status.connected { border-color: #6ade8b70; }
+.companion-status p { margin: 0; }
+.companion-status-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: .75rem; }
+.companion-status-hint { color: #b6b6c3; font-size: .875rem; margin-top: .75rem !important; }
+.companion-status select { max-width: 100%; color: inherit; background: #101010; padding: .5rem; }
+.browser-pairing { border: 1px solid #facc1560; padding: 1rem; border-radius: .75rem; margin-bottom: 1rem; }
+.browser-pairing button { margin: .5rem .75rem .5rem 0; }

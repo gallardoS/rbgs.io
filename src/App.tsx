@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Link, NavLink } from './LocalizedLink';
 import { basePath, languages, languageLocales, localizedPath } from './locale-routing';
 import { useEffect, useRef, useState } from 'react';
@@ -13,6 +13,8 @@ import { BackToTop } from './BackToTop';
 import { LanguageMenu } from './LanguageMenu';
 import { SeasonSelection } from './SeasonSelection';
 import { Settings } from './Settings';
+import {CompanionStatus} from './CompanionStatus';
+import {pendingCompanionLink} from './companion-link';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
 import { SeasonNotificationsProvider, useSeasonNotice } from './SeasonNotifications';
 import pageTitles from './page-titles.json';
@@ -153,6 +155,8 @@ function AppContent() {
   const session = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(()=>{if(session.profile&&pendingCompanionLink()&&basePath(location.pathname)!=='/settings')navigate(localizedPath('/settings',language),{replace:true});},[session.profile?.id]);
   useEffect(() => {
     const pathname = localizedPath(location.pathname, language);
     const homepage = localizedPath('/', language) as keyof typeof pageTitles;
@@ -251,6 +255,7 @@ function AppContent() {
         <Route path="/how-it-works" element={<Navigate to={`${localizedPath('/', language)}#how-it-works`} replace />} />
         <Route path="/play" element={<main className="content play-page">
           <header className="play-heading"><h1>{t('navigationPlay')}</h1><p>{t('playIntro')}</p></header>
+          {!session.loading&&session.profile&&<CompanionStatus key={session.profile.id} accountId={session.profile.id} />}
           <div className="play-lobby">{!session.loading && session.profile
             ? <SeasonSelection key={session.profile.id} accountId={session.profile.id} />
             : <>

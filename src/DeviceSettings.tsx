@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
 import './DeviceSettings.css';
+import {BrowserPairing} from './BrowserPairing';
 
 type Device = { id: string; name: string; createdAt: string; expiresAt: string; revokedAt: string | null };
 function validDevices(value: unknown): value is Device[] {
@@ -10,7 +11,7 @@ function validDevices(value: unknown): value is Device[] {
     && typeof d.expiresAt === 'string' && Number.isFinite(Date.parse(d.expiresAt))
     && (d.revokedAt === null || (typeof d.revokedAt === 'string' && Number.isFinite(Date.parse(d.revokedAt)))));
 }
-export function DeviceSettings() {
+export function DeviceSettings({accountId}:{accountId:string}) {
   const { t, language } = useLocale();
   const id = useId();
   const [devices, setDevices] = useState<Device[] | null>(null);
@@ -62,6 +63,9 @@ export function DeviceSettings() {
   return <section className="device-settings profile-settings-section" aria-labelledby={`${id}-title`}>
     <div className="profile-section-heading"><h2 id={`${id}-title`}>{t('devicesHeading')}</h2><p>{t('devicesDescription')}</p></div>
     <div>
+      <BrowserPairing accountId={accountId} ready={devices!==null} onConnected={()=>setAttempt(value=>value+1)} />
+      <p>{t('companionPairInstructions')}</p><p><a className="button" href="rbgs-companion://open">{t('companionOpen')}</a></p>
+      <details><summary>{t('companionManualCode')}</summary>
       <form className="device-pair-form" onSubmit={event => { event.preventDefault(); if (/^[A-HJ-NP-Z2-9]{10}$/.test(code)) void mutate('/api/v1/device-pairings/approve', 'POST', { code, acceptCapturePermissions: capturePermissions }); }}>
         <label htmlFor={`${id}-code`}>{t('devicesCode')}</label>
         <input id={`${id}-code`} value={code} onChange={event => { setCode(event.target.value.toUpperCase().replace(/[\s-]/g, '').slice(0, 10)); setCapturePermissions(false); }}
@@ -70,6 +74,7 @@ export function DeviceSettings() {
         <label className="capture-permission"><input type="checkbox" checked={capturePermissions} disabled={busy || !devices} onChange={event => setCapturePermissions(event.target.checked)} />{t('devicesCaptureConsent')}</label>
         <button type="submit" disabled={busy || !devices || !/^[A-HJ-NP-Z2-9]{10}$/.test(code)}>{t('devicesApprove')}</button>
       </form>
+      </details>
       {message && <p role={error ? 'alert' : 'status'}>{t(message)}</p>}
       {!devices ? <button type="button" disabled={busy} onClick={() => { setMessage(null); setAttempt(v => v + 1); }}>{t('devicesRefresh')}</button>
         : devices.length === 0 ? <p>{t('devicesEmpty')}</p>

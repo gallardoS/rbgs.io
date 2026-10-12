@@ -5,6 +5,9 @@ import { LanguageProvider } from './locales';
 import { App } from './App';
 import './styles.css';
 import { localizedPath, pathLanguage } from './locale-routing';
+import {initializeCompanionLink} from './companion-link';
+
+initializeCompanionLink();
 
 const root = document.getElementById('root')!;
 const app = <StrictMode><BrowserRouter><LanguageProvider><App /></LanguageProvider></BrowserRouter></StrictMode>;
