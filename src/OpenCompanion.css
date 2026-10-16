@@ -1,0 +1,8 @@
+.companion-launch { margin-block: .75rem 1rem; }
+.companion-launch-message { max-width: 55ch; margin: .5rem 0 0; font-size: .8rem; line-height: 1.5; color: #b6b7bb; }
+.companion-launch-message[role=alert] { color: #ffbd8a; }
+.companion-launch.is-compact { display: contents; }
+.companion-launch.is-compact p { flex-basis: 100%; margin: 0; max-width: none; text-align: center; font-size: .68rem; }
+.companion-launch-button { min-height: 0; border: 0; border-radius: 0; background: transparent; padding: .25rem 0; color: #facc15; font: inherit; font-size: .7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+.companion-launch-button:hover { background: transparent; box-shadow: none; color: #fff0a3; text-decoration: underline; }
+.companion-launch-button:disabled { opacity: .6; cursor: wait; }

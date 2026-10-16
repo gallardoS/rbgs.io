@@ -19,3 +19,8 @@ const key=(account:string)=>`rbgs-companion-device:${account}`;
 const memoryDevices=new Map<string,string>();
 export function preferredCompanion(account:string){try{return localStorage.getItem(key(account))??memoryDevices.get(account)??null;}catch{return memoryDevices.get(account)??null;}}
 export function selectCompanion(account:string,device:string){memoryDevices.set(account,device);try{localStorage.setItem(key(account),device);}catch{}window.dispatchEvent(new Event('rbgs-companion-device'));}
+export function forgetCompanion(account:string,device:string){
+ if(preferredCompanion(account)!==device)return;
+ memoryDevices.delete(account);try{localStorage.removeItem(key(account));}catch{}
+ window.dispatchEvent(new Event('rbgs-companion-device'));
+}

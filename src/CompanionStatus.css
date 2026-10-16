@@ -2,7 +2,18 @@
 .companion-status.connected { border-color: #6ade8b70; }
 .companion-status p { margin: 0; }
 .companion-status-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: .75rem; }
-.companion-status-hint { color: #b6b6c3; font-size: .875rem; margin-top: .75rem !important; }
 .companion-status select { max-width: 100%; color: inherit; background: #101010; padding: .5rem; }
 .browser-pairing { border: 1px solid #facc1560; padding: 1rem; border-radius: .75rem; margin-bottom: 1rem; }
-.browser-pairing button { margin: .5rem .75rem .5rem 0; }
+.browser-pairing h3 { margin-top: 0; }
+.browser-pairing-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+.companion-presence-dot { flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%; background: #facc15; }
+.companion-match-status { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .6rem 1.25rem; min-width: 220px; max-width: 100%; padding: .65rem .9rem; border: 1px solid #facc1559; border-radius: .35rem; background: #121514; color: #b6b7bb; font-size: .75rem; line-height: 1.4; }
+.companion-match-status.is-connected { border-color: #9ec09e50; color: #9ec09e; }
+.companion-match-status:has(.companion-launch) { max-width: min(28rem, 100%); box-sizing: border-box; }
+.companion-presence-dot.is-connected, .companion-match-status.is-connected .companion-presence-dot { background: #22c55e; box-shadow: 0 0 8px #22c55e66; }
+.companion-match-message { display: inline-flex; align-items: center; gap: .5rem; min-width: 0; }
+.companion-match-message a { color: inherit; text-decoration: none; overflow-wrap: anywhere; }
+.companion-match-message a:hover { text-decoration: underline; }
+.companion-match-actions { display: inline-flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: 1.25rem; }
+.companion-match-actions a { padding-block: .25rem; color: #facc15; font-size: .7rem; font-weight: 700; letter-spacing: .02em; text-decoration: none; text-transform: uppercase; }
+.companion-match-actions a:hover { color: #fff0a3; text-decoration: underline; }

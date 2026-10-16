@@ -3,7 +3,6 @@ import { useLocale } from './locales';
 import { fcIconAsset, useFcIconPreference, type FcIcon } from './fc-icon-preference';
 import './Settings.css';
 import { DeviceSettings } from './DeviceSettings';
-import {CompanionStatus} from './CompanionStatus';
 
 export function Settings({ accountId }: { accountId: string }) {
   const { t } = useLocale();
@@ -27,7 +26,6 @@ export function Settings({ accountId }: { accountId: string }) {
         <p className="fc-icon-storage">{t('settingsBrowserPreference')}</p>
       </div>
     </section>
-    <CompanionStatus accountId={accountId} />
     <DeviceSettings accountId={accountId} />
   </div>;
 }
