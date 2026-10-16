@@ -3,7 +3,7 @@ import { useLocale } from './locales';
 
 export type Character = {
   id: number; name: string; level: number;
-  namespace?: 'profile-classic1x-eu' | 'profile-classic-eu';
+  namespace?: 'profile-classic1x-eu' | 'profile-classic-eu' | 'profile-classic1x-us' | 'profile-classic-us';
   realm: { id: number; name: string; slug: string };
   playable_class?: { id?: number; name: string }; playable_race?: { name: string }; faction?: { name: string };
   avatarUrl?: string | null;
@@ -11,6 +11,9 @@ export type Character = {
   guild?: { name: string | null } | null;
   gender?: { type: string | null; name?: string | null } | null;
 };
+export function characterRegion(character: Character): 'EU' | 'NA' {
+  return character.namespace?.endsWith('-us') ? 'NA' : 'EU';
+}
 export function PlayerCardSkeleton() {
   const { t } = useLocale();
   return <div className="character-picker" role="status" aria-label={t('charactersLoading')}>
@@ -44,7 +47,7 @@ export function PlayerCard({ character, compact = false, tilt = false }: { chara
       card.style.setProperty('--card-rotate-x', '0deg');
       card.style.setProperty('--card-rotate-y', '0deg');
     }}>
-      <span className="profile-card-header"><span className="profile-card-realm">EU · {character.realm.name || character.realm.slug} · {character.level}</span><CharacterIcons character={character} /></span>
+      <span className="profile-card-header"><span className="profile-card-realm">{characterRegion(character)} · {character.realm.name || character.realm.slug} · {character.level}</span><CharacterIcons character={character} /></span>
       <CharacterAvatar character={character} />
       <strong className="profile-card-name">{character.name}</strong>
       {character.guild?.name && <span className="profile-card-guild">{`< ${character.guild.name} >`}</span>}

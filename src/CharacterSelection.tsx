@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { CharacterAvatar, CharacterIcons, PlayerCard, PlayerCardSkeleton, type Character } from './PlayerCard';
+import { CharacterAvatar, CharacterIcons, PlayerCard, PlayerCardSkeleton, characterRegion, type Character } from './PlayerCard';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
@@ -22,6 +22,7 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
   changeListener.current = onChange;
   const preferredChoice = useRef(preferred);
   preferredChoice.current = preferred;
+  // Retain the legacy key so existing EU choices survive; other namespaces have distinct choice keys.
   const storageKey = `rbgs.character.classic1x.eu.${accountId}`;
 
   useEffect(() => {
@@ -38,20 +39,21 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
         }
         const data = await response.json() as AccountProfile;
         const choices = data.wow_accounts.flatMap(account => account.characters.filter(character => character.level >= 60).map(character => ({
-          key: character.namespace === 'profile-classic-eu'
+          key: character.namespace && character.namespace !== 'profile-classic1x-eu'
             ? `${character.namespace}:${account.id}:${character.realm.id}:${character.id}`
             : `${account.id}:${character.realm.id}:${character.id}`, character,
         }))).sort((a, b) => a.character.name.localeCompare(b.character.name));
         if (controller.signal.aborted) return;
         setCharacters(choices);
-        let chosen = choices.find(choice => choice.character.name === preferredChoice.current?.name
+        const matching = choices.filter(choice => choice.character.name === preferredChoice.current?.name
           && (choice.character.realm.name || choice.character.realm.slug) === preferredChoice.current?.realm);
+        let chosen = matching.length === 1 ? matching[0] : undefined;
         try {
           const saved = localStorage.getItem(storageKey);
-          chosen ??= choices.find(choice => choice.key === saved);
+          chosen ??= matching.find(choice => choice.key === saved) ?? matching[0] ?? choices.find(choice => choice.key === saved);
           if (saved && !choices.some(choice => choice.key === saved)) localStorage.removeItem(storageKey);
         } catch { /* Selection remains available when storage is disabled. */ }
-        chosen ??= choices[0];
+        chosen ??= matching[0] ?? choices[0];
         setSelected(chosen?.key ?? '');
         changeListener.current?.(chosen?.character ?? null);
       })
@@ -82,7 +84,7 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
                 <span className="character-row-name"><strong>{character.name}</strong>
                   {character.guild?.name && <span className="character-row-guild" title={character.guild.name}>{`< ${character.guild.name} >`}</span>}
                 </span>
-                <span>EU · {character.realm.name || character.realm.slug} · {t('charactersLevel')} {character.level}</span>
+                <span>{characterRegion(character)} · {character.realm.name || character.realm.slug} · {t('charactersLevel')} {character.level}</span>
               </span>
               <CharacterIcons character={character} />
               <span className="character-row-check" aria-hidden="true">{key === selected ? '✓' : ''}</span>
