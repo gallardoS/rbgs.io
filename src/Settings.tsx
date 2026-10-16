@@ -23,7 +23,6 @@ export function Settings({ accountId }: { accountId: string }) {
             <span>{t(option === 'tank' ? 'settingsTankIcon' : 'settingsFlagIcon')}</span>
           </label>)}
         </fieldset>
-        <p className="fc-icon-storage">{t('settingsBrowserPreference')}</p>
       </div>
     </section>
     <DeviceSettings accountId={accountId} />
