@@ -3,6 +3,7 @@ import { RoleSelection, type MatchRole as Role } from './RoleSelection';
 import { CaptainConsent } from './CaptainConsent';
 import { useFcIconPreference } from './fc-icon-preference';
 import { CharacterSelection } from './CharacterSelection';
+import { CompanionStatus } from './CompanionStatus';
 import { PlayerCardSkeleton, type Character } from './PlayerCard';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
@@ -50,6 +51,7 @@ export function SeasonSelection({ accountId }: { accountId: string }) {
   const [character, setCharacter] = useState<Character | null>(null);
   const [role, setRole] = useState<Role | ''>('');
   const [captainConsent, setCaptainConsent] = useState(false);
+  const [companionDeviceId, setCompanionDeviceId] = useState<string | null>(null);
   const saveController = useRef<AbortController | null>(null);
 
   useEffect(() => () => { saveController.current?.abort(); saveController.current = null; }, []);
@@ -74,7 +76,7 @@ export function SeasonSelection({ accountId }: { accountId: string }) {
   }, [accountId, attempt]);
 
   const canSave = !loading && !saving && context?.season?.ratingSubjectType === 'ACCOUNT'
-    && !!character && !!role && error !== 'selectionConflict';
+    && !!character && !!role && !!companionDeviceId && error !== 'selectionConflict';
   async function findMatch() {
     if (!canSave || !context?.season || !character || !role || saveController.current) return;
     const controller = new AbortController();
@@ -91,12 +93,15 @@ export function SeasonSelection({ accountId }: { accountId: string }) {
           seasonId: context.season.id, seasonVersion: context.season.version,
           expectedVersion: context.selection?.version ?? null,
           declaration: { name: character.name, realm: character.realm.name || character.realm.slug },
-          role, captainConsent,
+          role, captainConsent, companionDeviceId,
         }),
       });
       if (controller.signal.aborted) return;
       if (!response.ok) {
-        setError(response.status === 409 ? 'selectionConflict' : 'selectionSaveError');
+        if (response.status === 412) {
+          setCompanionDeviceId(null);
+          setError('selectionCompanionRequired');
+        } else setError(response.status === 409 ? 'selectionConflict' : 'selectionSaveError');
         return;
       }
       const selection: unknown = await response.json();
@@ -138,9 +143,12 @@ export function SeasonSelection({ accountId }: { accountId: string }) {
   return <>
     <div className="play-character-stage">{content}</div>
     <div className="play-match-action">
-      <button type="button" className="find-match" disabled={!canSave} onClick={() => void findMatch()} aria-describedby="queue-availability">
-        {t(saving ? 'selectionSaving' : 'findMatch')}
-      </button>
+      <div className="play-match-control">
+        <CompanionStatus accountId={accountId} matchAction onLinkedDeviceChange={setCompanionDeviceId} />
+        <button type="button" className="find-match" disabled={!canSave} onClick={() => void findMatch()} aria-describedby="queue-availability">
+          {t(saving ? 'selectionSaving' : 'findMatch')}
+        </button>
+      </div>
       <p id="queue-availability" className="availability" role={saved ? 'status' : undefined}>
         {t(saved ? 'selectionSavedQueuePending' : 'queuePending')}
       </p>

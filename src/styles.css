@@ -225,7 +225,9 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .play-lobby .character-selection { margin: 0; }
 .play-lobby .profile-card { margin-top: 0; border-color: #e6cc7750; box-shadow: 0 20px 60px #0006, 0 0 35px #facc1508; }
 .play-lobby .character-selection { width: 100%; }
-.play-match-action { text-align: center; }
+.play-match-action { max-width: 100%; text-align: center; }
+.play-match-control { display: flex; flex-direction: column; align-items: center; max-width: 100%; }
+.play-match-control .find-match { margin-top: -1px; border-top-left-radius: 0; border-top-right-radius: 0; }
 .play-mode-info { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; width: min(100%, 36rem); }
 .play-mode-info details { border-top: 1px solid #ffffff20; padding: .8rem; }
 .play-mode-info summary { cursor: pointer; font-size: .85rem; color: #b6b7bb; }

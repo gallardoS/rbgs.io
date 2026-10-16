@@ -142,6 +142,7 @@ export const messages: Record<MessageKey, string> = {
   selectionSaved: "Selección guardada en tu cuenta.",
   selectionLoadError: "No hemos podido cargar tu selección de temporada. Inténtalo de nuevo.",
   selectionSaveError: "No hemos podido guardar tu selección. Los cambios no se han confirmado.",
+  selectionCompanionRequired: 'Vincula un companion válido en Ajustes antes de buscar partida.',
   selectionConflict: "Tu selección o la temporada ha cambiado. Recarga la selección guardada antes de intentarlo de nuevo.",
   selectionReload: "Recargar selección guardada",
   charactersLocalSelection: 'Tu selección se recuerda en este navegador.',

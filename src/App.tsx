@@ -14,7 +14,6 @@ import { LanguageMenu } from './LanguageMenu';
 import { SeasonSelection } from './SeasonSelection';
 import { Settings } from './Settings';
 import { CaptureTestAdmin } from './CaptureTestAdmin';
-import {CompanionStatus} from './CompanionStatus';
 import {pendingCompanionLink} from './companion-link';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
 import { SeasonNotificationsProvider, useSeasonNotice } from './SeasonNotifications';
@@ -257,7 +256,6 @@ function AppContent() {
         <Route path="/how-it-works" element={<Navigate to={`${localizedPath('/', language)}#how-it-works`} replace />} />
         <Route path="/play" element={<main className="content play-page">
           <header className="play-heading"><h1>{t('navigationPlay')}</h1><p>{t('playIntro')}</p></header>
-          {!session.loading&&session.profile&&<CompanionStatus key={session.profile.id} accountId={session.profile.id} />}
           <div className="play-lobby">{!session.loading && session.profile
             ? <SeasonSelection key={session.profile.id} accountId={session.profile.id} />
             : <>

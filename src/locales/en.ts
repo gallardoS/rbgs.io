@@ -202,6 +202,7 @@ export const messages = {
   selectionSaved: "Selection saved to your account.",
   selectionLoadError: "We could not load your season selection. Please try again.",
   selectionSaveError: "We could not save your selection. Your changes have not been confirmed.",
+  selectionCompanionRequired: 'Link a valid companion in Settings before finding a match.',
   selectionConflict: "Your selection or season changed. Reload the saved selection before trying again.",
   selectionReload: "Reload saved selection",
   charactersLocalSelection: 'Your selection is remembered in this browser.',

@@ -204,6 +204,7 @@ export const messages: Record<MessageKey, string> = {
   selectionSaved: "Sélection enregistrée sur votre compte.",
   selectionLoadError: "Impossible de charger votre sélection de saison. Réessayez.",
   selectionSaveError: "Impossible d’enregistrer votre sélection. Les modifications n’ont pas été confirmées.",
+  selectionCompanionRequired: 'Associez un companion valide dans les paramètres avant de chercher un match.',
   selectionConflict: "Votre sélection ou la saison a changé. Rechargez la sélection enregistrée avant de réessayer.",
   selectionReload: "Recharger la sélection enregistrée",
   charactersLocalSelection: 'Votre sélection est mémorisée dans ce navigateur.',
