@@ -131,27 +131,33 @@ export function SeasonSelection({ accountId }: { accountId: string }) {
     <p role="status">{t('selectionVerificationPending')}</p>
   </>;
   else content = <section className="season-selection" aria-label={t('selectionHeading')}>
-    <CaptainConsent selected={captainConsent} disabled={saving || !character}
-      onChange={value => { setCaptainConsent(value); setSaved(false); }} />
+    {character && <CaptainConsent selected={captainConsent} disabled={saving}
+      onChange={value => { setCaptainConsent(value); setSaved(false); }} />}
     <CharacterSelection accountId={accountId} preferred={context.selection ?? undefined} disabled={saving}
       onChange={value => { setCharacter(value); setSaved(false); }} />
-    <RoleSelection fcIcon={fcIcon} value={role} disabled={saving || !character}
-      onChange={value => { setRole(value); setSaved(false); }} />
+    {character && <RoleSelection fcIcon={fcIcon} value={role} disabled={saving}
+      onChange={value => { setRole(value); setSaved(false); }} />}
     {error && <p role="alert">{t(error)}</p>}
     {error === 'selectionConflict' && <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('selectionReload')}</button>}
   </section>;
   return <>
     <div className="play-character-stage">{content}</div>
-    <div className="play-match-action">
-      <div className="play-match-control">
-        <CompanionStatus accountId={accountId} matchAction onLinkedDeviceChange={setCompanionDeviceId} />
-        <button type="button" className="find-match" disabled={!canSave} onClick={() => void findMatch()} aria-describedby="queue-availability">
-          {t(saving ? 'selectionSaving' : 'findMatch')}
-        </button>
+    {character && <>
+      <div className="play-match-action">
+        <div className="play-match-control">
+          <CompanionStatus accountId={accountId} matchAction onLinkedDeviceChange={setCompanionDeviceId} />
+          <button type="button" className="find-match" disabled={!canSave} onClick={() => void findMatch()} aria-describedby="queue-availability">
+            {t(saving ? 'selectionSaving' : 'findMatch')}
+          </button>
+        </div>
+        <p id="queue-availability" className="availability" role={saved ? 'status' : undefined}>
+          {t(saved ? 'selectionSavedQueuePending' : 'queuePending')}
+        </p>
       </div>
-      <p id="queue-availability" className="availability" role={saved ? 'status' : undefined}>
-        {t(saved ? 'selectionSavedQueuePending' : 'queuePending')}
-      </p>
-    </div>
+      <div className="play-mode-info">
+        <details><summary>{t('soloHeading')}</summary><p>{t('soloDescription')}</p></details>
+        <details><summary>{t('premadeHeading')}</summary><p>{t('premadeDescription')}</p></details>
+      </div>
+    </>}
   </>;
 }

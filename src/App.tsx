@@ -258,16 +258,10 @@ function AppContent() {
           <header className="play-heading"><h1>{t('navigationPlay')}</h1><p>{t('playIntro')}</p></header>
           <div className="play-lobby">{!session.loading && session.profile
             ? <SeasonSelection key={session.profile.id} accountId={session.profile.id} />
-            : <>
-              <div className="play-character-stage">{session.loading ? <p role="status">{t('authChecking')}</p> : <BattleNetLoginButton />}
+            : <div className="play-character-stage">
+                {session.loading ? <p role="status">{t('authChecking')}</p> : <BattleNetLoginButton />}
                 {session.authError && <p role="alert">{t('authError')}</p>}
-              </div>
-              <div className="play-match-action"><button className="find-match" disabled aria-describedby="queue-availability">{t('findMatch')}</button>
-                <p id="queue-availability" className="availability">{t('queuePending')}</p></div>
-            </>}
-          </div><div className="play-mode-info">
-            <details><summary>{t('soloHeading')}</summary><p>{t('soloDescription')}</p></details>
-            <details><summary>{t('premadeHeading')}</summary><p>{t('premadeDescription')}</p></details>
+              </div>}
           </div></main>} />
         <Route path="/account" element={<InfoPage heading="navigationProfile" introduction="profileIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
           ? <div className="profile-settings">
