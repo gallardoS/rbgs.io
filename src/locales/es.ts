@@ -1,6 +1,7 @@
 import type { MessageKey } from './en';
 
 export const messages: Record<MessageKey, string> = {
+  notificationNew: 'nuevo',
   companionOpenConnect: 'Abrir y conectar',
   companionOpening: 'Conectando…',
   companionLaunchWaiting: 'Acepta el aviso del navegador para abrir la aplicación. La conexión terminará automáticamente.',

@@ -1,4 +1,5 @@
 export const messages = {
+  notificationNew: 'new',
   companionOpenConnect: 'Open & connect',
   companionOpening: 'Connecting…',
   companionLaunchWaiting: 'Accept your browser’s prompt to open the app. Connection will finish automatically.',

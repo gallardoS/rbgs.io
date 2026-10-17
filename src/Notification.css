@@ -1,0 +1,66 @@
+@font-face {
+  font-family: 'WoW Notification';
+  src: url('/fonts/wow-notification.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+.notification {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+  vertical-align: middle;
+  color: #fff;
+  font-family: 'WoW Notification', Inter, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  font-synthesis: none;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.notification-shadow {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  transform: translate(.5px, .5px);
+  color: #5280ff;
+  pointer-events: none;
+}
+
+.notification-label {
+  position: relative;
+  z-index: 2;
+  text-shadow: 1px 1px #5280ff;
+}
+
+.notification-glow {
+  position: absolute;
+  z-index: 0;
+  inset: -10px -20px;
+  background: url('/media/notification/collections-newglow.webp') center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.notification[data-animate=true] .notification-glow {
+  animation: notification-glow 2s linear infinite;
+}
+
+@keyframes notification-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification[data-animate=true] .notification-glow { animation: none; }
+}
+
+@media (forced-colors: active) {
+  .notification { color: CanvasText; }
+  .notification-label { text-shadow: none; }
+  .notification-shadow, .notification-glow { display: none; }
+}
