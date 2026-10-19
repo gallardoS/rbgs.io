@@ -11,12 +11,14 @@ export function CaptureTestAdmin({ accountId }: { accountId: string }) {
   const [opponent, setOpponent] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [created, setCreated] = useState(false);
   const captureOnly = kind === 'CAPTURE_ONLY';
 
   async function create() {
     if (busy) return;
     setBusy(true);
     setMessage('');
+    setCreated(false);
     try {
       const token = document.cookie.split('; ').find(c => c.startsWith('XSRF-TOKEN='))?.slice(11);
       if (!token) throw Error();
@@ -33,6 +35,7 @@ export function CaptureTestAdmin({ accountId }: { accountId: string }) {
       const result = await response.json();
       if (!result || result.mode !== 'CONTROLLED_TEST' || result.testKind !== kind || typeof result.matchId !== 'string') throw Error();
       setMessage(t('captureTestCreated'));
+      setCreated(true);
     } catch {
       setMessage(t('captureTestError'));
     } finally {
@@ -43,7 +46,7 @@ export function CaptureTestAdmin({ accountId }: { accountId: string }) {
   return <section className="profile-settings-section">
     <div className="profile-section-heading"><h2>{t('captureTestHeading')}</h2><p>{t('captureTestDescription')}</p></div>
     <form className="device-pair-form" onSubmit={e => { e.preventDefault(); void create(); }}>
-      <label>{t('captureTestKind')}<select value={kind} disabled={busy} onChange={e => { setKind(e.target.value as TestKind); setMessage(''); }}>
+      <label>{t('captureTestKind')}<select value={kind} disabled={busy} onChange={e => { setKind(e.target.value as TestKind); setMessage(''); setCreated(false); }}>
         <option value="CAPTURE_ONLY">{t('captureTestRandom')}</option>
         <option value="ROSTER_CONTROLLED">{t('captureTestRoster')}</option>
       </select></label>
@@ -52,7 +55,8 @@ export function CaptureTestAdmin({ accountId }: { accountId: string }) {
       <label>{t('captureTestRealm')}<input maxLength={128} value={realm} disabled={busy} onChange={e => setRealm(e.target.value)} /></label>
       {!captureOnly && <label>{t('captureTestOpponent')}<input required maxLength={128} value={opponent} disabled={busy} onChange={e => setOpponent(e.target.value)} /></label>}
       <button disabled={busy || !name.trim() || (!captureOnly && !opponent.trim())}>{t('captureTestCreate')}</button>
-      {message && <p role="status">{message}</p>}
+      {message && <p role="status">{created ? t('captureTestCreated') : t('captureTestError')}</p>}
+      {created && <a href="rbgs-companion://matches">{t('captureTestOpenCompanion')}</a>}
     </form>
   </section>;
 }
