@@ -17,7 +17,8 @@ export function BrowserPairing({accountId,ready,onConnected}:{accountId:string;r
  async function approve(){setBusy(true);setError(false);try{setRequest(await post(true));}catch{setError(true);}finally{setBusy(false);}}
  return <section className="browser-pairing"><h3>{t('companionApproveHeading')}</h3>
   {error?<><p role="alert">{t('companionApprovalError')}</p><button onClick={()=>setRetry(value=>value+1)}>{t('companionRetry')}</button></>:!request?<p role="status">{t('companionPresenceChecking')}</p>:request.status==='PAIRED'?<p role="status">{t('companionLinked')}</p>:request.status==='APPROVED'?<p role="status">{t('companionApprovalWaiting')}</p>:<>
-   <p>{t('companionApproveAccount')} <strong>{request.accountName}</strong></p><p>{t('companionApprovalWarning')}</p>
+   <p>{t('companionApproveAccount')} <strong>{request.accountName}</strong></p>
+   <p>{t(request.scope.includes('evidence:write')?'companionMatchAccess':'companionConnectionAccess')}</p><p>{t('companionApprovalWarning')}</p>
   </>}
   <div className="browser-pairing-actions">
    {!error&&request?.status==='PENDING'&&<button disabled={busy||Date.parse(request.expiresAt)<=Date.now()} onClick={()=>void approve()}>{t('companionApproveConnection')}</button>}
