@@ -55,7 +55,7 @@ export function OpenCompanion({accountId,compact=false,onConnected}:{accountId:s
     }catch{finish('companionLaunchError',true);}
   }
   return <div className={`companion-launch ${compact?'is-compact':''}`}>
-    <p className="companion-launch-message">{t('companionLaunchAccess')}</p>
+    {!compact&&<p className="companion-launch-message">{t('companionLaunchAccess')}</p>}
     <button className={compact?'companion-launch-button':'button'} type="button" disabled={busy} onClick={()=>void open()}>{t(busy?'companionOpening':compact?'companionStart':'companionOpenConnect')}</button>
     {message&&<p className="companion-launch-message" role={error?'alert':'status'}>{t(message)}{url&&<> <a href={url}>{t('companionOpenAgain')}</a></>}</p>}
   </div>;
