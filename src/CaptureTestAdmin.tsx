@@ -3,7 +3,7 @@ import { useLocale } from './locales';
 
 type TestKind = 'CAPTURE_ONLY' | 'ROSTER_CONTROLLED';
 
-export function CaptureTestAdmin({ accountId }: { accountId: string }) {
+export function CaptureTestAdmin({ accountId, onCreated }: { accountId: string; onCreated?: (matchId: string) => void }) {
   const { t } = useLocale();
   const [kind, setKind] = useState<TestKind>('CAPTURE_ONLY');
   const [name, setName] = useState('');
@@ -36,6 +36,7 @@ export function CaptureTestAdmin({ accountId }: { accountId: string }) {
       if (!result || result.mode !== 'CONTROLLED_TEST' || result.testKind !== kind || typeof result.matchId !== 'string') throw Error();
       setMessage(t('captureTestCreated'));
       setCreated(true);
+      onCreated?.(result.matchId);
     } catch {
       setMessage(t('captureTestError'));
     } finally {

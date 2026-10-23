@@ -13,7 +13,7 @@ import { BackToTop } from './BackToTop';
 import { LanguageMenu } from './LanguageMenu';
 import { SeasonSelection } from './SeasonSelection';
 import { Settings } from './Settings';
-import { CaptureTestAdmin } from './CaptureTestAdmin';
+import { ModeratorMatches } from './ModeratorMatches';
 import {pendingCompanionLink} from './companion-link';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
 import { SeasonNotificationsProvider, useSeasonNotice } from './SeasonNotifications';
@@ -282,7 +282,7 @@ function AppContent() {
         <Route path="/moderator" element={session.loading
           ? <InfoPage heading="navigationModerator"><p role="status">{t('authChecking')}</p></InfoPage>
           : session.profile?.role === 'MODERATOR'
-            ? <InfoPage heading="navigationModerator"><div className="profile-settings"><CaptureTestAdmin key={session.profile.id} accountId={session.profile.id} /></div></InfoPage>
+            ? <InfoPage heading="navigationModerator"><div className="profile-settings"><ModeratorMatches key={session.profile.id} accountId={session.profile.id} /></div></InfoPage>
             : <Navigate to={localizedPath('/', language)} replace />} />
         <Route path="/status" element={<Status />} /><Route path="*" element={<NotFound />} /></Routes>
       <footer className="footer"><span className="brand">{t('appName')}</span><Link to="/status">{t('navigationStatus')}</Link></footer>
