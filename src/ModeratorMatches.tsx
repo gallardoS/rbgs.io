@@ -1,19 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CaptureTestAdmin } from './CaptureTestAdmin';
+import { ModeratorDisputes } from './ModeratorDisputes';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
 import './ModeratorMatches.css';
 
-type Result = { matchId: string; mode: string; status: 'PENDING' | 'VERIFIED' | 'REVIEW'; reason: string | null;
-  outcome: 'WIN' | 'DRAW' | null; winningTeam: 'A' | 'B' | null; reportsA: number; reportsB: number; requiredPerTeam: number; version: number };
+type Result = { matchId: string; mode: string; status: 'PENDING' | 'VERIFIED' | 'REVIEW' | 'RESOLVED' | 'VOIDED'; reason: string | null;
+  outcome: 'WIN' | 'DRAW' | null; winningTeam: 'A' | 'B' | null; reportsA: number; reportsB: number; requiredPerTeam: number; version: number; explanation?: string | null; resolvedAt?: string | null };
 type Player = { name: string; realm: string | null; team: 'A' | 'B' | null };
 type Match = { matchId: string; mode: 'CONTROLLED_TEST' | 'MATCHMADE'; evidencePolicy: 'FULL_ROSTER' | 'CAPTURE_ONLY';
   profile: string; createdAt: string; captureStartDeadline: string; cancelledAt: string | null; roster: Player[]; result: Result; canCancel: boolean };
 type Page = { items: Match[]; nextCursor: string | null };
 type Report = { evidenceId: string; revision: number; receivedAt: string; validation: string; reason: string | null; normalizedFacts: string | null; redactedPayload: string };
-type Review = { result: Result; expectedRoster: { character: { name: string; realm: string | null }; assignedTeamKey: string | null }[]; reports: Report[]; events: { id: string; recordedAt: string; status: string; reason: string | null }[] };
-const filters = ['ALL', 'PENDING', 'REVIEW', 'VERIFIED', 'CANCELLED'] as const;
-const statusKeys: Record<string, MessageKey> = { ALL: 'moderationAll', PENDING: 'moderationPending', VERIFIED: 'moderationVerified', REVIEW: 'moderationReview', CANCELLED: 'moderationCancelled' };
+type Review = { result: Result; expectedRoster: { character: { name: string; realm: string | null }; assignedTeamKey: string | null }[]; reports: Report[]; events: { id: string; recordedAt: string; status: string; reason: string | null; actorId?: string | null; decisionReason?: string | null; outcomeKind?: string | null; winningTeam?: string | null; expectedVersion?: number | null; correctionRequired?: boolean; previousStatus?: string; previousOutcomeKind?: string | null; previousWinningTeam?: string | null; evidenceIds?: string }[] };
+const filters = ['ALL', 'PENDING', 'REVIEW', 'VERIFIED', 'RESOLVED', 'VOIDED', 'CANCELLED'] as const;
+const statusKeys: Record<string, MessageKey> = { RESOLVED: 'moderationResolved', VOIDED: 'moderationVoided', ALL: 'moderationAll', PENDING: 'moderationPending', VERIFIED: 'moderationVerified', REVIEW: 'moderationReview', CANCELLED: 'moderationCancelled' };
 const validationKeys: Record<string, MessageKey> = { PENDING: 'moderationPending', VALID: 'moderationValid', INVALID: 'moderationInvalid', INCOMPLETE: 'moderationIncomplete', UNVERIFIABLE: 'moderationUnverifiable' };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const date = (v: unknown): v is string => typeof v === 'string' && Number.isFinite(Date.parse(v));
@@ -21,9 +22,10 @@ const count = (v: unknown): v is number => Number.isSafeInteger(v) && Number(v) 
 const nullableText = (v: unknown): v is string | null => v === null || typeof v === 'string';
 function validResult(v: any): v is Result {
   return v && uuid.test(v.matchId) && ['CONTROLLED_TEST', 'MATCHMADE'].includes(v.mode)
-    && ['PENDING', 'VERIFIED', 'REVIEW'].includes(v.status) && nullableText(v.reason)
+    && ['PENDING', 'VERIFIED', 'REVIEW', 'RESOLVED', 'VOIDED'].includes(v.status) && nullableText(v.reason)
     && [null, 'WIN', 'DRAW'].includes(v.outcome) && [null, 'A', 'B'].includes(v.winningTeam)
-    && (v.status === 'VERIFIED' ? (v.outcome === 'WIN' && ['A', 'B'].includes(v.winningTeam) || v.outcome === 'DRAW' && v.winningTeam === null) : v.outcome === null && v.winningTeam === null)
+    && (['VERIFIED', 'RESOLVED'].includes(v.status) ? (v.outcome === 'WIN' && ['A', 'B'].includes(v.winningTeam) || v.outcome === 'DRAW' && v.winningTeam === null) : v.outcome === null && v.winningTeam === null)
+    && (v.explanation === undefined || nullableText(v.explanation)) && (v.resolvedAt === undefined || v.resolvedAt === null || date(v.resolvedAt))
     && count(v.reportsA) && count(v.reportsB) && count(v.requiredPerTeam) && v.requiredPerTeam > 0 && count(v.version);
 }
 function validPage(v: any): v is Page {
@@ -47,6 +49,10 @@ function validReview(v: any, id: string): v is Review {
 }
 function reasonKey(reason: string | null): MessageKey | null {
   if (!reason) return null;
+  if (reason === 'PLAYER_DISPUTE') return 'historyPlayerDisputeReason';
+  if (reason === 'MODERATOR_RESOLVED') return 'moderationResolved';
+  if (reason === 'MODERATOR_VOIDED') return 'moderationVoided';
+  if (reason === 'LATE_EVIDENCE_AFTER_DECISION') return 'moderationLateEvidence';
   if (reason === 'ASSIGNMENT_CANCELLED') return 'moderationReasonCancelled';
   if (reason === 'CAPTURE_ONLY_NO_EXPECTED_TEAMS') return 'moderationReasonCaptureOnly';
   if (reason === 'INSUFFICIENT_REPORTS') return 'moderationReasonInsufficient';
@@ -65,7 +71,8 @@ function decode(value: string | null): Record<string, any> | null {
   try { const parsed = value === null ? null : JSON.parse(value); return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null; } catch { return null; }
 }
 
-function MatchDetails({ id, revision, onDenied }: { id: string; revision: number; onDenied: () => void }) {
+function MatchDetails({ match, onDenied, onResolved }: { match: Match; onDenied: () => void; onResolved: () => void }) {
+  const id = match.matchId, revision = match.result.version;
   const { t, language } = useLocale();
   const [data, setData] = useState<Review | null>(null);
   const [failed, setFailed] = useState(false);
@@ -110,12 +117,79 @@ function MatchDetails({ id, revision, onDenied }: { id: string; revision: number
         </details>
       </article>;
     })}
+    <ModeratorDisputes matchId={id} version={data.result.version} onDenied={onDenied} />
+    {!match.cancelledAt && <DecisionForm key={data.result.version} match={match} data={data} onDenied={onDenied} onResolved={onResolved} onReload={() => setAttempt(v => v + 1)} />}
     <h3>{t('moderationHistory')}</h3>
     {data.events.length === 0 ? <p>{t('moderationNoEvents')}</p> : <ol>{data.events.map(event => {
       const reason = reasonKey(event.reason);
-      return <li key={event.id}><time dateTime={event.recordedAt}>{new Date(event.recordedAt).toLocaleString(language)}</time> · {t(statusKeys[event.status] ?? 'moderationReview')}{reason ? ` — ${t(reason)}` : ''}</li>;
+      return <li key={event.id}><time dateTime={event.recordedAt}>{new Date(event.recordedAt).toLocaleString(language)}</time> · {t(statusKeys[event.status] ?? 'moderationReview')}{reason ? ` — ${t(reason)}` : ''}{event.decisionReason && <p>{event.decisionReason}</p>}{event.actorId && <p>{t('moderationDecisionAuthor')}: <code>{event.actorId}</code> · {t('moderationDecisionVersion')}: {event.expectedVersion}</p>}{event.outcomeKind && <p>{event.outcomeKind === 'DRAW' ? t('moderationDraw') : `${t('moderationWinner')}: ${t('moderationTeam')} ${event.winningTeam}`}</p>}{event.previousStatus && <p>{t('moderationPreviousState')}: {t(statusKeys[event.previousStatus] ?? 'moderationReview')}{event.previousOutcomeKind ? ` · ${event.previousOutcomeKind === 'DRAW' ? t('moderationDraw') : `${t('moderationTeam')} ${event.previousWinningTeam}`}` : ''}</p>}{event.evidenceIds && <details><summary>{t('moderationDecisionEvidence')}</summary><pre>{event.evidenceIds}</pre></details>}{event.correctionRequired && <p>{t('moderationCorrectionRecorded')}</p>}</li>;
     })}</ol>}
   </div>;
+}
+
+
+function DecisionForm({ match, data, onDenied, onResolved, onReload }: {
+  match: Match; data: Review; onDenied: () => void; onResolved: () => void; onReload: () => void;
+}) {
+  const { t } = useLocale();
+  const [choice, setChoice] = useState('VOID');
+  const [reason, setReason] = useState('');
+  const [ids, setIds] = useState<string[]>([]);
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<MessageKey | null>(null);
+  const [stale, setStale] = useState(false);
+  const active = useRef<AbortController | null>(null);
+  useEffect(() => () => { active.current?.abort(); active.current = null; }, []);
+  const outcome = choice === 'A' || choice === 'B' ? 'WIN' : choice;
+  const winner = outcome === 'WIN' ? choice : null;
+  const eligible = data.reports.filter(r => {
+    if (outcome === 'VOID') return true;
+    const facts = decode(r.normalizedFacts);
+    return match.evidencePolicy === 'FULL_ROSTER' && r.validation === 'VALID' && facts?.outcome === outcome && facts?.winningTeam === winner;
+  });
+  const ready = reason.trim().length > 0 && reason.length <= 2000 && (outcome === 'VOID' || ids.length > 0) && !stale;
+  async function submit() {
+    if (!ready || active.current) return;
+    const controller = new AbortController(); active.current = controller;
+    const timeout = window.setTimeout(() => controller.abort(), 10000);
+    setBusy(true); setError(null);
+    try {
+      const token = document.cookie.split('; ').find(c => c.startsWith('XSRF-TOKEN='))?.slice(11);
+      if (!token) throw Error();
+      const response = await fetch('/api/v1/moderation/matches/' + match.matchId + '/decisions', {
+        method: 'POST', credentials: 'same-origin', cache: 'no-store', signal: controller.signal,
+        headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': decodeURIComponent(token) },
+        body: JSON.stringify({ expectedVersion: data.result.version, outcome, winningTeam: winner, reason: reason.trim(), evidenceIds: ids })
+      });
+      if (active.current !== controller) return;
+      if (response.status === 401 || response.status === 403) { onDenied(); return; }
+      if (response.status === 409) { setStale(true); setConfirming(false); setError('moderationMatchChanged'); return; }
+      if (response.status === 400) { setError('moderationDecisionUnsupported'); setConfirming(false); return; }
+      if (!response.ok) throw Error();
+      const result: unknown = await response.json();
+      if (!validResult(result) || result.matchId !== match.matchId || !['RESOLVED', 'VOIDED'].includes(result.status)) throw Error();
+      if (active.current === controller) onResolved();
+    } catch { if (active.current === controller) { setError('moderationDecisionError'); setStale(true); setConfirming(false); } }
+    finally { window.clearTimeout(timeout); if (active.current === controller) { active.current = null; setBusy(false); } }
+  }
+  return <form className="moderation-decision" onSubmit={e => { e.preventDefault(); setConfirming(true); }}>
+    <h3>{t('moderationDecide')}</h3><p>{t('moderationDecisionHelp')}</p>
+    <fieldset disabled={busy || confirming || stale}>
+      <label>{t('moderationDecisionOutcome')}<select value={choice} onChange={e => { setChoice(e.target.value); setIds([]); setError(null); }}>
+        <option value="VOID">{t('moderationVoid')}</option>
+        {match.evidencePolicy === 'FULL_ROSTER' && <><option value="A">{t('moderationWinner')}: {t('moderationTeam')} A</option><option value="B">{t('moderationWinner')}: {t('moderationTeam')} B</option><option value="DRAW">{t('moderationDraw')}</option></>}
+      </select></label>
+      <label>{t('moderationDecisionReason')}<textarea required maxLength={2000} value={reason} onChange={e => setReason(e.target.value)} rows={3} /></label>
+      <p>{t('moderationDecisionEvidence')}</p>
+      {eligible.length === 0 && <p>{t('moderationNoSupportingEvidence')}</p>}
+      {eligible.map(report => <label className="moderation-evidence-choice" key={report.evidenceId}><input type="checkbox" checked={ids.includes(report.evidenceId)} onChange={e => setIds(current => e.target.checked ? [...current, report.evidenceId] : current.filter(id => id !== report.evidenceId))} />{decode(report.redactedPayload)?.observedCharacter?.name ?? t('moderationUnknownPlayer')} · {t('moderationRevision')} {report.revision} · <code>{report.evidenceId}</code></label>)}
+    </fieldset>
+    {error && <p role="alert">{t(error)}</p>}
+    {stale && <button type="button" onClick={onReload}>{t('moderationRefresh')}</button>}
+    {!confirming && <button disabled={!ready || busy}>{t('moderationDecide')}</button>}
+    {confirming && <div className="moderation-confirm" role="group" aria-label={t('moderationDecisionConfirm')}><p>{t('moderationDecisionConfirm')}</p><p>{outcome === 'VOID' ? t('moderationVoid') : outcome === 'DRAW' ? t('moderationDraw') : t('moderationWinner') + ': ' + t('moderationTeam') + ' ' + winner}</p><p>{reason}</p><button type="button" disabled={busy} onClick={() => void submit()}>{t(busy ? 'moderationDecisionSaving' : 'moderationDecisionConfirmButton')}</button><button type="button" disabled={busy} onClick={() => setConfirming(false)}>{t('moderationDecisionEdit')}</button></div>}
+  </form>;
 }
 
 export function ModeratorMatches({ accountId }: { accountId: string }) {
@@ -208,11 +282,12 @@ export function ModeratorMatches({ accountId }: { accountId: string }) {
           <p><time dateTime={match.createdAt}>{new Date(match.createdAt).toLocaleString(language)}</time> · {match.roster.map(p => p.name).join(', ')}</p>
           {reason && <p className="moderation-reason">{t(reason)}</p>}
           {match.evidencePolicy === 'FULL_ROSTER' && <p>{t('moderationUsableReports')}: {t('moderationTeam')} A {match.result.reportsA}/{match.result.requiredPerTeam} · {t('moderationTeam')} B {match.result.reportsB}/{match.result.requiredPerTeam}</p>}
-          {!isCancelled && match.result.status === 'VERIFIED' && <p>{match.result.outcome === 'DRAW' ? t('moderationDraw') : `${t('moderationWinner')}: ${t('moderationTeam')} ${match.result.winningTeam}`}</p>}
+          {!isCancelled && ['VERIFIED', 'RESOLVED'].includes(match.result.status) && <p>{match.result.outcome === 'DRAW' ? t('moderationDraw') : `${t('moderationWinner')}: ${t('moderationTeam')} ${match.result.winningTeam}`}</p>}
+          {match.result.explanation && <p>{match.result.explanation}</p>}
           <div className="moderation-actions"><button aria-expanded={selected === match.matchId} aria-controls={`evidence-${match.matchId}`} onClick={() => setSelected(current => current === match.matchId ? null : match.matchId)}>{t(selected === match.matchId ? 'moderationHideDetails' : 'moderationDetails')}</button>
             {match.canCancel && !isCancelled && <button disabled={busy !== null} onClick={() => { setConfirm(match.matchId); setAction(null); }}>{t('moderationCancel')}</button>}</div>
           {confirm === match.matchId && <div className="moderation-confirm" role="group" aria-label={t('moderationConfirmCancel')}><p>{t('moderationConfirmCancel')}</p><button autoFocus disabled={busy !== null} onClick={() => void cancel(match)}>{t(busy === match.matchId ? 'moderationCancelling' : 'moderationConfirm')}</button><button disabled={busy !== null} onClick={() => setConfirm(null)}>{t('moderationKeep')}</button></div>}
-          {selected === match.matchId && <div id={`evidence-${match.matchId}`}><MatchDetails id={match.matchId} revision={match.result.version} onDenied={accessDenied} /></div>}
+          {selected === match.matchId && <div id={`evidence-${match.matchId}`}><MatchDetails match={match} onDenied={accessDenied} onResolved={() => { setAction({ id: match.matchId, key: 'moderationDecisionSaved', error: false }); setRefresh(v => v + 1); }} /></div>}
         </article>;
       })}</div>
       {cursor && <button disabled={loading || busy !== null} onClick={() => void load(cursor)}>{t('moderationMore')}</button>}

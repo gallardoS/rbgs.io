@@ -33,3 +33,13 @@
 .moderation-report h4 { margin: 0; font-size: .9rem; }
 .moderation-report pre { max-height: 22rem; padding: .75rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; background: #080a08; color: #c5c8c3; font-size: .75rem; }
 @media (max-width: 600px) { .moderation-toolbar, .moderation-match-heading { flex-wrap: wrap; } .moderation-match { padding: 1rem; } .moderation-filter { align-items: flex-start; flex-direction: column; } }
+
+.moderation-decision { margin-top: 1.5rem; padding: 1rem; border: 1px solid #facc1570; border-radius: .5rem; }
+.moderation-decision fieldset { border: 0; padding: 0; margin: 0 0 1rem; min-width: 0; }
+.moderation-decision label { display: grid; gap: .5rem; margin-bottom: 1rem; font-size: .875rem; }
+.moderation-decision select, .moderation-decision textarea { box-sizing: border-box; width: 100%; max-width: 100%; padding: .65rem; background: #101410; color: #facc15; border: 1px solid #facc1566; border-radius: .4rem; font: inherit; }
+.moderation-decision textarea { resize: vertical; color: #e7e9e5; }
+.moderation-decision .moderation-evidence-choice { display: flex; align-items: baseline; flex-wrap: wrap; overflow-wrap: anywhere; }
+.moderation-details pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.moderation-status.is-resolved { color: #a5d9ac; }
+.moderation-status.is-voided { color: #bfc1bf; }

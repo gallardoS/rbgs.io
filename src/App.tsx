@@ -14,6 +14,7 @@ import { LanguageMenu } from './LanguageMenu';
 import { SeasonSelection } from './SeasonSelection';
 import { Settings } from './Settings';
 import { ModeratorMatches } from './ModeratorMatches';
+import { MatchHistory } from './MatchHistory';
 import {pendingCompanionLink} from './companion-link';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
 import { SeasonNotificationsProvider, useSeasonNotice } from './SeasonNotifications';
@@ -162,12 +163,14 @@ function AppContent() {
     const homepage = localizedPath('/', language) as keyof typeof pageTitles;
     const isPublicPage = Object.hasOwn(pageTitles, pathname);
     const isKnownRoute = Object.hasOwn(pageTitles, pathname) || internalRoutes.includes(basePath(pathname)) || basePath(pathname) === '/how-it-works';
-    const title = isKnownRoute ? pageTitles[pathname as keyof typeof pageTitles] ?? pageTitles[homepage] : `${t('notFoundHeading')} | rbgs.io`;
+    const title = basePath(pathname) === '/match-history' ? `${t('navigationHistory')} | rbgs.io`
+      : isKnownRoute ? pageTitles[pathname as keyof typeof pageTitles] ?? pageTitles[homepage] : `${t('notFoundHeading')} | rbgs.io`;
     document.title = title;
     document.querySelector('meta[name="robots"]')?.setAttribute('content', isPublicPage ? 'index, follow' : 'noindex, follow');
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
     document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
-    const description = isKnownRoute ? pageDescriptions[pathname as keyof typeof pageDescriptions] ?? pageDescriptions[homepage] : t('notFoundHeading');
+    const description = basePath(pathname) === '/match-history' ? t('historyIntroNew')
+      : isKnownRoute ? pageDescriptions[pathname as keyof typeof pageDescriptions] ?? pageDescriptions[homepage] : t('notFoundHeading');
     document.querySelector('meta[property="og:locale"]')?.setAttribute('content', languageLocales[language].replace('-', '_'));
     document.querySelectorAll('link[rel="alternate"][hreflang]').forEach(link => link.remove());
     for (const selector of ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']) {
@@ -217,7 +220,7 @@ function AppContent() {
       }
     });
     return () => cancelAnimationFrame(frame);
-  }, [location.pathname, location.hash, location.key]);
+  }, [location.pathname, location.hash]);
   return <div className="app-shell">
     <header className="header"><Link className="brand" to="/">{t('appName')}</Link>
       <button type="button" className="menu-toggle" aria-label={t('navigationMenu')} aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(open => !open)}>
@@ -275,7 +278,9 @@ function AppContent() {
             </section>
           </div>
           : <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>}{session.authError && <p role="alert">{t('authError')}</p>}</InfoPage>} />
-        <Route path="/match-history" element={<InfoPage heading="navigationHistory" introduction="historyIntro"><p>{t('historyPending')}</p></InfoPage>} />
+        <Route path="/match-history" element={session.profile
+          ? <MatchHistory key={session.profile.id} />
+          : <InfoPage heading="navigationHistory" introduction="historyIntro"><p role={session.authError ? 'alert' : 'status'}>{t(session.loading ? 'authChecking' : session.authError ? 'authError' : 'historySignIn')}</p>{!session.loading && <BattleNetLoginButton />}</InfoPage>} />
         <Route path="/my-group" element={<InfoPage heading="navigationGroup" introduction="groupIntro"><p>{t('groupPending')}</p></InfoPage>} />
         <Route path="/settings" element={<InfoPage heading="navigationSettings" introduction="settingsIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
           ? <Settings key={session.profile.id} accountId={session.profile.id} /> : <BattleNetLoginButton />}</InfoPage>} />
