@@ -1,0 +1,28 @@
+.notification-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+  background: url('/media/notification/plunderstorm-new-dot-lg.webp') center / contain no-repeat;
+  pointer-events: none;
+}
+
+.notification-dot[data-animate=true] {
+  animation: notification-dot-pulse 2s linear infinite;
+}
+
+@keyframes notification-dot-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-dot[data-animate=true] { animation: none; }
+}
+
+@media (forced-colors: active) {
+  .notification-dot {
+    background: CanvasText;
+    clip-path: polygon(50% 20%, 80% 50%, 50% 80%, 20% 50%);
+    animation: none;
+  }
+}
