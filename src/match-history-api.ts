@@ -10,7 +10,7 @@ export type Conversation = { id: string; status: 'OPEN' | 'WAITING_PLAYER' | 'RE
   unread: boolean; olderMessages: boolean; messages: { id: string; author: 'PLAYER' | 'MODERATOR' | 'SYSTEM'; kind: string; body: string; at: string }[] };
 export type MatchDetail = { match: HistoryItem; roster: { name: string; realm: string | null; team: 'A' | 'B' | null; you: boolean }[];
   capture: { startedAt: string | null; endedAt: string | null; durationSeconds: number | null;
-    stats: { killingBlows: number | null; deaths: number | null; honorableKills: number | null; damage: number | null; healing: number | null } | null;
+    stats: { killingBlows: number | null; deaths: number | null; honorableKills: number | null; damage: number | null; healing: number | null; flagsCaptured?: number | null; flagsReturned?: number | null } | null;
     delivery: string; product: string | null; build: string | null; revision: number } | null;
   dispute: Conversation | null; updates: { id: string; at: string; status: string; reason: string | null; explanation: string | null; outcome: string | null; winningTeam: string | null }[];
   olderUpdates: boolean; canDispute: boolean };
@@ -52,7 +52,7 @@ export function validDetail(v: any, id: string): v is MatchDetail {
     && (v.capture === null || v.capture && nullableDate(v.capture.startedAt) && nullableDate(v.capture.endedAt)
       && (v.capture.durationSeconds === null || count(v.capture.durationSeconds)) && text(v.capture.delivery, 32)
       && nullableText(v.capture.product, 128) && nullableText(v.capture.build, 128) && count(v.capture.revision)
-      && (v.capture.stats === null || ['killingBlows', 'deaths', 'honorableKills', 'damage', 'healing'].every(k => v.capture.stats[k] === null || count(v.capture.stats[k]))))
+      && (v.capture.stats === null || ['killingBlows', 'deaths', 'honorableKills', 'damage', 'healing'].every(k => v.capture.stats[k] === null || count(v.capture.stats[k])) && ['flagsCaptured', 'flagsReturned'].every(k => v.capture.stats[k] === undefined || v.capture.stats[k] === null || count(v.capture.stats[k]))))
     && (v.dispute === null || validConversation(v.dispute)) && Array.isArray(v.updates) && v.updates.length <= 100
     && v.updates.every((e: any) => e && uuid(e.id) && date(e.at) && states.includes(e.status) && nullableText(e.reason, 128) && nullableText(e.explanation) && nullableText(e.outcome, 8) && nullableText(e.winningTeam, 1))
     && typeof v.olderUpdates === 'boolean' && typeof v.canDispute === 'boolean';

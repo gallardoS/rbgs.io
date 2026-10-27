@@ -118,6 +118,8 @@ export const messages = {
   historyDeaths: "Deaths",
   historyHonorableKills: "Honorable kills",
   historyDamage: "Damage",
+  historyFlagsCaptured: "Flags captured",
+  historyFlagsReturned: "Flags returned",
   historyHealing: "Healing",
   historyUnknown: "Not available",
   historyPlayers: "Players",

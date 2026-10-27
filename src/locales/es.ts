@@ -120,6 +120,8 @@ export const messages: Record<MessageKey, string> = {
   historyDeaths: "Muertes",
   historyHonorableKills: "Muertes con honor",
   historyDamage: "Daño",
+  historyFlagsCaptured: "Banderas capturadas",
+  historyFlagsReturned: "Banderas devueltas",
   historyHealing: "Sanación",
   historyUnknown: "No disponible",
   historyPlayers: "Jugadores",
