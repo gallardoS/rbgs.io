@@ -12,6 +12,7 @@ import { BrandText } from './BrandText';
 import { BackToTop } from './BackToTop';
 import { LanguageMenu } from './LanguageMenu';
 import { SeasonSelection } from './SeasonSelection';
+import { AuthenticatedLobby } from './LobbySession';
 import { Settings } from './Settings';
 import { ModeratorMatches } from './ModeratorMatches';
 import { MatchHistory } from './MatchHistory';
@@ -221,7 +222,7 @@ function AppContent() {
     });
     return () => cancelAnimationFrame(frame);
   }, [location.pathname, location.hash]);
-  return <div className="app-shell">
+  return <AuthenticatedLobby accountId={session.profile?.id ?? null}><div className="app-shell">
     <header className="header"><Link className="brand" to="/">{t('appName')}</Link>
       <button type="button" className="menu-toggle" aria-label={t('navigationMenu')} aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(open => !open)}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
@@ -281,7 +282,7 @@ function AppContent() {
         <Route path="/match-history" element={session.profile
           ? <MatchHistory key={session.profile.id} />
           : <InfoPage heading="navigationHistory" introduction="historyIntro"><p role={session.authError ? 'alert' : 'status'}>{t(session.loading ? 'authChecking' : session.authError ? 'authError' : 'historySignIn')}</p>{!session.loading && <BattleNetLoginButton />}</InfoPage>} />
-        <Route path="/my-group" element={<InfoPage heading="navigationGroup" introduction="groupIntro"><p>{t('groupPending')}</p></InfoPage>} />
+        <Route path="/my-group" element={<GroupRedirect />} />
         <Route path="/settings" element={<InfoPage heading="navigationSettings" introduction="settingsIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
           ? <Settings key={session.profile.id} accountId={session.profile.id} /> : <BattleNetLoginButton />}</InfoPage>} />
         <Route path="/moderator" element={session.loading
@@ -293,7 +294,14 @@ function AppContent() {
       <footer className="footer"><span className="brand">{t('appName')}</span><Link to="/status">{t('navigationStatus')}</Link></footer>
     </div>
     <BackToTop />
-  </div>;
+  </div></AuthenticatedLobby>;
+}
+
+function GroupRedirect() {
+  const { language, t } = useLocale();
+  const navigate = useNavigate();
+  useEffect(() => { navigate(`${localizedPath('/play', language)}?mode=premade`, { replace: true }); }, [language, navigate]);
+  return <main className="content"><Link to="/play?mode=premade">{t('premadeHeading')}</Link></main>;
 }
 
 function InfoPage({ heading, introduction, children }: { heading: MessageKey; introduction?: MessageKey; children: React.ReactNode }) {

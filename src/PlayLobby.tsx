@@ -1,0 +1,133 @@
+import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useLocale } from './locales';
+import type { GroupLobby, GroupMember } from './GroupPage';
+import { PlayerCard, setPlayerCardTilt, resetPlayerCardTilt, type Character } from './PlayerCard';
+import { fcIconAsset, useFcIconPreference, type FcIcon } from './fc-icon-preference';
+import { LobbyActionButton } from './LobbyActions';
+import './PlayLobby.css';
+
+export function PlayModeButton({ mode, selected, disabled, onSelect }: {
+  mode: 'solo' | 'premade'; selected: boolean; disabled: boolean; onSelect: () => void;
+}) {
+  const { t } = useLocale();
+  const tooltipId = useId();
+  const [dismissed, setDismissed] = useState(false);
+  const [open, setOpen] = useState(false);
+  const heading = t(mode === 'solo' ? 'soloHeading' : 'premadeHeading');
+  return <span className="play-mode-option" data-selected={selected}>
+    <button type="button" className="play-mode-button" aria-pressed={selected} disabled={disabled} onClick={onSelect}>{heading}</button>
+    <span className="play-mode-help" data-tooltip-dismissed={dismissed} data-tooltip-open={open}
+      onPointerEnter={() => setDismissed(false)} onPointerLeave={() => setOpen(false)}
+      onKeyDown={event => { if (event.key === 'Escape') { setDismissed(true); setOpen(false); } }}>
+      <button type="button" className="play-mode-info-button" aria-label={`${heading} · ${t('playModeInfo')}`} aria-describedby={tooltipId}
+        onFocus={() => setDismissed(false)} onBlur={() => setOpen(false)} onClick={() => { setDismissed(false); setOpen(value => !value); }}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7h.01" />
+        </svg>
+      </button>
+      <span id={tooltipId} className="captain-tooltip" role="tooltip">{t(mode === 'solo' ? 'soloDescription' : 'premadeDescription')}</span>
+    </span>
+  </span>;
+}
+
+export function PlayLobbyCode({ lobby }: { lobby: GroupLobby }) {
+  const { t } = useLocale();
+  if (!lobby.group) return null;
+  const copyLabel = t(lobby.copied ? 'groupCodeCopied' : 'groupCopyCode');
+  return <div className="play-lobby-code">
+    <span className="play-lobby-code-main"><strong className="play-lobby-region" aria-label={`${t('playLobbyRegion')}: ${lobby.group.region}`}>{lobby.group.region}</strong><span className="play-lobby-code-label">{t('playLobbyCodeLabel')}</span>
+    {lobby.group.lobbyCode ? <strong className="play-premade-code">{lobby.group.lobbyCode}</strong> : <span className="play-code-disabled">{t('groupCodeDisabled')}</span>}
+    </span>
+    <span className="play-code-actions">
+      {lobby.group.lobbyCode && <LobbyActionButton label={copyLabel} icon={lobby.copied ? 'check' : 'copy'} active={lobby.copied}
+        disabled={lobby.busy} onClick={() => void lobby.copyCode()} />}
+      {lobby.captain && <>
+      <LobbyActionButton label={t(lobby.group.lobbyCode ? 'groupRegenerateCode' : 'groupEnableCode')}
+        icon={lobby.group.lobbyCode ? 'refresh' : 'unlock'} disabled={lobby.busy}
+        onClick={() => void lobby.command('code', { enabled: true })} />
+      {lobby.group.lobbyCode && <LobbyActionButton label={t('groupDisableCode')} icon="lock" disabled={lobby.busy}
+        onClick={() => void lobby.command('code', { enabled: false })} />}
+      </>}
+    </span>
+    <span className="sr-only" role="status">{lobby.copied ? t('groupCodeCopied') : ''}</span>
+  </div>;
+}
+
+export function PlayLobbyStage({ children, premade, lobby, ownRole, onSlot }: {
+  children: ReactNode; premade: boolean; lobby: GroupLobby; ownRole: GroupMember['role']; onSlot: (member?: GroupMember) => void;
+}) {
+  const { t } = useLocale();
+  const { icon: fcIcon } = useFcIconPreference(lobby.accountId);
+  const counts = { FC: 0, HEALER: 0, DPS: 0 };
+  const roster = lobby.group?.members ?? [];
+  for (const member of roster) {
+    const role = member.accountId === lobby.accountId ? ownRole : member.role;
+    if (role) counts[role]++;
+  }
+  if (!roster.length && ownRole) counts[ownRole]++;
+  const others = lobby.group?.members.filter(member => member.accountId !== lobby.accountId) ?? [];
+  const dense = premade && (lobby.group?.members.length ?? 1) >= 9;
+  const ownRef = useRef<HTMLDivElement>(null);
+  const previous = useRef<{ dense: boolean; rect: DOMRect; card: DOMRect } | null>(null);
+  useLayoutEffect(() => {
+    const own = ownRef.current;
+    const card = own?.querySelector<HTMLElement>('.player-card-trigger > .player-card');
+    if (!own || !card) return;
+    const rect = own.getBoundingClientRect(), cardRect = card.getBoundingClientRect();
+    const before = previous.current;
+    if (premade && before && before.dense !== dense && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      own.animate([{ transform: `translateY(${before.rect.top - rect.top}px)`, opacity: .85 }, { transform: 'none', opacity: 1 }], { duration: 360, easing: 'cubic-bezier(.2, .7, .2, 1)' });
+      card.animate([{ height: `${before.card.height}px` }, { height: `${cardRect.height}px` }], { duration: 360, easing: 'cubic-bezier(.2, .7, .2, 1)' });
+    }
+    previous.current = { dense, rect, card: cardRect };
+  });
+  function slot(index: number) {
+    const member = others[index];
+    return <button type="button" key={member?.accountId ?? `empty-${index}`} className={`premade-slot${member ? ' is-occupied' : ' is-empty'}`}
+      disabled={lobby.loading || lobby.busy || lobby.error === 'groupAccessError' || lobby.error === 'groupLoadError'} onClick={() => onSlot(member)}
+      onPointerMove={event => { const card = event.currentTarget.querySelector<HTMLElement>('.premade-card-preview .player-card'); if (card) setPlayerCardTilt(card, event, card.parentElement); }}
+      onPointerLeave={event => { const card = event.currentTarget.querySelector<HTMLElement>('.premade-card-preview .player-card'); if (card) resetPlayerCardTilt(card); }}
+      aria-label={member ? `${member.characterName ?? member.displayName} · ${t('playMemberOptions')}` : `${t('playOpenSlot')} ${index + 2}`}>
+      {member ? <LobbyPlayerCard member={member} fcIcon={fcIcon} /> : <>
+        <span className="premade-slot-plus" aria-hidden="true">+</span><span className="premade-slot-label">{t('groupInvite')}</span>
+      </>}
+    </button>;
+  }
+  return <div className={`play-character-stage play-roster-stage${premade ? ' is-premade' : ''}${dense ? ' is-dense' : ''}`}>
+    <div className="premade-wing premade-wing-left" hidden={!premade}>{premade && Array.from({ length: 4 }, (_, i) => slot(i))}</div>
+    <div ref={ownRef} className="play-own-character">{children}</div>
+    <div className="premade-wing premade-wing-right" hidden={!premade}>
+      {premade && Array.from({ length: 4 }, (_, i) => slot(i + 4))}
+    {premade && <div className="premade-roster-summary" role="status">
+      <span className="premade-player-total"><strong>{roster.length || 1}/10</strong> {t('playLobbyPlayers')}</span>
+      <span className="premade-role-counts" role="group" aria-label={t('playRoleDistribution')}>
+        {(['FC', 'HEALER', 'DPS'] as const).map(role => <span className="premade-role-count" key={role}><strong>{counts[role]}</strong><LobbyRoleIcon role={role} fcIcon={fcIcon} /></span>)}
+      </span>
+    </div>}
+    </div>
+    {dense && <div className="premade-final-slot">{slot(8)}</div>}
+
+  </div>;
+}
+
+function LobbyPlayerCard({ member, fcIcon }: { member: GroupMember; fcIcon: FcIcon }) {
+  const { t } = useLocale();
+  const character: Character = { id: 0, name: member.characterName ?? member.displayName, level: 0,
+    realm: { id: 0, name: member.realm ?? t('playSelectionPending'), slug: '' } };
+  const avatar = <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="16" cy="10" r="5" /><path d="M6 29v-3a10 10 0 0 1 20 0v3" /></svg>;
+  const footer = <span className="premade-member-role"><LobbyRoleIcon role={member.role} fcIcon={fcIcon} />
+    {member.captain && <span className="premade-captain-label">{t('groupCaptain')}</span>}
+  </span>;
+  return <>
+    <PlayerCard character={character} size="small" showLevel={false} detailsAvailable={false} avatarFallback={avatar} footer={footer} />
+    <span className="premade-card-preview" aria-hidden="true"><PlayerCard character={character} tilt showLevel={false} detailsAvailable={false} avatarFallback={avatar} footer={footer} /></span>
+  </>;
+}
+
+export function LobbyRoleIcon({ role, fcIcon }: { role: GroupMember['role']; fcIcon: FcIcon }) {
+  const { t } = useLocale();
+  if (!role) return <span className="premade-role-unset" aria-label={t('playRoleUnset')}>—</span>;
+  const label = t(role === 'FC' ? 'selectionFc' : role === 'HEALER' ? 'selectionHealer' : 'selectionDps');
+  const source = role === 'FC' ? fcIconAsset(fcIcon) : `/media/roles/${role === 'HEALER' ? 'heal' : 'dps'}.webp`;
+  return <img className="premade-role-icon" src={source} width="24" height="24" alt={label} title={label} />;
+}

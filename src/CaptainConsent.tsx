@@ -1,19 +1,20 @@
 import { useId, useState } from 'react';
 import { useLocale } from './locales';
 
-export function CaptainConsent({ selected, disabled, onChange }: {
-  selected: boolean; disabled: boolean; onChange: (selected: boolean) => void;
+export function CaptainConsent({ selected, disabled = false, onChange, readOnly = false, label, tooltip }: {
+  selected: boolean; disabled?: boolean; onChange?: (selected: boolean) => void;
+  readOnly?: boolean; label?: string; tooltip?: string;
 }) {
   const { t } = useLocale();
   const tooltipId = useId();
   const [dismissed, setDismissed] = useState(false);
-  return <div className="captain-consent" data-tooltip-dismissed={dismissed}
+  return <div className={`captain-consent${readOnly ? ' is-readonly' : ''}`} data-tooltip-dismissed={dismissed}
     onPointerEnter={() => setDismissed(false)}
     onKeyDown={event => { if (event.key === 'Escape') setDismissed(true); }}>
-    <button type="button" className="captain-toggle" aria-label={t('selectionCaptain')}
-      aria-pressed={selected} aria-describedby={tooltipId} disabled={disabled}
+    <button type="button" className="captain-toggle" aria-label={label ?? t('selectionCaptain')}
+      aria-pressed={selected} aria-describedby={tooltipId} disabled={disabled} aria-disabled={readOnly || undefined}
       onFocus={() => setDismissed(false)}
-      onClick={() => onChange(!selected)}>
+      onClick={() => { if (!readOnly) onChange?.(!selected); }}>
       <svg className="captain-crown" width="32" height="32" viewBox="0 0 256 256"
         fill="none" stroke="currentColor" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         {/* Crown Simple Fill: https://www.svgrepo.com/svg/364408/crown-simple-fill */}
@@ -21,7 +22,7 @@ export function CaptainConsent({ selected, disabled, onChange }: {
       </svg>
     </button>
     <span id={tooltipId} className="captain-tooltip" role="tooltip">
-      {t(selected ? 'selectionCaptainSelected' : 'selectionCaptainAvailable')}
+      {tooltip ?? t(selected ? 'selectionCaptainSelected' : 'selectionCaptainAvailable')}
     </span>
   </div>;
 }

@@ -367,3 +367,5 @@ html { scrollbar-color: #facc15 #0c0e0d; scrollbar-width: thin; }
   .language-switch > .language-flag, .language-switch > .language-options { display: none; }
   .mobile-language-options .language-flag[aria-current="page"] { background: #ffffff0a; }
 }
+
+.play-match-action .find-match.is-premade:disabled { background: #353b37; color: #aeb5ad; opacity: 1; }

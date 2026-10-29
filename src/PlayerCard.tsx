@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useLocale } from './locales';
 
 export type Character = {
   id: number; name: string; level: number;
-  namespace?: 'profile-classic1x-eu' | 'profile-classic-eu' | 'profile-classic1x-us' | 'profile-classic-us';
+  namespace?: 'profile-classic1x-eu' | 'profile-classic-eu' | 'profile-classic1x-us' | 'profile-classic-us' | 'profile-classicann-eu' | 'profile-classicann-us';
   realm: { id: number; name: string; slug: string };
   playable_class?: { id?: number; name: string }; playable_race?: { name: string }; faction?: { name: string };
   avatarUrl?: string | null;
@@ -28,40 +28,39 @@ export function PlayerCardSkeleton() {
   </div>;
 }
 
-export function PlayerCard({ character, compact = false, tilt = false }: { character: Character; compact?: boolean; tilt?: boolean }) {
-  const ratings = <span className="profile-card-ratings">
-    <CharacterRating />
-    <CharacterRating premade />
-  </span>;
-  return <>
-    <div className={`profile-card player-card${compact ? ' player-card-compact' : ''}${tilt ? ' lobby-card' : ''}`} onPointerMove={event => {
-      if (!tilt || event.pointerType !== 'mouse' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      const card = event.currentTarget;
-      const bounds = card.parentElement!.getBoundingClientRect();
-      const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
-      const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
-      card.style.setProperty('--card-rotate-x', `${(0.5 - y) * 16}deg`);
-      card.style.setProperty('--card-rotate-y', `${(x - 0.5) * 16}deg`);
-    }} onPointerLeave={event => {
-      const card = event.currentTarget;
-      card.style.setProperty('--card-rotate-x', '0deg');
-      card.style.setProperty('--card-rotate-y', '0deg');
-    }}>
-      <span className="profile-card-header"><span className="profile-card-realm">{characterRegion(character)} · {character.realm.name || character.realm.slug} · {character.level}</span><CharacterIcons character={character} /></span>
-      <CharacterAvatar character={character} />
-      <strong className="profile-card-name">{character.name}</strong>
-      {character.guild?.name && <span className="profile-card-guild">{`< ${character.guild.name} >`}</span>}
-      <CharacterStats />
-      {ratings}
-    </div>
-  </>;
+export function setPlayerCardTilt(card: HTMLElement, pointer: { pointerType: string; clientX: number; clientY: number }, anchor = card.parentElement) {
+  if (pointer.pointerType !== 'mouse' || !anchor || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const bounds = anchor.getBoundingClientRect();
+  const x = Math.max(0, Math.min(1, (pointer.clientX - bounds.left) / bounds.width));
+  const y = Math.max(0, Math.min(1, (pointer.clientY - bounds.top) / bounds.height));
+  card.style.setProperty('--card-rotate-x', `${(0.5 - y) * 16}deg`);
+  card.style.setProperty('--card-rotate-y', `${(x - 0.5) * 16}deg`);
+}
+export function resetPlayerCardTilt(card: HTMLElement) {
+  card.style.setProperty('--card-rotate-x', '0deg'); card.style.setProperty('--card-rotate-y', '0deg');
 }
 
-function CharacterRating({ premade = false }: { premade?: boolean }) {
+export function PlayerCard({ character, compact = false, tilt = false, size = 'normal', detailsAvailable = true, showLevel = true, avatarFallback, footer }: {
+  character: Character; compact?: boolean; tilt?: boolean; size?: 'normal' | 'small'; detailsAvailable?: boolean;
+  showLevel?: boolean; avatarFallback?: ReactNode; footer?: ReactNode;
+}) {
+  return <div className={`profile-card player-card${compact ? ' player-card-compact' : ''}${tilt ? ' lobby-card' : ''}${size === 'small' ? ' player-card-small' : ''}`}
+    onPointerMove={event => { if (tilt) setPlayerCardTilt(event.currentTarget, event); }} onPointerLeave={event => resetPlayerCardTilt(event.currentTarget)}>
+    <span className="profile-card-header"><span className="profile-card-realm">{showLevel ? `${character.realm.name || character.realm.slug} · ${character.level}` : character.realm.name || character.realm.slug}</span><CharacterIcons character={character} /></span>
+    <CharacterAvatar character={character} fallback={avatarFallback} />
+    <strong className="profile-card-name">{character.name}</strong>
+    {character.guild?.name && <span className="profile-card-guild">{`< ${character.guild.name} >`}</span>}
+    <CharacterStats available={detailsAvailable} />
+    <span className="profile-card-ratings"><CharacterRating available={detailsAvailable} /><CharacterRating available={detailsAvailable} premade /></span>
+    {footer && <span className="player-card-footer">{footer}</span>}
+  </div>;
+}
+
+function CharacterRating({ premade = false, available = true }: { premade?: boolean; available?: boolean }) {
   const { t } = useLocale();
   const label = t(premade ? 'premadeHeading' : 'soloHeading');
-  return <span className="profile-card-rating" title={label} aria-label={`${label}: 1500`}>
-    <strong>1500</strong>
+  return <span className="profile-card-rating" title={label} aria-label={`${label}: ${available ? 1500 : '—'}`} >
+    <strong>{available ? '1500' : '—'}</strong>
     <svg width="18" height="18" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {premade && <><circle cx="6" cy="12" r="3.5" /><circle cx="26" cy="12" r="3.5" />
         <path d="M9 19a6 6 0 0 0-8 6v2h7M23 19a6 6 0 0 1 8 6v2h-7" /></>}
@@ -71,10 +70,10 @@ function CharacterRating({ premade = false }: { premade?: boolean }) {
   </span>;
 }
 
-function CharacterStats() {
+function CharacterStats({ available = true }: { available?: boolean }) {
   const { t } = useLocale();
   return <span className="profile-card-stats">
-    <span><span>{t('charactersGamesPlayed')}</span><strong>0</strong></span>
+    <span><span>{t('charactersGamesPlayed')}</span><strong>{available ? '0' : '—'}</strong></span>
     <span><span>{t('charactersWinrate')}</span><strong>—</strong></span>
     <span><span>{t('charactersLastMatches')}</span><strong>—</strong></span>
   </span>;
@@ -103,7 +102,7 @@ export function CharacterIcons({ character }: { character: Character }) {
   </span>;
 }
 
-export function CharacterAvatar({ character }: { character: Character }) {
+export function CharacterAvatar({ character, fallback }: { character: Character; fallback?: ReactNode }) {
   const [failedUrls, setFailedUrls] = useState<string[]>([]);
   const [className, color] = classAvatars[character.playable_class?.id ?? 0] ?? ['', '#b6b7bb'];
   const classIcon = className ? `/media/character/class_${className}.jpg` : null;
@@ -113,6 +112,6 @@ export function CharacterAvatar({ character }: { character: Character }) {
     {source
       ? <img src={source} width="48" height="48" alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer"
           onError={() => setFailedUrls(urls => [...urls, source])} />
-      : <span>✦</span>}
+      : fallback ?? <span>✦</span>}
   </span>;
 }

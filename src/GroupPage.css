@@ -1,0 +1,25 @@
+.group-page { max-width: 64rem; padding-bottom: 4rem; }
+.group-page header p, .group-page section > p, .group-page form p { color: #b9c1c1; line-height: 1.6; }
+.group-page section { margin-block: 2rem; }
+.group-toolbar, .group-member-actions, .group-invite-control, .group-member-heading { display: flex; gap: .75rem; flex-wrap: wrap; align-items: center; }
+.group-toolbar { justify-content: space-between; }
+.group-roster, .group-invitations { list-style: none; padding: 0; display: grid; gap: .75rem; }
+.group-roster { grid-template-columns: repeat(auto-fit, minmax(min(100%, 25rem), 1fr)); }
+.group-roster > li, .group-invitations > li, .group-preparation { padding: 1.25rem; border: 1px solid #343c3c; border-radius: .75rem; background: #101414; }
+.group-roster p { margin-block: .6rem; }
+.group-roster summary { cursor: pointer; color: #b9c1c1; }
+.group-roster details { margin-block: 1rem; line-height: 1.5; }
+.group-member-heading span { color: #facc15; font-size: .85rem; }
+.group-confirmed { color: #a3e6a4; }
+.group-invitations > li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
+.group-invitations > li > div { display: flex; gap: .5rem; }
+.group-invite-control { margin-top: .5rem; }
+.group-invite-control input { min-width: 0; padding: .7rem; background: #101414; color: #fafaf6; border: 1px solid #596060; border-radius: .375rem; }
+.group-preparation ul { line-height: 1.8; padding-left: 1.25rem; }
+.group-page :focus-visible { outline: 2px solid #facc15; outline-offset: 3px; }
+.group-page button:disabled { opacity: .5; cursor: default; }
+.group-close { margin-top: 1.5rem; }
+.group-close button { margin-right: .75rem; }
+.group-code-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.group-page input[readonly] { font-family: monospace; width: 14ch; max-width: 100%; }
+.group-invite-control + .group-member-actions { margin-top: .75rem; }

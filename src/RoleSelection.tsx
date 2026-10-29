@@ -4,21 +4,21 @@ import { fcIconAsset, type FcIcon } from './fc-icon-preference';
 import type { MessageKey } from './locales/en';
 import { RoleOutlineIcon, type RoleIcon } from './RoleOutlineIcon';
 
-export type MatchRole = 'FC' | 'DPS' | 'HEALER';
+export type MatchRole = 'FC' | 'HEALER' | 'DPS';
 const roles: { role: MatchRole; icon: Exclude<RoleIcon, 'flag'>; label: MessageKey }[] = [
   { role: 'FC', icon: 'tank', label: 'selectionFc' },
-  { role: 'DPS', icon: 'dps', label: 'selectionDps' },
   { role: 'HEALER', icon: 'heal', label: 'selectionHealer' },
+  { role: 'DPS', icon: 'dps', label: 'selectionDps' },
 ];
 
-export function RoleSelection({ value, disabled, fcIcon, onChange }: {
-  value: MatchRole | ''; disabled: boolean; fcIcon: FcIcon; onChange: (role: MatchRole) => void;
+export function RoleSelection({ value, disabled, fcIcon, onChange, legendLabel = 'selectionRole' }: {
+  value: MatchRole | ''; disabled: boolean; fcIcon: FcIcon; legendLabel?: MessageKey; onChange: (role: MatchRole) => void;
 }) {
   const { t } = useLocale();
   const groupId = useId();
   const [dismissed, setDismissed] = useState<MatchRole | null>(null);
   return <fieldset className="role-picker" disabled={disabled}>
-    <legend className="role-legend">{t('selectionRole')}</legend>
+    <legend className="role-legend">{t(legendLabel)}</legend>
     {roles.map(({ role, icon, label }) => <label className="role-option" key={role}
       data-tooltip-dismissed={dismissed === role}
       onPointerEnter={() => setDismissed(null)}
