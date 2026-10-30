@@ -4,6 +4,7 @@
 .captain-consent { position: relative; justify-self: center; margin-bottom: -1rem; }
 .captain-toggle { display: grid; place-items: center; width: 48px; height: 44px; padding: 0; border: 0; border-radius: .375rem; background: transparent; color: #facc15; cursor: pointer; }
 .captain-consent.is-readonly .captain-toggle { cursor: default; }
+.captain-consent.is-readonly:has(.captain-toggle[aria-pressed=false]) { visibility: hidden; pointer-events: none; }
 .captain-crown { stroke-dasharray: 8 24; }
 .captain-toggle[aria-pressed=true] { color: #facc15; }
 .captain-toggle[aria-pressed=true] .captain-crown { fill: currentColor; stroke: none; stroke-dasharray: none; }

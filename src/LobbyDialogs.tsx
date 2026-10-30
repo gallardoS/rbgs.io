@@ -1,6 +1,6 @@
-import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { useId, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useLocale } from './locales';
-import { type GroupLobby, type GroupMember } from './GroupPage';
+import { type GroupLobby } from './GroupPage';
 import type { LobbyPanel } from './LobbyActions';
 
 function LobbyPopup({ dialogRef, title, children, focusClose = true, className = '' }: {
@@ -24,18 +24,11 @@ export function useLobbyDialogs(lobby: GroupLobby, onJoined: () => void) {
   const { t } = useLocale();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inviteRef = useRef<HTMLDialogElement>(null);
-  const memberRef = useRef<HTMLDialogElement>(null);
-  const [memberId, setMemberId] = useState<string | null>(null);
   const [invited, setInvited] = useState<string | null>(null);
-  const member = lobby.group?.members.find(item => item.accountId === memberId);
-  useEffect(() => { if (memberId && !member && !lobby.busy) memberRef.current?.close(); }, [memberId, member, lobby.busy]);
-  const openSlot = (selected?: GroupMember) => {
-    if (selected) { setMemberId(selected.accountId); memberRef.current?.showModal(); }
-    else {
-      setInvited(null);
-      inviteRef.current?.showModal();
-      inviteRef.current?.querySelector<HTMLInputElement>('input')?.focus();
-    }
+  const openSlot = () => {
+    setInvited(null);
+    inviteRef.current?.showModal();
+    inviteRef.current?.querySelector<HTMLInputElement>('input')?.focus();
   };
   const openPanel = (_next: LobbyPanel) => {
     dialogRef.current?.showModal();
@@ -93,17 +86,6 @@ export function useLobbyDialogs(lobby: GroupLobby, onJoined: () => void) {
         <button className="lobby-primary-action" disabled={lobby.busy || lobby.joinCode.length !== 8}>{t('playJoinShort')}</button>
       </form>
       {lobby.busy && <p role="status">{t('groupSaving')}</p>}
-    </LobbyPopup>
-    <LobbyPopup dialogRef={memberRef} title={member?.characterName ?? member?.displayName ?? t('playMemberOptions')} className="play-member-dialog">
-      {member ? <>
-        <p>{member.displayName} · {member.realm}</p>
-        <p>{t(member.companionConnected ? 'companionPresenceConnected' : 'companionPresenceDisconnected')}</p>
-        <p>{t('groupAddonUnknown')}</p>{error}
-        {lobby.captain && <div className="group-member-actions">
-          <button disabled={lobby.busy} onClick={() => void lobby.command('captain', { accountId: member.accountId })}>{t('groupTransfer')}</button>
-          <button disabled={lobby.busy} onClick={() => void lobby.command('members/remove', { accountId: member.accountId })}>{t('groupRemove')}</button>
-        </div>}
-      </> : <p>{t('groupGone')}</p>}
     </LobbyPopup>
   </>;
   return { dialogRef, openSlot, openPanel, dialogs };

@@ -4,6 +4,8 @@ import type { GroupLobby, GroupMember } from './GroupPage';
 import { PlayerCard, setPlayerCardTilt, resetPlayerCardTilt, type Character } from './PlayerCard';
 import { fcIconAsset, useFcIconPreference, type FcIcon } from './fc-icon-preference';
 import { LobbyActionButton } from './LobbyActions';
+import { CaptainCrown } from './CaptainConsent';
+import { LobbyMemberMenu } from './LobbyMemberMenu';
 import './PlayLobby.css';
 
 export function PlayModeButton({ mode, selected, disabled, onSelect }: {
@@ -12,21 +14,13 @@ export function PlayModeButton({ mode, selected, disabled, onSelect }: {
   const { t } = useLocale();
   const tooltipId = useId();
   const [dismissed, setDismissed] = useState(false);
-  const [open, setOpen] = useState(false);
   const heading = t(mode === 'solo' ? 'soloHeading' : 'premadeHeading');
-  return <span className="play-mode-option" data-selected={selected}>
-    <button type="button" className="play-mode-button" aria-pressed={selected} disabled={disabled} onClick={onSelect}>{heading}</button>
-    <span className="play-mode-help" data-tooltip-dismissed={dismissed} data-tooltip-open={open}
-      onPointerEnter={() => setDismissed(false)} onPointerLeave={() => setOpen(false)}
-      onKeyDown={event => { if (event.key === 'Escape') { setDismissed(true); setOpen(false); } }}>
-      <button type="button" className="play-mode-info-button" aria-label={`${heading} · ${t('playModeInfo')}`} aria-describedby={tooltipId}
-        onFocus={() => setDismissed(false)} onBlur={() => setOpen(false)} onClick={() => { setDismissed(false); setOpen(value => !value); }}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7h.01" />
-        </svg>
-      </button>
-      <span id={tooltipId} className="captain-tooltip" role="tooltip">{t(mode === 'solo' ? 'soloDescription' : 'premadeDescription')}</span>
-    </span>
+  return <span className="play-mode-option" data-tooltip-dismissed={dismissed}
+    onPointerEnter={() => setDismissed(false)}
+    onKeyDown={event => { if (event.key === 'Escape') setDismissed(true); }}>
+    <button type="button" className="play-mode-button" aria-pressed={selected} aria-describedby={tooltipId}
+      disabled={disabled} onClick={onSelect} onFocus={() => setDismissed(false)}>{heading}</button>
+    <span id={tooltipId} className="captain-tooltip" role="tooltip">{t(mode === 'solo' ? 'soloDescription' : 'premadeDescription')}</span>
   </span>;
 }
 
@@ -54,7 +48,7 @@ export function PlayLobbyCode({ lobby }: { lobby: GroupLobby }) {
 }
 
 export function PlayLobbyStage({ children, premade, lobby, ownRole, onSlot }: {
-  children: ReactNode; premade: boolean; lobby: GroupLobby; ownRole: GroupMember['role']; onSlot: (member?: GroupMember) => void;
+  children: ReactNode; premade: boolean; lobby: GroupLobby; ownRole: GroupMember['role']; onSlot: () => void;
 }) {
   const { t } = useLocale();
   const { icon: fcIcon } = useFcIconPreference(lobby.accountId);
@@ -83,16 +77,9 @@ export function PlayLobbyStage({ children, premade, lobby, ownRole, onSlot }: {
   });
   function slot(index: number) {
     const member = others[index];
-    return <button type="button" key={member?.accountId ?? `empty-${index}`} className={`premade-slot${member ? ' is-occupied' : ' is-empty'}`}
-      disabled={lobby.loading || lobby.busy || lobby.error === 'groupAccessError' || lobby.error === 'groupLoadError'} onClick={() => onSlot(member)}
-      onPointerMove={event => { const card = event.currentTarget.querySelector<HTMLElement>('.premade-card-preview .player-card'); if (card) setPlayerCardTilt(card, event, card.parentElement); }}
-      onPointerLeave={event => { const card = event.currentTarget.querySelector<HTMLElement>('.premade-card-preview .player-card'); if (card) resetPlayerCardTilt(card); }}
-      aria-label={member ? `${member.characterName ?? member.displayName} · ${t('playMemberOptions')}` : `${t('playOpenSlot')} ${index + 2}`}>
-      {member ? <LobbyPlayerCard member={member} fcIcon={fcIcon} /> : <>
-        <span className="premade-slot-plus" aria-hidden="true">+</span><span className="premade-slot-label">{t('groupInvite')}</span>
-      </>}
-    </button>;
+    return <PremadeSlot key={member?.accountId ?? `empty-${index}`} member={member} index={index} lobby={lobby} fcIcon={fcIcon} onInvite={onSlot} />;
   }
+
   return <div className={`play-character-stage play-roster-stage${premade ? ' is-premade' : ''}${dense ? ' is-dense' : ''}`}>
     <div className="premade-wing premade-wing-left" hidden={!premade}>{premade && Array.from({ length: 4 }, (_, i) => slot(i))}</div>
     <div ref={ownRef} className="play-own-character">{children}</div>
@@ -110,17 +97,40 @@ export function PlayLobbyStage({ children, premade, lobby, ownRole, onSlot }: {
   </div>;
 }
 
+function PremadeSlot({ member, index, lobby, fcIcon, onInvite }: {
+  member?: GroupMember; index: number; lobby: GroupLobby; fcIcon: FcIcon; onInvite: () => void;
+}) {
+  const { t } = useLocale();
+  const menuId = useId();
+  const anchorRef = useRef<HTMLButtonElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  return <>
+    <button ref={anchorRef} type="button" className={`premade-slot${member ? ' is-occupied' : ' is-empty'}`}
+      disabled={lobby.loading || lobby.busy || lobby.error === 'groupAccessError' || lobby.error === 'groupLoadError'}
+      popoverTarget={member ? menuId : undefined} aria-haspopup={member ? 'menu' : undefined}
+      aria-expanded={member ? menuOpen : undefined} aria-controls={member ? menuId : undefined}
+      onClick={member ? undefined : onInvite}
+      onPointerMove={event => { const card = event.currentTarget.querySelector<HTMLElement>('.premade-card-preview .player-card'); if (card) setPlayerCardTilt(card, event, card.parentElement); }}
+      onPointerLeave={event => { const card = event.currentTarget.querySelector<HTMLElement>('.premade-card-preview .player-card'); if (card) resetPlayerCardTilt(card); }}
+      aria-label={member ? `${member.characterName ?? member.displayName} · ${t('playMemberOptions')}` : `${t('playOpenSlot')} ${index + 2}`}>
+      {member ? <LobbyPlayerCard member={member} fcIcon={fcIcon} /> : <>
+        <span className="premade-slot-plus" aria-hidden="true">+</span><span className="premade-slot-label">{t('groupInvite')}</span>
+      </>}
+    </button>
+    {member && <LobbyMemberMenu id={menuId} anchorRef={anchorRef} member={member} lobby={lobby} onOpenChange={setMenuOpen} />}
+  </>;
+}
+
 function LobbyPlayerCard({ member, fcIcon }: { member: GroupMember; fcIcon: FcIcon }) {
   const { t } = useLocale();
   const character: Character = member.character ?? { id: 0, name: member.characterName ?? member.displayName, level: 0,
     realm: { id: 0, name: member.realm ?? t('playSelectionPending'), slug: '' } };
   const avatar = <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="16" cy="10" r="5" /><path d="M6 29v-3a10 10 0 0 1 20 0v3" /></svg>;
-  const footer = <span className="premade-member-role"><LobbyRoleIcon role={member.role} fcIcon={fcIcon} />
-    {member.captain && <span className="premade-captain-label">{t('groupCaptain')}</span>}
-  </span>;
+  const roleIcon = <LobbyRoleIcon role={member.role} fcIcon={fcIcon} />;
+  const crown = member.captain ? <span className="premade-captain-badge" role="img" aria-label={t('groupCaptain')} title={t('groupCaptain')}><CaptainCrown size={20} className="premade-captain-crown" /></span> : undefined;
   return <>
-    <PlayerCard character={character} size="small" showLevel={!!member.character} avatarFallback={avatar} footer={footer} />
-    <span className="premade-card-preview" aria-hidden="true"><PlayerCard character={character} tilt showLevel={!!member.character} avatarFallback={avatar} footer={footer} /></span>
+    <PlayerCard character={character} size="small" showLevel={!!member.character} avatarFallback={avatar} footer={roleIcon} avatarBadge={crown} />
+    <span className="premade-card-preview" aria-hidden="true"><PlayerCard character={character} tilt showLevel={!!member.character} avatarFallback={avatar} headerIcon={roleIcon} footer={member.captain ? t('groupCaptain') : undefined} /></span>
   </>;
 }
 

@@ -252,6 +252,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
       tooltip={premade ? t(lobby.captain ? 'playYouAreLobbyCaptain' : 'playLobbyCaptain') : undefined}
       onChange={value => { setCaptainConsent(value); setSaved(false); }} />}
     <CharacterSelection small={premade && premadeCount >= 9} accountId={accountId} preferred={context.selection ?? undefined} disabled={saving}
+      previewHeaderIcon={premade ? <LobbyRoleIcon role={lobby.me?.role ?? premadeRole} fcIcon={fcIcon} /> : undefined}
       smallFooter={premade ? <span className="premade-member-role"><span>{t('groupYou')}</span><LobbyRoleIcon role={lobby.me?.role ?? premadeRole} fcIcon={fcIcon} /></span> : undefined}
       onChange={value => { setCharacter(value); setSaved(false); }} />
     {character && <RoleSelection fcIcon={fcIcon} legendLabel={premade ? 'playLobbyRole' : 'selectionRole'} value={premade ? lobby.me?.role ?? premadeRole : role} disabled={saving || (premade && (lobby.loading || lobby.busy))}

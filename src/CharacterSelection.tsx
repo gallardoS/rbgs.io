@@ -21,9 +21,9 @@ async function persistChoice(choice: Choice, signal: AbortSignal) {
 }
 
 
-export function CharacterSelection({ accountId, onChange, preferred, disabled = false, small = false, smallFooter }: {
+export function CharacterSelection({ accountId, onChange, preferred, disabled = false, small = false, smallFooter, previewHeaderIcon }: {
   accountId: string; onChange?: (character: Character | null) => void;
-  preferred?: { name: string; realm: string }; disabled?: boolean; small?: boolean; smallFooter?: ReactNode;
+  preferred?: { name: string; realm: string }; disabled?: boolean; small?: boolean; smallFooter?: ReactNode; previewHeaderIcon?: ReactNode;
 }) {
   const { t } = useLocale();
   const [characters, setCharacters] = useState<Choice[]>([]);
@@ -151,7 +151,7 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
           onPointerLeave={event => { const card = event.currentTarget.querySelector<HTMLElement>('.premade-card-preview .player-card'); if (card) resetPlayerCardTilt(card); }}>
 
           {current && <PlayerCard character={current} tilt={!small} size={small ? 'small' : 'normal'} footer={small ? smallFooter ?? t('groupYou') : undefined} />}
-          {current && small && <span className="premade-card-preview own-card-preview" aria-hidden="true"><PlayerCard character={current} tilt footer={smallFooter} /></span>}
+          {current && small && <span className="premade-card-preview own-card-preview" aria-hidden="true"><PlayerCard character={current} tilt headerIcon={previewHeaderIcon} footer={t('groupYou')} /></span>}
         </button>
       </div>
       <dialog ref={dialog} className="character-selection-dialog" aria-labelledby="character-selection-title"

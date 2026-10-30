@@ -40,14 +40,14 @@ export function resetPlayerCardTilt(card: HTMLElement) {
   card.style.setProperty('--card-rotate-x', '0deg'); card.style.setProperty('--card-rotate-y', '0deg');
 }
 
-export function PlayerCard({ character, compact = false, tilt = false, size = 'normal', showLevel = true, avatarFallback, footer }: {
+export function PlayerCard({ character, compact = false, tilt = false, size = 'normal', showLevel = true, avatarFallback, footer, headerIcon, avatarBadge }: {
   character: Character; compact?: boolean; tilt?: boolean; size?: 'normal' | 'small';
-  showLevel?: boolean; avatarFallback?: ReactNode; footer?: ReactNode;
+  showLevel?: boolean; avatarFallback?: ReactNode; footer?: ReactNode; headerIcon?: ReactNode; avatarBadge?: ReactNode;
 }) {
   return <div className={`profile-card player-card${compact ? ' player-card-compact' : ''}${tilt ? ' lobby-card' : ''}${size === 'small' ? ' player-card-small' : ''}`}
     onPointerMove={event => { if (tilt) setPlayerCardTilt(event.currentTarget, event); }} onPointerLeave={event => resetPlayerCardTilt(event.currentTarget)}>
-    <span className="profile-card-header"><span className="profile-card-realm">{showLevel ? `${character.realm.name || character.realm.slug} · ${character.level}` : character.realm.name || character.realm.slug}</span><CharacterIcons character={character} /></span>
-    <CharacterAvatar character={character} fallback={avatarFallback} />
+    <span className="profile-card-header"><span className="profile-card-realm">{showLevel ? `${character.realm.name || character.realm.slug} · ${character.level}` : character.realm.name || character.realm.slug}</span><CharacterIcons character={character} leadingIcon={headerIcon} /></span>
+    {avatarBadge ? <span className="player-card-avatar-with-badge"><span className="player-card-avatar-badge">{avatarBadge}</span><CharacterAvatar character={character} fallback={avatarFallback} /></span> : <CharacterAvatar character={character} fallback={avatarFallback} />}
     <strong className="profile-card-name">{character.name}</strong>
     {character.guild?.name && <span className="profile-card-guild">{`< ${character.guild.name} >`}</span>}
     <CharacterStats />
@@ -90,13 +90,14 @@ const raceIcons: Record<string, string> = {
   Tauren: 'tauren', Gnome: 'gnome', Troll: 'troll',
 };
 
-export function CharacterIcons({ character }: { character: Character }) {
+export function CharacterIcons({ character, leadingIcon }: { character: Character; leadingIcon?: ReactNode }) {
   const className = classAvatars[character.playable_class?.id ?? 0]?.[0];
   const race = character.playable_race?.name;
   const raceIcon = race ? raceIcons[race] : undefined;
   const gender = character.gender?.type === 'FEMALE' ? 'female'
     : character.gender?.type === 'MALE' ? 'male' : undefined;
   return <span className="profile-card-icons">
+    {leadingIcon}
     {raceIcon && gender && <img src={`/media/character/race_${raceIcon}_${gender}.jpg`} width="18" height="18" alt={race} title={race} />}
     {className && <img src={`/media/character/class_${className}.jpg`} width="18" height="18" alt={character.playable_class?.name} title={character.playable_class?.name} />}
   </span>;
