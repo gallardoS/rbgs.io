@@ -13,8 +13,8 @@ function readDismissed(key: string): string[] {
   } catch { return []; }
 }
 
-// Group invitations expire 30 minutes after creation or renewal (GroupInvitation).
-const INVITATION_LIFETIME_MS = 30 * 60 * 1000;
+// Group invitations expire 60 seconds after creation or renewal (GroupInvitation).
+const INVITATION_LIFETIME_MS = 60 * 1000;
 
 function InvitationLifetime({ expiresAt }: { expiresAt: string }) {
   const [startedAt, setStartedAt] = useState(Date.now);

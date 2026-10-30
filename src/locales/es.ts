@@ -83,7 +83,7 @@ export const messages: Record<MessageKey, string> = {
   groupTransfer: 'Nombrar capitán',
   groupRemove: 'Expulsar jugador',
   groupInvite: 'Invitar jugador',
-  groupInviteHelp: 'Introduce el BattleTag completo de un jugador que haya iniciado sesión en rbgs.io. Las invitaciones caducan a los 30 minutos.',
+  groupInviteHelp: 'Introduce el BattleTag completo de un jugador que haya iniciado sesión en rbgs.io. Las invitaciones caducan a los 60 segundos.',
   groupCancelInvite: 'Cancelar invitación',
   groupPreparation: 'Prepararse para premade',
   groupConfirmationHelp: 'Confirma tu personaje y rol guardados. Los cambios de plantilla, capitán, temporada o selección requieren confirmar de nuevo. Esto no te pone en cola.',

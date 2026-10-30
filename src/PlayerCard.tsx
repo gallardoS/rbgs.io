@@ -40,8 +40,8 @@ export function resetPlayerCardTilt(card: HTMLElement) {
   card.style.setProperty('--card-rotate-x', '0deg'); card.style.setProperty('--card-rotate-y', '0deg');
 }
 
-export function PlayerCard({ character, compact = false, tilt = false, size = 'normal', detailsAvailable = true, showLevel = true, avatarFallback, footer }: {
-  character: Character; compact?: boolean; tilt?: boolean; size?: 'normal' | 'small'; detailsAvailable?: boolean;
+export function PlayerCard({ character, compact = false, tilt = false, size = 'normal', showLevel = true, avatarFallback, footer }: {
+  character: Character; compact?: boolean; tilt?: boolean; size?: 'normal' | 'small';
   showLevel?: boolean; avatarFallback?: ReactNode; footer?: ReactNode;
 }) {
   return <div className={`profile-card player-card${compact ? ' player-card-compact' : ''}${tilt ? ' lobby-card' : ''}${size === 'small' ? ' player-card-small' : ''}`}
@@ -50,17 +50,17 @@ export function PlayerCard({ character, compact = false, tilt = false, size = 'n
     <CharacterAvatar character={character} fallback={avatarFallback} />
     <strong className="profile-card-name">{character.name}</strong>
     {character.guild?.name && <span className="profile-card-guild">{`< ${character.guild.name} >`}</span>}
-    <CharacterStats available={detailsAvailable} />
-    <span className="profile-card-ratings"><CharacterRating available={detailsAvailable} /><CharacterRating available={detailsAvailable} premade /></span>
+    <CharacterStats />
+    <span className="profile-card-ratings"><CharacterRating /><CharacterRating premade /></span>
     {footer && <span className="player-card-footer">{footer}</span>}
   </div>;
 }
 
-function CharacterRating({ premade = false, available = true }: { premade?: boolean; available?: boolean }) {
+function CharacterRating({ premade = false }: { premade?: boolean }) {
   const { t } = useLocale();
   const label = t(premade ? 'premadeHeading' : 'soloHeading');
-  return <span className="profile-card-rating" title={label} aria-label={`${label}: ${available ? 1500 : '—'}`} >
-    <strong>{available ? '1500' : '—'}</strong>
+  return <span className="profile-card-rating" title={label} aria-label={`${label}: —`} >
+    <strong>—</strong>
     <svg width="18" height="18" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {premade && <><circle cx="6" cy="12" r="3.5" /><circle cx="26" cy="12" r="3.5" />
         <path d="M9 19a6 6 0 0 0-8 6v2h7M23 19a6 6 0 0 1 8 6v2h-7" /></>}
@@ -70,10 +70,10 @@ function CharacterRating({ premade = false, available = true }: { premade?: bool
   </span>;
 }
 
-function CharacterStats({ available = true }: { available?: boolean }) {
+function CharacterStats() {
   const { t } = useLocale();
   return <span className="profile-card-stats">
-    <span><span>{t('charactersGamesPlayed')}</span><strong>{available ? '0' : '—'}</strong></span>
+    <span><span>{t('charactersGamesPlayed')}</span><strong>—</strong></span>
     <span><span>{t('charactersWinrate')}</span><strong>—</strong></span>
     <span><span>{t('charactersLastMatches')}</span><strong>—</strong></span>
   </span>;

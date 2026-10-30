@@ -4,11 +4,12 @@ import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
 import './GroupPage.css';
 import { useLobbyEvents } from './useLobbyEvents';
+import type { Character } from './PlayerCard';
 
 export type GroupMember = {
   accountId: string; displayName: string; captain: boolean; characterName: string | null; realm: string | null;
   role: 'FC' | 'HEALER' | 'DPS' | null; roleVersion: number; selectionVersion: number | null; confirmed: boolean;
-  companionConnected: boolean; addonStatus: string; gamePresence: string; blockers: string[];
+  companionConnected: boolean; addonStatus: string; gamePresence: string; blockers: string[]; character?: Character | null;
 };
 type Invitation = { id: string; groupId: string; captainName: string; recipientName: string; expiresAt: string };
 export type PremadeGroup = { id: string; captainId: string; revision: number; region: 'EU' | 'NA'; lobbyCode: string | null; members: GroupMember[]; invitations: Invitation[]; queueReady: boolean; blockers: string[] };
@@ -26,6 +27,25 @@ function validInvitation(v: any): v is Invitation {
   return v && typeof v.id === 'string' && typeof v.groupId === 'string' && typeof v.captainName === 'string'
     && typeof v.recipientName === 'string' && typeof v.expiresAt === 'string' && Number.isFinite(Date.parse(v.expiresAt));
 }
+function validMemberCharacter(v: any): v is Character | null | undefined {
+  if (v == null) return true; // Older snapshots and selections still have a neutral card.
+  const named = (ref: any) => ref == null || (typeof ref === 'object'
+    && (ref.name == null || typeof ref.name === 'string') && (ref.id == null || Number.isSafeInteger(ref.id))
+    && (ref.type == null || typeof ref.type === 'string'));
+  const image = (url: unknown) => {
+    if (url == null) return true;
+    if (typeof url !== 'string') return false;
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === 'https:' && !parsed.username && !parsed.password
+        && ['.worldofwarcraft.com', '.blizzard.com', '.blizzardstatic.com', '.battle.net'].some(host => parsed.hostname.endsWith(host));
+    } catch { return false; }
+  };
+  return Number.isSafeInteger(v.id) && v.id > 0 && typeof v.name === 'string' && Number.isSafeInteger(v.level) && v.level >= 60
+    && v.realm && Number.isSafeInteger(v.realm.id) && typeof v.realm.slug === 'string' && (v.realm.name == null || typeof v.realm.name === 'string')
+    && typeof v.namespace === 'string' && /^profile-classic(1x|ann)?-(eu|us)$/.test(v.namespace)
+    && [v.playable_class, v.playable_race, v.faction, v.guild, v.gender].every(named) && image(v.avatarUrl) && image(v.insetUrl);
+}
 function validGroup(v: any): v is PremadeGroup | null {
   return v === null || v && typeof v.id === 'string' && typeof v.captainId === 'string' && Number.isSafeInteger(v.revision)
     && ['EU', 'NA'].includes(v.region) && v.revision >= 0 && (v.lobbyCode === null || typeof v.lobbyCode === 'string' && /^[A-HJ-NP-Z2-9]{8}$/.test(v.lobbyCode))
@@ -34,7 +54,7 @@ function validGroup(v: any): v is PremadeGroup | null {
     && v.members.every((m: any) => m && typeof m.accountId === 'string' && typeof m.displayName === 'string' && typeof m.captain === 'boolean'
       && (m.characterName === null || typeof m.characterName === 'string') && (m.realm === null || typeof m.realm === 'string')
       && [null, 'FC', 'HEALER', 'DPS'].includes(m.role) && Number.isSafeInteger(m.roleVersion) && m.roleVersion >= 0 && (m.selectionVersion === null || Number.isSafeInteger(m.selectionVersion))
-      && typeof m.confirmed === 'boolean' && typeof m.companionConnected === 'boolean' && typeof m.addonStatus === 'string'
+      && validMemberCharacter(m.character) && typeof m.confirmed === 'boolean' && typeof m.companionConnected === 'boolean' && typeof m.addonStatus === 'string'
       && typeof m.gamePresence === 'string' && Array.isArray(m.blockers) && m.blockers.every((r: unknown) => typeof r === 'string'));
 }
 class GroupError extends Error { constructor(public status: number, public detail = '') { super('Group request failed'); } }

@@ -12,7 +12,7 @@ const roles: { role: MatchRole; icon: Exclude<RoleIcon, 'flag'>; label: MessageK
 ];
 
 export function RoleSelection({ value, disabled, fcIcon, onChange, legendLabel = 'selectionRole' }: {
-  value: MatchRole | ''; disabled: boolean; fcIcon: FcIcon; legendLabel?: MessageKey; onChange: (role: MatchRole) => void;
+  value: MatchRole; disabled: boolean; fcIcon: FcIcon; legendLabel?: MessageKey; onChange: (role: MatchRole) => void;
 }) {
   const { t } = useLocale();
   const groupId = useId();

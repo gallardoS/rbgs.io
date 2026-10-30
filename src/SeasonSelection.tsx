@@ -47,11 +47,11 @@ function validSelection(value: unknown): value is Selection {
     && typeof data.ratingSubjectId === 'string' && typeof data.validForSeason === 'boolean';
 }
 
-function storedPremadeRole(accountId: string): Role | '' {
+function storedPremadeRole(accountId: string): Role {
   try {
     const value = localStorage.getItem(`rbgs.premade-role.${accountId}`);
-    return value === 'FC' || value === 'HEALER' || value === 'DPS' ? value : '';
-  } catch { return ''; }
+    return value === 'FC' || value === 'HEALER' || value === 'DPS' ? value : 'DPS';
+  } catch { return 'DPS'; }
 }
 
 export function SeasonSelection({ accountId }: { accountId: string }) {
@@ -86,9 +86,10 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
   const [error, setError] = useState<MessageKey | null>(null);
   const [saved, setSaved] = useState(false);
   const [character, setCharacter] = useState<Character | null>(null);
-  const [role, setRole] = useState<Role | ''>('');
-  const [premadeRole, setPremadeRole] = useState<Role | ''>(() => storedPremadeRole(accountId));
+  const [role, setRole] = useState<Role>('DPS');
+  const [premadeRole, setPremadeRole] = useState<Role>(() => storedPremadeRole(accountId));
   const seededRoleGroup = useRef<string | null>(null);
+  const draftPremadeRole = useRef<Role | null>(null);
   const lastSavedDevice = useRef<string | null>(null);
   const autoSaveAttempt = useRef<string | null>(null);
   const [captainConsent, setCaptainConsent] = useState(false);
@@ -108,7 +109,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
         if (!validContext(data)) throw new Error('Invalid context');
         if (disposed || controller.signal.aborted) return;
         setContext(data);
-        setRole(data.selection?.role ?? '');
+        setRole(data.selection?.role ?? 'DPS');
         setCaptainConsent(data.selection?.captainConsent ?? false);
       })
       .catch(() => { if (!disposed) { setContext(null); setError('selectionLoadError'); } })
@@ -202,27 +203,29 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
     }
   }
 
-  function rememberPremadeRole(value: Role | '') {
+  function rememberPremadeRole(value: Role) {
     setPremadeRole(value);
     try {
-      if (value) localStorage.setItem(`rbgs.premade-role.${accountId}`, value);
-      else localStorage.removeItem(`rbgs.premade-role.${accountId}`);
+      localStorage.setItem(`rbgs.premade-role.${accountId}`, value);
     } catch { /* The lobby role still works without browser storage. */ }
   }
   async function changePremadeRole(value: Role) {
     rememberPremadeRole(value);
-    if (lobby.group && !await lobby.updateRole(value)) rememberPremadeRole(lobby.me?.role ?? '');
+    if (!lobby.group) { draftPremadeRole.current = value; return; }
+    if (!await lobby.updateRole(value)) rememberPremadeRole(lobby.me?.role ?? 'DPS');
   }
   useEffect(() => {
-    setPremadeRole(storedPremadeRole(accountId)); seededRoleGroup.current = null;
+    setPremadeRole(storedPremadeRole(accountId)); seededRoleGroup.current = null; draftPremadeRole.current = null;
     lastSavedDevice.current = null; autoSaveAttempt.current = null;
   }, [accountId]);
   useEffect(() => {
     if (!lobby.group) { seededRoleGroup.current = null; return; }
     if (!premade || lobby.loading || lobby.busy || seededRoleGroup.current === lobby.group.id) return;
     seededRoleGroup.current = lobby.group.id;
-    if (lobby.me?.role) rememberPremadeRole(lobby.me.role);
-    else if (premadeRole) void changePremadeRole(premadeRole);
+    const draft = draftPremadeRole.current;
+    draftPremadeRole.current = null;
+    if (draft && draft !== lobby.me?.role) void changePremadeRole(draft);
+    else rememberPremadeRole(lobby.me?.role ?? 'DPS');
   }, [premade, lobby.group?.id, lobby.loading, lobby.busy, premadeRole]);
   useEffect(() => {
     if (!premade || !canSave || lobby.busy || (!selectionDirty && lastSavedDevice.current === companionDeviceId)) return;
@@ -249,7 +252,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
       tooltip={premade ? t(lobby.captain ? 'playYouAreLobbyCaptain' : 'playLobbyCaptain') : undefined}
       onChange={value => { setCaptainConsent(value); setSaved(false); }} />}
     <CharacterSelection small={premade && premadeCount >= 9} accountId={accountId} preferred={context.selection ?? undefined} disabled={saving}
-      smallFooter={premade ? <span className="premade-member-role"><span>{t('groupYou')}</span><LobbyRoleIcon role={(lobby.me?.role ?? premadeRole) || null} fcIcon={fcIcon} /></span> : undefined}
+      smallFooter={premade ? <span className="premade-member-role"><span>{t('groupYou')}</span><LobbyRoleIcon role={lobby.me?.role ?? premadeRole} fcIcon={fcIcon} /></span> : undefined}
       onChange={value => { setCharacter(value); setSaved(false); }} />
     {character && <RoleSelection fcIcon={fcIcon} legendLabel={premade ? 'playLobbyRole' : 'selectionRole'} value={premade ? lobby.me?.role ?? premadeRole : role} disabled={saving || (premade && (lobby.loading || lobby.busy))}
       onChange={value => { if (premade) void changePremadeRole(value); else { setRole(value); setSaved(false); } }} />}
@@ -263,7 +266,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
       </div>
       <LobbyActions lobby={lobby} onPanel={openPanel} characterReady={!!character} />
     </div>
-    <PlayLobbyStage premade={premade} lobby={lobby} ownRole={(lobby.me?.role ?? premadeRole) || null} onSlot={openSlot}>{content}</PlayLobbyStage>
+    <PlayLobbyStage premade={premade} lobby={lobby} ownRole={lobby.me?.role ?? premadeRole} onSlot={openSlot}>{content}</PlayLobbyStage>
     {context && <div className="play-selection-feedback">
     {error && <p role="alert">{t(error)}</p>}
     {premade && error === 'selectionSaveError' && <button type="button" disabled={!canSave} onClick={() => void saveSelection()}>{t('charactersRetry')}</button>}

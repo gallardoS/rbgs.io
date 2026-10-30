@@ -81,7 +81,7 @@ export const messages = {
   groupTransfer: 'Make captain',
   groupRemove: 'Remove player',
   groupInvite: 'Invite player',
-  groupInviteHelp: 'Enter the full BattleTag of a player who has signed in to rbgs.io. Invitations expire after 30 minutes.',
+  groupInviteHelp: 'Enter the full BattleTag of a player who has signed in to rbgs.io. Invitations expire after 60 seconds.',
   groupCancelInvite: 'Cancel invitation',
   groupPreparation: 'Prepare for premade',
   groupConfirmationHelp: 'Confirm your saved character and role. Roster, captain, season or selection changes require confirmation again. This does not enter a queue.',

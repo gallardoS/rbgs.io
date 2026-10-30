@@ -62,9 +62,9 @@ export function PlayLobbyStage({ children, premade, lobby, ownRole, onSlot }: {
   const roster = lobby.group?.members ?? [];
   for (const member of roster) {
     const role = member.accountId === lobby.accountId ? ownRole : member.role;
-    if (role) counts[role]++;
+    counts[role ?? 'DPS']++;
   }
-  if (!roster.length && ownRole) counts[ownRole]++;
+  if (!roster.length) counts[ownRole ?? 'DPS']++;
   const others = lobby.group?.members.filter(member => member.accountId !== lobby.accountId) ?? [];
   const dense = premade && (lobby.group?.members.length ?? 1) >= 9;
   const ownRef = useRef<HTMLDivElement>(null);
@@ -112,21 +112,21 @@ export function PlayLobbyStage({ children, premade, lobby, ownRole, onSlot }: {
 
 function LobbyPlayerCard({ member, fcIcon }: { member: GroupMember; fcIcon: FcIcon }) {
   const { t } = useLocale();
-  const character: Character = { id: 0, name: member.characterName ?? member.displayName, level: 0,
+  const character: Character = member.character ?? { id: 0, name: member.characterName ?? member.displayName, level: 0,
     realm: { id: 0, name: member.realm ?? t('playSelectionPending'), slug: '' } };
   const avatar = <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="16" cy="10" r="5" /><path d="M6 29v-3a10 10 0 0 1 20 0v3" /></svg>;
   const footer = <span className="premade-member-role"><LobbyRoleIcon role={member.role} fcIcon={fcIcon} />
     {member.captain && <span className="premade-captain-label">{t('groupCaptain')}</span>}
   </span>;
   return <>
-    <PlayerCard character={character} size="small" showLevel={false} detailsAvailable={false} avatarFallback={avatar} footer={footer} />
-    <span className="premade-card-preview" aria-hidden="true"><PlayerCard character={character} tilt showLevel={false} detailsAvailable={false} avatarFallback={avatar} footer={footer} /></span>
+    <PlayerCard character={character} size="small" showLevel={!!member.character} avatarFallback={avatar} footer={footer} />
+    <span className="premade-card-preview" aria-hidden="true"><PlayerCard character={character} tilt showLevel={!!member.character} avatarFallback={avatar} footer={footer} /></span>
   </>;
 }
 
 export function LobbyRoleIcon({ role, fcIcon }: { role: GroupMember['role']; fcIcon: FcIcon }) {
   const { t } = useLocale();
-  if (!role) return <span className="premade-role-unset" aria-label={t('playRoleUnset')}>—</span>;
+  role ??= 'DPS';
   const label = t(role === 'FC' ? 'selectionFc' : role === 'HEALER' ? 'selectionHealer' : 'selectionDps');
   const source = role === 'FC' ? fcIconAsset(fcIcon) : `/media/roles/${role === 'HEALER' ? 'heal' : 'dps'}.webp`;
   return <img className="premade-role-icon" src={source} width="24" height="24" alt={label} title={label} />;

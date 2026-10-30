@@ -6,7 +6,7 @@ import type { MessageKey } from './locales/en';
 
 type AccountProfile = { wow_accounts: { id: number; characters: Character[] }[] };
 type Reference = { namespace: string; wowAccountId: number; realmId: number; characterId: number };
-type SavedCharacter = Reference & { region: 'EU' | 'NA'; name: string; realm: string };
+type SavedCharacter = Reference & { region: 'EU' | 'NA'; name: string; realm: string; character?: Character | null };
 type Choice = { key: string; character: Character; reference: Reference };
 const sameReference = (a: Reference, b: Reference) => a.namespace === b.namespace && a.wowAccountId === b.wowAccountId && a.realmId === b.realmId && a.characterId === b.characterId;
 class ChoiceError extends Error { constructor(public messageKey: MessageKey) { super(messageKey); } }
@@ -81,7 +81,8 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
         if (!chosen) return;
         setSelected(chosen.key);
         try {
-          if (!saved || !sameReference(chosen.reference, saved)) await persistChoice(chosen, controller.signal);
+          // The catalog is already loaded; refresh only this selected profile, with no extra provider fan-out.
+          await persistChoice(chosen, controller.signal);
           if (controller.signal.aborted) return;
           persistedKey.current = chosen.key;
           changeListener.current?.(chosen.character);

@@ -83,7 +83,7 @@ export const messages: Record<MessageKey, string> = {
   groupTransfer: 'Nommer capitaine',
   groupRemove: 'Retirer le joueur',
   groupInvite: 'Inviter un joueur',
-  groupInviteHelp: 'Saisissez le BattleTag complet d’un joueur déjà connecté à rbgs.io. Les invitations expirent après 30 minutes.',
+  groupInviteHelp: 'Saisissez le BattleTag complet d’un joueur déjà connecté à rbgs.io. Les invitations expirent après 60 secondes.',
   groupCancelInvite: 'Annuler l’invitation',
   groupPreparation: 'Préparer le premade',
   groupConfirmationHelp: 'Confirmez votre personnage et votre rôle enregistrés. Toute modification de la composition, du capitaine, de la saison ou de la sélection exige une nouvelle confirmation. Cela ne lance pas la recherche.',
