@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
 /** SSE carries invalidations; authenticated HTTP snapshots remain authoritative. */
-export function useLobbyEvents(accountId: string, enabled: boolean, onChange: () => void) {
+export function useLobbyEvents(accountId: string, enabled: boolean, onChange: () => void, onRemoved?: () => void) {
   const [connected, setConnected] = useState(false);
   const change = useRef(onChange); change.current = onChange;
+  const removed = useRef(onRemoved); removed.current = onRemoved;
   useEffect(() => {
     let source: EventSource | null = null;
     let watchdog: number | null = null;
@@ -24,6 +25,7 @@ export function useLobbyEvents(accountId: string, enabled: boolean, onChange: ()
         lastSignal = Date.now(); setConnected(true); change.current();
       });
       current.addEventListener('changed', () => { if (live()) { lastSignal = Date.now(); change.current(); } });
+      current.addEventListener('removed', () => { if (live()) { lastSignal = Date.now(); removed.current?.(); change.current(); } });
       current.addEventListener('ping', () => { if (live()) lastSignal = Date.now(); });
       current.addEventListener('error', () => { if (live()) setConnected(false); });
       watchdog = window.setInterval(() => {

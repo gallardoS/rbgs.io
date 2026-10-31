@@ -1,6 +1,9 @@
 import type { MessageKey } from './en';
 
 export const messages = {
+  lobbyNotifications: 'Уведомления лобби',
+  lobbyRemovedMessage: 'Вас исключили из лобби',
+  lobbyRemovedDismiss: 'Закрыть уведомление лобби',
   lobbyInviteMoreOne: "Ещё 1 приглашение",
   lobbyInviteNotifications: "Приглашения в лобби",
   lobbyInviteTitle: "Приглашение в лобби",

@@ -1,4 +1,4 @@
-import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useId, useLayoutEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { useLocale } from './locales';
 import type { GroupLobby, GroupMember } from './GroupPage';
 import { PlayerCard, setPlayerCardTilt, resetPlayerCardTilt, type Character } from './PlayerCard';
@@ -14,13 +14,31 @@ export function PlayModeButton({ mode, selected, disabled, onSelect }: {
   const { t } = useLocale();
   const tooltipId = useId();
   const [dismissed, setDismissed] = useState(false);
+  const tooltipRef = useRef<HTMLSpanElement>(null);
   const heading = t(mode === 'solo' ? 'soloHeading' : 'premadeHeading');
+  function followPointer(event: PointerEvent<HTMLSpanElement>) {
+    if (event.pointerType === 'touch' || !tooltipRef.current) return;
+    const tooltip = tooltipRef.current;
+    const anchor = event.currentTarget.getBoundingClientRect();
+    const width = tooltip.offsetWidth, height = tooltip.offsetHeight;
+    const preferredLeft = event.clientX + width + 22 <= window.innerWidth ? event.clientX + 14 : event.clientX - width - 14;
+    const preferredTop = event.clientY + height + 26 <= window.innerHeight ? event.clientY + 18 : event.clientY - height - 14;
+    const left = Math.max(8, Math.min(preferredLeft, window.innerWidth - width - 8));
+    const top = Math.max(8, Math.min(preferredTop, window.innerHeight - height - 8));
+    tooltip.style.left = `${left - anchor.left}px`;
+    tooltip.style.top = `${top - anchor.top}px`;
+    tooltip.style.right = 'auto';
+  }
+  function resetPointer() {
+    const tooltip = tooltipRef.current;
+    for (const property of ['left', 'top', 'right']) tooltip?.style.removeProperty(property);
+  }
   return <span className="play-mode-option" data-tooltip-dismissed={dismissed}
-    onPointerEnter={() => setDismissed(false)}
+    onPointerEnter={event => { setDismissed(false); followPointer(event); }} onPointerMove={followPointer} onPointerLeave={resetPointer}
     onKeyDown={event => { if (event.key === 'Escape') setDismissed(true); }}>
     <button type="button" className="play-mode-button" aria-pressed={selected} aria-describedby={tooltipId}
       disabled={disabled} onClick={onSelect} onFocus={() => setDismissed(false)}>{heading}</button>
-    <span id={tooltipId} className="captain-tooltip" role="tooltip">{t(mode === 'solo' ? 'soloDescription' : 'premadeDescription')}</span>
+    <span ref={tooltipRef} id={tooltipId} className="captain-tooltip" role="tooltip">{t(mode === 'solo' ? 'soloDescription' : 'premadeDescription')}</span>
   </span>;
 }
 

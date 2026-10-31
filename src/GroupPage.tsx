@@ -6,6 +6,8 @@ import './GroupPage.css';
 import { useLobbyEvents } from './useLobbyEvents';
 import type { Character } from './PlayerCard';
 
+export const LOBBY_REMOVAL_NOTICE_MS = 15_000;
+
 export type GroupMember = {
   accountId: string; displayName: string; captain: boolean; characterName: string | null; realm: string | null;
   role: 'FC' | 'HEALER' | 'DPS' | null; roleVersion: number; selectionVersion: number | null; confirmed: boolean;
@@ -87,6 +89,7 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
   const [battleTag, setBattleTag] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [copied, setCopied] = useState(false);
+  const [removalNotice, setRemovalNotice] = useState<{ expiresAt: string } | null>(null);
   const controller = useRef<AbortController | null>(null);
   const mutating = useRef(false);
   const refreshing = useRef<AbortController | null>(null);
@@ -170,7 +173,11 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
       if (mounted.current && eventPending.current) queueEventRefresh();
     }
   }
-  const streamConnected = useLobbyEvents(accountId, (active || receiveInvitations) && error !== 'groupAccessError', queueEventRefresh);
+  const streamConnected = useLobbyEvents(accountId, (active || receiveInvitations) && error !== 'groupAccessError', queueEventRefresh, () => {
+    if (!mounted.current) return;
+    setRemovalNotice({ expiresAt: new Date(Date.now() + LOBBY_REMOVAL_NOTICE_MS).toISOString() });
+    fullSnapshotPending.current = true;
+  });
   useEffect(() => {
     mounted.current = true;
     lastSnapshotAt.current = 0; initialized.current = false;
@@ -251,7 +258,8 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
   }
 
   return { accountId, group, incoming, context, loading, busy, error, battleTag, setBattleTag, joinCode, setJoinCode,
-    copied, me, captain, reload, action, command, updateRole, expires, copyCode };
+    copied, me, captain, reload, action, command, updateRole, expires, copyCode,
+    removalNotice, dismissRemovalNotice: () => setRemovalNotice(null) };
 }
 
 export type GroupLobby = ReturnType<typeof useGroupLobby>;

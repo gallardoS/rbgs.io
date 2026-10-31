@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useLocale } from './locales';
 import { localizedPath } from './locale-routing';
-import type { GroupLobby } from './GroupPage';
+import { LOBBY_REMOVAL_NOTICE_MS, type GroupLobby } from './GroupPage';
 import './LobbyInvitationNotifications.css';
 
 function readDismissed(key: string): string[] {
@@ -16,7 +16,7 @@ function readDismissed(key: string): string[] {
 // Group invitations expire 60 seconds after creation or renewal (GroupInvitation).
 const INVITATION_LIFETIME_MS = 60 * 1000;
 
-function InvitationLifetime({ expiresAt }: { expiresAt: string }) {
+function NotificationLifetime({ expiresAt, lifetimeMs = INVITATION_LIFETIME_MS }: { expiresAt: string; lifetimeMs?: number }) {
   const [startedAt, setStartedAt] = useState(Date.now);
   useEffect(() => {
     const resync = () => { if (!document.hidden) setStartedAt(Date.now()); };
@@ -29,7 +29,7 @@ function InvitationLifetime({ expiresAt }: { expiresAt: string }) {
   }, []);
   const remaining = Math.max(0, Date.parse(expiresAt) - startedAt);
   return <div className="lobby-invite-lifetime" aria-hidden="true">
-    <span key={startedAt} style={{ '--invite-remaining': Math.min(1, remaining / INVITATION_LIFETIME_MS),
+    <span key={startedAt} style={{ '--invite-remaining': Math.min(1, remaining / lifetimeMs),
       animationDuration: `${remaining}ms` } as CSSProperties} />
   </div>;
 }
@@ -43,14 +43,17 @@ export function LobbyInvitationNotifications({ lobby }: { lobby: GroupLobby }) {
   const [failed, setFailed] = useState<string | null>(null);
   const running = useRef(false);
   const currentTime = Math.max(clock, Date.now());
+  const removal = lobby.removalNotice && Date.parse(lobby.removalNotice.expiresAt) > currentTime ? lobby.removalNotice : null;
   const pending = lobby.incoming.filter(invite => Date.parse(invite.expiresAt) > currentTime);
   const visible = pending.filter(invite => !dismissed.includes(`${invite.id}:${invite.expiresAt}`));
   useEffect(() => {
-    const next = Math.min(...lobby.incoming.map(invite => Date.parse(invite.expiresAt)).filter(at => at > Date.now()));
+    const deadlines = lobby.incoming.map(invite => Date.parse(invite.expiresAt));
+    if (lobby.removalNotice) deadlines.push(Date.parse(lobby.removalNotice.expiresAt));
+    const next = Math.min(...deadlines.filter(at => at > Date.now()));
     if (!Number.isFinite(next)) return;
     const timeout = window.setTimeout(() => setClock(Date.now()), Math.min(next - Date.now() + 20, 2_147_483_647));
     return () => window.clearTimeout(timeout);
-  }, [lobby.incoming, clock]);
+  }, [lobby.incoming, lobby.removalNotice?.expiresAt, clock]);
 
   function dismiss(key: string) {
     setDismissed(previous => {
@@ -72,9 +75,20 @@ export function LobbyInvitationNotifications({ lobby }: { lobby: GroupLobby }) {
   if (typeof document === 'undefined') return null;
   return createPortal(<>
     <div className="sr-only" role="status" aria-live="polite" aria-atomic="false" aria-relevant="additions text">
+      {removal && <span key={removal.expiresAt}>{t('lobbyRemovedMessage')}</span>}
       {visible.slice(0, 3).map(invite => <span key={`${invite.id}:${invite.expiresAt}`}>{invite.captainName} {t('lobbyInviteMessage')}</span>)}
     </div>
-    {visible.length > 0 && <section className="lobby-invite-notifications" aria-label={t('lobbyInviteNotifications')}>
+    {(visible.length > 0 || removal) && <section className="lobby-invite-notifications" aria-label={t('lobbyNotifications')}>
+    {removal && <article key={removal.expiresAt} className="lobby-invite-notice lobby-removal-notice" onKeyDown={event => {
+      if (event.key === 'Escape') { event.stopPropagation(); lobby.dismissRemovalNotice(); }
+    }}>
+      <div className="lobby-invite-notice-heading">
+        <span className="lobby-invite-notice-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5M9 12h12m-5-5 5 5-5 5" /></svg></span>
+        <strong>{t('lobbyRemovedMessage')}</strong>
+        <button type="button" className="lobby-invite-dismiss" aria-label={t('lobbyRemovedDismiss')} onClick={lobby.dismissRemovalNotice}>×</button>
+      </div>
+      <NotificationLifetime expiresAt={removal.expiresAt} lifetimeMs={LOBBY_REMOVAL_NOTICE_MS} />
+    </article>}
     {visible.slice(0, 3).map(invite => {
       const key = `${invite.id}:${invite.expiresAt}`;
       return <article key={key} className="lobby-invite-notice" onKeyDown={event => {
@@ -93,7 +107,7 @@ export function LobbyInvitationNotifications({ lobby }: { lobby: GroupLobby }) {
           <button type="button" className="lobby-invite-accept" disabled={lobby.busy || !!lobby.group} onClick={() => void respond(invite.id, key, true)}>{t('groupAccept')}</button>
           <button type="button" disabled={lobby.busy} onClick={() => void respond(invite.id, key, false)}>{t('groupDecline')}</button>
         </div>
-        <InvitationLifetime expiresAt={invite.expiresAt} />
+        <NotificationLifetime expiresAt={invite.expiresAt} />
       </article>;
     })}
     {visible.length > 3 && <span className="lobby-invite-more">{t(visible.length === 4 ? 'lobbyInviteMoreOne' : 'lobbyInviteMore').replace('{count}', String(visible.length - 3))}</span>}

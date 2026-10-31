@@ -1,6 +1,9 @@
 import type { MessageKey } from './en';
 
 export const messages: Record<MessageKey, string> = {
+  lobbyNotifications: 'Notificaciones del lobby',
+  lobbyRemovedMessage: 'Te han expulsado del lobby',
+  lobbyRemovedDismiss: 'Cerrar notificación del lobby',
   lobbyInviteMoreOne: "1 invitación más",
   lobbyInviteNotifications: "Invitaciones al lobby",
   lobbyInviteTitle: "Invitación al lobby",

@@ -1,4 +1,7 @@
 export const messages = {
+  lobbyNotifications: 'Lobby notifications',
+  lobbyRemovedMessage: 'You were removed from the lobby',
+  lobbyRemovedDismiss: 'Dismiss lobby notification',
   lobbyInviteMoreOne: "1 more invitation",
   lobbyInviteNotifications: "Lobby invitations",
   lobbyInviteTitle: "Lobby invitation",

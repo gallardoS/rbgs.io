@@ -152,6 +152,7 @@
 .find-match-steps > span + span { margin-top: .4rem; }
 
 .play-mode-option { position: relative; display: inline-flex; }
+.play-mode-option .play-mode-button:disabled { pointer-events: none; }
 .play-mode-option .captain-tooltip { top: calc(100% + .5rem); bottom: auto; z-index: 12; text-align: left; }
 .play-mode-option:first-child .captain-tooltip { left: 0; transform: none; }
 .play-mode-option:last-child .captain-tooltip { left: auto; right: 0; transform: none; }

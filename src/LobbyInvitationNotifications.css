@@ -22,3 +22,5 @@
 .lobby-invite-lifetime { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; overflow: hidden; border-radius: 0 0 .8rem .8rem; pointer-events: none; }
 .lobby-invite-lifetime > span { display: block; width: 100%; height: 100%; background: #facc15; transform-origin: left center; animation: lobby-invite-countdown linear forwards; }
 @keyframes lobby-invite-countdown { from { transform: scaleX(var(--invite-remaining)); } to { transform: scaleX(0); } }
+
+.lobby-removal-notice .lobby-invite-notice-icon { color: #f07c7c; }
