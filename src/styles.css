@@ -193,7 +193,7 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .language-flag { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 40px; min-height: 40px; padding: 0; border: 0; border-radius: .2rem; background: transparent; box-shadow: none; }
 .language-flag:hover { background: transparent; box-shadow: none; }
 .language-flag img { display: block; border-radius: 1px; }
-.language-options { position: absolute; left: 50%; transform: translateX(-50%); top: calc(100% + .4rem); padding: .25rem; background: #151817; border-radius: .2rem; box-shadow: 0 4px 18px #0006; }
+.language-options { max-height: 70dvh; overflow-y: auto; position: absolute; left: 50%; transform: translateX(-50%); top: calc(100% + .4rem); padding: .25rem; background: #151817; border-radius: .2rem; box-shadow: 0 4px 18px #0006; }
 
 .character-selection { max-width: 42rem; margin: 2rem 0; }
 .character-selection h2 { margin-top: 0; }
@@ -363,7 +363,7 @@ html { scrollbar-color: #facc15 #0c0e0d; scrollbar-width: thin; }
 
 .mobile-language-options { display: none; }
 @media (max-width: 1000px) {
-  .mobile-language-options { display: flex; align-items: center; gap: .5rem; }
+  .mobile-language-options { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
   .language-switch > .language-flag, .language-switch > .language-options { display: none; }
   .mobile-language-options .language-flag[aria-current="page"] { background: #ffffff0a; }
 }

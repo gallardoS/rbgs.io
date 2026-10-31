@@ -4,8 +4,12 @@ import { localizedPath, pathLanguage, type Language } from '../locale-routing';
 import { messages as en, type MessageKey } from './en';
 import { messages as es } from './es';
 import { messages as fr } from './fr';
+import { messages as de } from './de';
+import { messages as ptBR } from './pt-BR';
+import { messages as ru } from './ru';
+import { messages as it } from './it';
 
-const catalogs = { en, es, fr };
+const catalogs = { en, es, fr, de, 'pt-BR': ptBR, ru, it };
 
 const LanguageContext = createContext({ language: 'en' as Language, setLanguage: (_language: Language) => {} });
 

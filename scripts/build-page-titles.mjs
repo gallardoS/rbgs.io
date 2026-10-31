@@ -6,10 +6,10 @@ const descriptions = JSON.parse(await readFile(new URL('../src/page-descriptions
 const internalRoutes = JSON.parse(await readFile(new URL('../src/internal-routes.json', import.meta.url), 'utf8'));
 const template = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
 const escapeHtml = (value) => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-const languages = ['en', 'es', 'fr'];
-const languageLocales = { en: 'en_US', es: 'es_ES', fr: 'fr_FR' };
-const pathLanguage = path => path.match(/^\/(es|fr)(?:\/|$)/)?.[1] ?? 'en';
-const basePath = path => path.replace(/^\/(es|fr)(?=\/|$)/, '') || '/';
+const languages = ['en', 'es', 'fr', 'de', 'pt-BR', 'ru', 'it'];
+const languageLocales = { en: 'en_US', es: 'es_ES', fr: 'fr_FR', de: 'de_DE', 'pt-BR': 'pt_BR', ru: 'ru_RU', it: 'it_IT' };
+const pathLanguage = path => path.match(/^\/(es|fr|de|pt-BR|ru|it)(?:\/|$)/)?.[1] ?? 'en';
+const basePath = path => path.replace(/^\/(es|fr|de|pt-BR|ru|it)(?=\/|$)/, '') || '/';
 const localizedPath = (path, language) => language === 'en' ? path : path === '/' ? `/${language}/` : `/${language}${path}`;
 const websiteData = JSON.stringify({
   '@context': 'https://schema.org',
@@ -60,7 +60,7 @@ for (const language of languages) {
       .replace('<div id="root"></div>', () => `<div id="root" data-prerender-path="${path}">${render(path)}</div>`);
     await writeFile(new URL(`../dist${path}.html`, import.meta.url), html);
   }
-  const errorHeading = { en: 'Page not found', es: 'Página no encontrada', fr: 'Page introuvable' }[language];
+  const errorHeading = { en: 'Page not found', es: 'Página no encontrada', fr: 'Page introuvable', de: 'Seite nicht gefunden', 'pt-BR': 'Página não encontrada', ru: 'Страница не найдена', it: 'Pagina non trovata' }[language];
   const errorTitle = `${errorHeading} | rbgs.io`;
   const errorDescription = `${errorHeading}.`;
   const html = template
