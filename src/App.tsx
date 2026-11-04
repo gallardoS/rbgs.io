@@ -18,6 +18,7 @@ import { Settings } from './Settings';
 import { ModeratorMatches } from './ModeratorMatches';
 import { TesterPopup } from './TesterPopup';
 import { MatchHistory } from './MatchHistory';
+import { ProfileRegions } from './ProfileRegions';
 import {pendingCompanionLink} from './companion-link';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
 import { SeasonNotificationsProvider, useSeasonNotice } from './SeasonNotifications';
@@ -285,7 +286,7 @@ function AppContent() {
           ? <div className="profile-settings">
             <section className="profile-settings-section" aria-labelledby="profile-account-title">
               <div className="profile-section-heading"><h2 id="profile-account-title">{t('profileAccountHeading')}</h2><p>{t('profileAccountDescription')}</p></div>
-              <dl className="profile-account-details"><div><dt>Battle.net</dt><dd>{session.profile.displayName}</dd></div><div><dt>{t('profileRegion')}</dt><dd>{session.profile.region.toUpperCase()}</dd></div></dl>
+              <dl className="profile-account-details"><div><dt>Battle.net</dt><dd>{session.profile.displayName}</dd></div><div><dt>{t('profileRegion')}</dt><dd><ProfileRegions key={session.profile.id} accountId={session.profile.id} /></dd></div></dl>
             </section>
             <section className="profile-settings-section" aria-labelledby="profile-session-title">
               <div className="profile-section-heading"><h2 id="profile-session-title">{t('profileSessionHeading')}</h2><p>{t('profileSessionDescription')}</p></div>
