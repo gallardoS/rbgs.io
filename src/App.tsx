@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
 import { HeroBackground } from './HeroBackground';
+import GradualBlur from './GradualBlur';
 import { HeroCopy } from './HeroCopy';
 import { Leaderboard } from './Leaderboard';
 import { MatchJourney } from './MatchJourney';
@@ -113,7 +114,9 @@ function Home({ profile, loading, authError }: Session) {
         : <BattleNetLoginButton />}
       {authError && <p role="alert">{t('authError')}</p>}
     </div>
-  </div></section><MatchJourney /><Leaderboard preview /></main>;
+  </div></section><MatchJourney /><Leaderboard preview />
+    <GradualBlur target="page" position="bottom" container="#page-scroll" height="clamp(4rem, 10vh, 7rem)" strength={2} layers={8} zIndex={10} tint="#070808" autoHide />
+  </main>;
 }
 
 type Profile = { id: string; displayName: string; region: string; role: string };

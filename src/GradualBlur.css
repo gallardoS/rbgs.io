@@ -1,0 +1,9 @@
+.gradual-blur {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gradual-blur > div {
+    transition: none !important;
+  }
+}
