@@ -262,7 +262,7 @@ function AppContent() {
         <Route path="/downloads" element={<InfoPage heading="navigationDownloads" introduction="downloadsIntro"><div className="info-grid">
           <article><h2>{t('companionHeading')}</h2><p>{t('companionDescription')}</p>
             {session.profile && ['TESTER', 'MODERATOR', 'ADMIN'].includes(session.profile.role)
-              ? <a className="button" href="https://github.com/gallardoS/companion.rbgs.io/releases/latest" target="_blank" rel="noopener noreferrer">{t('companionDownload')}</a>
+              ? <a className="button" href="https://github.com/gallardoS/companion.rbgs.io/releases/latest/download/rbgs.io-companion-setup.exe">{t('companionDownload')}</a>
               : <span className="availability">{t('releasePending')}</span>}
           </article>
           <article><h2>{t('addonHeading')}</h2><p>{t('addonDescription')}</p><span className="availability">{t('releasePending')}</span></article>
