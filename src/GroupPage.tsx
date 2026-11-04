@@ -43,9 +43,10 @@ function validMemberCharacter(v: any): v is Character | null | undefined {
         && ['.worldofwarcraft.com', '.blizzard.com', '.blizzardstatic.com', '.battle.net'].some(host => parsed.hostname.endsWith(host));
     } catch { return false; }
   };
-  return Number.isSafeInteger(v.id) && v.id > 0 && typeof v.name === 'string' && Number.isSafeInteger(v.level) && v.level >= 60
+  return Number.isSafeInteger(v.id) && v.id > 0 && typeof v.name === 'string' && Number.isSafeInteger(v.level)
+    && v.level >= (typeof v.namespace === 'string' && v.namespace.startsWith('profile-forever-') ? 1 : 60)
     && v.realm && Number.isSafeInteger(v.realm.id) && typeof v.realm.slug === 'string' && (v.realm.name == null || typeof v.realm.name === 'string')
-    && typeof v.namespace === 'string' && /^profile-classic(1x|ann)?-(eu|us)$/.test(v.namespace)
+    && typeof v.namespace === 'string' && /^profile-(classic(1x|ann)?|forever)-(eu|us)$/.test(v.namespace)
     && [v.playable_class, v.playable_race, v.faction, v.guild, v.gender].every(named) && image(v.avatarUrl) && image(v.insetUrl);
 }
 function validGroup(v: any): v is PremadeGroup | null {

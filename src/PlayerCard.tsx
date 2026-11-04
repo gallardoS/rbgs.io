@@ -3,7 +3,7 @@ import { useLocale } from './locales';
 
 export type Character = {
   id: number; name: string; level: number;
-  namespace?: 'profile-classic1x-eu' | 'profile-classic-eu' | 'profile-classic1x-us' | 'profile-classic-us' | 'profile-classicann-eu' | 'profile-classicann-us';
+  namespace?: 'profile-classic1x-eu' | 'profile-classic-eu' | 'profile-classic1x-us' | 'profile-classic-us' | 'profile-classicann-eu' | 'profile-classicann-us' | 'profile-forever-eu' | 'profile-forever-us';
   realm: { id: number; name: string; slug: string };
   playable_class?: { id?: number; name: string }; playable_race?: { name: string }; faction?: { name: string };
   avatarUrl?: string | null;
@@ -13,6 +13,9 @@ export type Character = {
 };
 export function characterRegion(character: Character): 'EU' | 'NA' {
   return character.namespace?.endsWith('-us') ? 'NA' : 'EU';
+}
+export function isPickerCharacter(character: Pick<Character, 'namespace' | 'level'>): boolean {
+  return character.level >= (character.namespace?.startsWith('profile-forever-') ? 1 : 60);
 }
 export function PlayerCardSkeleton() {
   const { t } = useLocale();

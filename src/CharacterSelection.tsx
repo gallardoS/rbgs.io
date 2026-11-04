@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { CharacterAvatar, CharacterIcons, PlayerCard, PlayerCardSkeleton, characterRegion, setPlayerCardTilt, resetPlayerCardTilt, type Character } from './PlayerCard';
+import { CharacterAvatar, CharacterIcons, PlayerCard, PlayerCardSkeleton, characterRegion, isPickerCharacter, setPlayerCardTilt, resetPlayerCardTilt, type Character } from './PlayerCard';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
@@ -62,12 +62,15 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
         const data = await response.json() as AccountProfile;
         const text = await preference.text();
         const saved = text ? JSON.parse(text) as SavedCharacter | null : null;
-        const choices = data.wow_accounts.flatMap(account => account.characters.filter(character => character.level >= 60).map(character => ({
+        const choices = data.wow_accounts.flatMap(account => account.characters.filter(isPickerCharacter).map(character => ({
           key: character.namespace && character.namespace !== 'profile-classic1x-eu'
             ? `${character.namespace}:${account.id}:${character.realm.id}:${character.id}`
             : `${account.id}:${character.realm.id}:${character.id}`, character,
           reference: { namespace: character.namespace ?? 'profile-classic1x-eu', wowAccountId: account.id, realmId: character.realm.id, characterId: character.id },
-        }))).sort((a, b) => a.character.name.localeCompare(b.character.name));
+        }))).sort((a, b) =>
+          Number(b.character.namespace?.startsWith('profile-forever-') ?? false)
+          - Number(a.character.namespace?.startsWith('profile-forever-') ?? false)
+          || a.character.name.localeCompare(b.character.name));
         if (controller.signal.aborted) return;
         setCharacters(choices);
         const matching = choices.filter(choice => choice.character.name === preferredChoice.current?.name
@@ -160,18 +163,16 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
       </div>
       <dialog ref={dialog} className="character-selection-dialog" aria-labelledby="character-selection-title"
         onClose={() => setDialogOpen(false)}
-        aria-describedby="character-selection-description" onClick={event => {
+        onClick={event => {
           if (event.target !== event.currentTarget) return;
           const bounds = event.currentTarget.getBoundingClientRect();
           if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.current?.close();
         }}>
         <header className="character-selection-heading">
-          <div><h2 id="character-selection-title">{t('charactersChange')}</h2>
-            <p id="character-selection-description">{t('charactersIntro')}</p></div>
+          <div><h2 id="character-selection-title">{t('charactersChange')}</h2></div>
           <button type="button" className="character-selection-close" aria-label={t('charactersClose')} onClick={() => dialog.current?.close()} autoFocus>×</button>
         </header>
         {choicesList}
-        <p className="character-selection-note">{t('charactersBetaNotice')}</p>
       </dialog>
     </>}
   </section>;
