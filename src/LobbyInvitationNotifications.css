@@ -33,4 +33,6 @@
 .message-notification .lobby-invite-notice-heading > strong { min-width: 0; line-height: 1.5; overflow-wrap: anywhere; }
 .message-notification .lobby-invite-dismiss { flex-shrink: 0; }
 .message-notification-actions { margin-top: .85rem; }
-.message-notification-actions .battle-net-button { width: 100%; justify-content: center; box-sizing: border-box; }
+.message-notification-actions .battle-net-button { width: 100%; justify-content: center; box-sizing: border-box; padding: .65rem .75rem; gap: .5rem; font-size: .85rem; white-space: nowrap; }
+.message-notification-actions .battle-net-button img { flex-shrink: 0; }
+.message-notification-actions .battle-net-button .button-arrow { flex-shrink: 0; margin-left: auto; }
