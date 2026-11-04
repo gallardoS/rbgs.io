@@ -3,6 +3,7 @@ import { CharacterAvatar, CharacterIcons, PlayerCard, PlayerCardSkeleton, charac
 import { BattleNetLoginButton } from './BattleNetLoginButton';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
+import { MessageNotification } from './FloatingNotifications';
 
 type AccountProfile = { wow_accounts: { id: number; characters: Character[] }[] };
 type Reference = { namespace: string; wowAccountId: number; realmId: number; characterId: number };
@@ -37,6 +38,7 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
   const writeController = useRef<AbortController | null>(null);
   const persistedKey = useRef('');
   const dialog = useRef<HTMLDialogElement>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const changeListener = useRef(onChange);
   changeListener.current = onChange;
   const preferredChoice = useRef(preferred);
@@ -137,16 +139,18 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
         </ul>
   );
   return <section className="character-selection" aria-label={t('charactersHeading')}>
-    {choiceError && !dialog.current?.open && <p role="alert">{t(choiceError)}</p>}
+    <MessageNotification message={choiceError} attempt={attempt} container={dialogOpen ? dialog.current : null}>
+      {choiceError === 'charactersAuthorization' && <BattleNetLoginButton />}
+    </MessageNotification>
+    <MessageNotification message={error} attempt={attempt} />
     {loading ? <PlayerCardSkeleton /> : error ? <>
-      <p role="alert">{t(error)}</p>
       {error === 'charactersAuthorization'
         ? <BattleNetLoginButton />
         : <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('charactersRetry')}</button>}
     </> : characters.length === 0 ? <p role="status">{t('charactersEmpty')}</p> : <>
       <div className="character-picker">
         <button type="button" className={`player-card-trigger${small ? ' has-small-card' : ''}`} disabled={disabled || choosing} aria-haspopup="dialog"
-          aria-label={`${current?.name ?? ''} · ${t('charactersChange')}`} onClick={() => dialog.current?.showModal()}
+          aria-label={`${current?.name ?? ''} · ${t('charactersChange')}`} onClick={() => { dialog.current?.showModal(); setDialogOpen(true); }}
           onPointerMove={event => { const card = event.currentTarget.querySelector<HTMLElement>('.premade-card-preview .player-card'); if (card) setPlayerCardTilt(card, event, card.parentElement); }}
           onPointerLeave={event => { const card = event.currentTarget.querySelector<HTMLElement>('.premade-card-preview .player-card'); if (card) resetPlayerCardTilt(card); }}>
 
@@ -155,6 +159,7 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
         </button>
       </div>
       <dialog ref={dialog} className="character-selection-dialog" aria-labelledby="character-selection-title"
+        onClose={() => setDialogOpen(false)}
         aria-describedby="character-selection-description" onClick={event => {
           if (event.target !== event.currentTarget) return;
           const bounds = event.currentTarget.getBoundingClientRect();
@@ -165,7 +170,6 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
             <p id="character-selection-description">{t('charactersIntro')}</p></div>
           <button type="button" className="character-selection-close" aria-label={t('charactersClose')} onClick={() => dialog.current?.close()} autoFocus>×</button>
         </header>
-        {choiceError && <p role="alert">{t(choiceError)}</p>}
         {choicesList}
         <p className="character-selection-note">{t('charactersBetaNotice')}</p>
       </dialog>

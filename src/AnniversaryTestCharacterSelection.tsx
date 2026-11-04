@@ -6,7 +6,8 @@ import type { MessageKey } from './locales/en';
 export type TestCharacterReference = { namespace: string; wowAccountId: number; realmId: number; characterId: number };
 type Choice = { key: string; reference: TestCharacterReference; name: string; realm: string; level: number };
 
-export function AnniversaryTestCharacterSelection({ disabled, onChange }: {
+export function AnniversaryTestCharacterSelection({ disabled, onChange, endpoint = '/api/v1/moderation/capture-tests' }: {
+  endpoint?: string;
   disabled: boolean; onChange: (value: TestCharacterReference | null) => void;
 }) {
   const { t } = useLocale();
@@ -19,7 +20,7 @@ export function AnniversaryTestCharacterSelection({ disabled, onChange }: {
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true); setError(null); setChoices([]); setSelected(''); onChange(null);
-    fetch('/api/v1/moderation/capture-tests/anniversary/characters', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
+    fetch(endpoint + '/anniversary/characters', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
       .then(async response => {
         if (!response.ok) {
           if (!controller.signal.aborted) setError(response.status === 401 || response.status === 403
@@ -45,7 +46,7 @@ export function AnniversaryTestCharacterSelection({ disabled, onChange }: {
       .catch(() => { if (!controller.signal.aborted) setError('charactersError'); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [attempt, onChange]);
+  }, [attempt, endpoint, onChange]);
 
   const current = choices.find(choice => choice.key === selected);
   return <>

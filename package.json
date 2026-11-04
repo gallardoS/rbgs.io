@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:soloq-lab": "vite --mode soloq-lab",
     "build": "tsc --noEmit && vite build && vite build --ssr src/prerender.tsx --outDir dist/server && node scripts/build-page-titles.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"

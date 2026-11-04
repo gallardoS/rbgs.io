@@ -1,0 +1,27 @@
+.soloq-lab-scroll { height: 100%; overflow-y: auto; overflow-x: hidden; }
+.soloq-lab { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem 5rem; color: #e7e3d9; }
+.soloq-lab header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; }
+.soloq-lab header > div:first-child { flex: 1 1 16rem; }
+.soloq-lab .role-option:first-of-type .role-tooltip { left: 0; transform: none; }
+.soloq-lab h1 { margin: .25rem 0 1rem; font-size: clamp(1.5rem,4vw,2.3rem); }
+.soloq-lab-brand { color: #d4b576; margin: 0; font-weight: 700; }
+.soloq-lab-banner { padding: .8rem 1rem; border: 1px solid #b69a60; border-radius: .4rem; color: #ead098; background: #251e12; }
+.soloq-lab button, .soloq-lab select { min-height: 2.5rem; max-width: 100%; padding: .5rem .8rem; border: 1px solid #655b43; border-radius: .35rem; background: #1c1e20; color: inherit; font: inherit; }
+.soloq-lab button { cursor: pointer; }
+.soloq-lab button:disabled { opacity: .45; cursor: default; }
+.soloq-lab button:hover:not(:disabled), .soloq-lab button:focus-visible { border-color: #d4b576; }
+.soloq-lab-controls, .soloq-lab-test-actions { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+.soloq-lab-live { color: #b4b8b2; font-size: .85rem; }
+.soloq-lab-selection, .soloq-lab-search, .soloq-lab-room { padding: 1.25rem; border: 1px solid #3b3d3f; border-radius: .5rem; background: #131619; margin-top: 1.25rem; }
+.soloq-lab-selection { display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; }
+.soloq-lab-selection label:first-child { display: grid; gap: .5rem; }
+.soloq-lab-selection .role-picker { margin: 0; }
+.soloq-lab-selection .soloq-lab-captain-rule { flex-basis: 100%; margin: .25rem 0 0; font-size: .9rem; }
+.soloq-lab-search .soloq-lab-test-actions { margin-top: 1rem; }
+.soloq-lab-room h2 { color: #ead098; margin-top: 0; }
+.soloq-lab-teams { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1.5rem; margin-top: 1.25rem; }
+.soloq-lab-teams ol { padding: 0; list-style: none; }
+.soloq-lab-teams li { display: grid; grid-template-columns: minmax(0,1fr) 5rem 1.5rem; gap: .5rem; padding: .6rem; border-bottom: 1px solid #303337; }
+.soloq-lab-teams li[data-self=true] { background: #332b1b; }
+.soloq-lab-teams li span:first-child { overflow-wrap: anywhere; }
+@media (max-width: 600px) { .soloq-lab-teams { grid-template-columns: 1fr; gap: .5rem; } .soloq-lab-selection { align-items: flex-start; flex-direction: column; } }

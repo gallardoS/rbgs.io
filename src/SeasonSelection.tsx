@@ -16,6 +16,9 @@ import { LobbyActions } from './LobbyActions';
 import { useLobbySession } from './LobbySession';
 import { LobbyInvitationNotifications } from './LobbyInvitationNotifications';
 import { useLobbyDialogs } from './LobbyDialogs';
+import { MessageNotification } from './FloatingNotifications';
+import { useSoloQueueSession } from './SoloQueueSession';
+import { SoloQueuePanel } from './SoloQueuePanel';
 
 type Selection = {
   characterId: string; name: string; realm: string; source: 'DECLARED' | 'BLIZZARD_VERIFIED';
@@ -69,7 +72,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
   const premade = params.get('mode') === 'premade';
   const modeChosen = useRef(false);
   function chooseMode(next: boolean) {
-    if (lobby.loading || lobby.busy) return;
+    if (lobby.loading || lobby.busy || queueBusy || queueActive) return;
     modeChosen.current = true;
     setParams(previous => { const nextParams = new URLSearchParams(previous); nextParams.set('mode', next ? 'premade' : 'solo'); return nextParams; }, { replace: true });
   }
@@ -85,6 +88,9 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
   const [attempt, setAttempt] = useState(0);
   const [error, setError] = useState<MessageKey | null>(null);
   const [saved, setSaved] = useState(false);
+  const queue = useSoloQueueSession();
+  const queueBusy = queue?.busy ?? false;
+  const queueActive = queue?.active ?? false;
   const [character, setCharacter] = useState<Character | null>(null);
   const [role, setRole] = useState<Role>('DPS');
   const [premadeRole, setPremadeRole] = useState<Role>(() => storedPremadeRole(accountId));
@@ -120,7 +126,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
   const contextStale = !!context && (!!lobby.context && (lobby.context.season?.id !== context.season?.id
     || lobby.context.season?.version !== context.season?.version)
     || !!lobby.me && lobby.me.selectionVersion !== (context.selection?.version ?? null));
-  const canSave = !loading && !saving && !contextStale && context?.season?.ratingSubjectType === 'ACCOUNT'
+  const canSave = !queueActive && !loading && !saving && !contextStale && context?.season?.ratingSubjectType === 'ACCOUNT'
     && !!character && (premade || !!role) && !!companionDeviceId && error !== 'selectionConflict';
   const selectionDirty = contextStale || !context?.selection || !character || context.selection.name !== character.name
     || context.selection.realm !== (character.realm.name || character.realm.slug)
@@ -131,8 +137,13 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
   });
   const premadeCount = lobby.group?.members.length ?? 1;
   const incompletePremade = premade && premadeCount < 10;
+  const queueBlockers = queue?.status?.blockers ?? [];
+  const seasonMessage = queueBlockers.includes('SEASON_NOT_STARTED') ? 'soloQueueSeasonPending'
+    : queueBlockers.includes('SEASON_UNAVAILABLE') ? 'groupSeasonUnavailable' : null;
   const matchSteps: MessageKey[] = [];
-  if (premade) {
+  if (seasonMessage) {
+    matchSteps.push(seasonMessage);
+  } else if (premade) {
     if (incompletePremade) matchSteps.push('groupNeedTen');
     if (lobby.group && !lobby.captain) matchSteps.push('playLeaderStartsMatch');
     if (!character) matchSteps.push('playChooseCharacter');
@@ -141,23 +152,39 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
     for (const reason of lobby.me?.blockers ?? []) {
       if (reason !== 'ADDON_STATUS_UNVERIFIED' && groupBlockerMessages[reason]) matchSteps.push(reason === 'SELECTION_REQUIRED' ? 'playChooseCharacter' : groupBlockerMessages[reason]);
     }
+  } else {
+    const soloBlockerMessages: Record<string, MessageKey> = {
+      ...groupBlockerMessages,
+      GROUP_MEMBERSHIP_EXISTS: 'playLeaveForSolo',
+      GAME_PRESENCE_UNVERIFIED: 'soloQueueGamePending',
+      COMPETITIVE_DATA_UNAVAILABLE: 'soloQueueDataPending',
+      MATCH_ROOM_UNAVAILABLE: 'soloQueueRoomPending',
+    };
+    for (const reason of queueBlockers) {
+      matchSteps.push(reason === 'SELECTION_REQUIRED' ? 'playChooseCharacter' : soloBlockerMessages[reason] ?? 'queuePending');
+    }
   }
   const matchMessages = [...new Set(matchSteps)];
   const hasMatchTooltip = matchMessages.length > 0;
   const matchTooltipId = useId();
   const [matchTooltipOpen, setMatchTooltipOpen] = useState(false);
   const [matchTooltipDismissed, setMatchTooltipDismissed] = useState(false);
-  const canFind = !loading && !saving && !lobby.loading && !lobby.busy && !lobby.error && (premade
+  const canFind = !seasonMessage && !queueActive && !loading && !saving && !queueBusy && !lobby.loading && !lobby.busy && !lobby.error && (premade
     ? premadeCount === 10 && !!lobby.captain
     : canSave && !lobby.group);
   async function findMatch() {
     if (!canFind) return;
-    if (canSave) await saveSelection();
+    if (canSave) {
+      const selection = await saveSelection();
+      if (!premade && selection && context?.season && queue) {
+        await queue.enter({seasonId: context.season.id, seasonVersion: context.season.version, selectionVersion: selection.version});
+      }
+    }
     else if (contextStale || error === 'selectionConflict') setError('selectionConflict');
     else if (!context?.season) setError('groupSeasonUnavailable');
     else if (!character || (!premade && !role)) setError('groupSelectionRequired');
     else if (!companionDeviceId) setError('selectionCompanionRequired');
-    // Actual queue admission belongs to premade matchmaking; never claim a search has started.
+    // Premade admission belongs to feature 10. SoloQ reports the server's compatibility gate.
   }
   async function saveSelection() {
     if (!canSave || !context?.season || !character || (!premade && !role) || saveController.current) return;
@@ -194,7 +221,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
       lastSavedDevice.current = companionDeviceId;
       setSaved(true);
       await lobby.reload(true);
-      // Queue admission must follow confirmed persistence when its feature is implemented.
+      return selection;
     } catch {
       if (saveController.current === controller) setError('selectionSaveError');
     } finally {
@@ -238,7 +265,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
   let content;
   if (loading) content = <PlayerCardSkeleton />;
   else if (!context) content = <>
-    <p role="alert">{t(error ?? 'selectionLoadError')}</p>
+    <MessageNotification message={error ?? 'selectionLoadError'} attempt={attempt} />
     <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('charactersRetry')}</button>
   </>;
   else if (context.season?.ratingSubjectType === 'CHARACTER') content = <>
@@ -247,37 +274,39 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
     <p role="status">{t('selectionVerificationPending')}</p>
   </>;
   else content = <section className="season-selection" aria-label={t('selectionHeading')}>
-    {character && <CaptainConsent selected={premade ? !!lobby.captain : captainConsent} disabled={saving}
+    {character && <CaptainConsent selected={premade ? !!lobby.captain : captainConsent} disabled={saving || queueBusy || queueActive}
       readOnly={premade} label={premade ? t('playLobbyCaptain') : undefined}
       tooltip={premade ? t(lobby.captain ? 'playYouAreLobbyCaptain' : 'playLobbyCaptain') : undefined}
       onChange={value => { setCaptainConsent(value); setSaved(false); }} />}
-    <CharacterSelection small={premade && premadeCount >= 9} accountId={accountId} preferred={context.selection ?? undefined} disabled={saving}
+    <CharacterSelection small={premade && premadeCount >= 9} accountId={accountId} preferred={context.selection ?? undefined} disabled={saving || queueBusy || queueActive}
       previewHeaderIcon={premade ? <LobbyRoleIcon role={lobby.me?.role ?? premadeRole} fcIcon={fcIcon} /> : undefined}
       smallFooter={premade ? <span className="premade-member-role"><span>{t('groupYou')}</span><LobbyRoleIcon role={lobby.me?.role ?? premadeRole} fcIcon={fcIcon} /></span> : undefined}
       onChange={value => { setCharacter(value); setSaved(false); }} />
-    {character && <RoleSelection fcIcon={fcIcon} legendLabel={premade ? 'playLobbyRole' : 'selectionRole'} value={premade ? lobby.me?.role ?? premadeRole : role} disabled={saving || (premade && (lobby.loading || lobby.busy))}
+    {character && <RoleSelection fcIcon={fcIcon} legendLabel={premade ? 'playLobbyRole' : 'selectionRole'} value={premade ? lobby.me?.role ?? premadeRole : role} disabled={saving || queueBusy || queueActive || (premade && (lobby.loading || lobby.busy))}
       onChange={value => { if (premade) void changePremadeRole(value); else { setRole(value); setSaved(false); } }} />}
   </section>;
   return <>
     <div className={`play-lobby-header${premade ? ' has-premade' : ''}`}>
       <PlayLobbyCode lobby={lobby} />
       <div className="play-mode-toggle" role="group" aria-label={t('playQueueMode')}>
-        <PlayModeButton mode="solo" selected={!premade} disabled={saving || lobby.loading || lobby.busy} onSelect={() => chooseMode(false)} />
-        <PlayModeButton mode="premade" selected={premade} disabled={saving || lobby.loading || lobby.busy} onSelect={() => chooseMode(true)} />
+        <PlayModeButton mode="solo" selected={!premade} disabled={saving || queueBusy || queueActive || lobby.loading || lobby.busy} onSelect={() => chooseMode(false)} />
+        <PlayModeButton mode="premade" selected={premade} disabled={saving || queueBusy || queueActive || lobby.loading || lobby.busy} onSelect={() => chooseMode(true)} />
       </div>
       <LobbyActions lobby={lobby} onPanel={openPanel} characterReady={!!character} />
     </div>
     <PlayLobbyStage premade={premade} lobby={lobby} ownRole={lobby.me?.role ?? premadeRole} onSlot={openSlot}>{content}</PlayLobbyStage>
+    {!premade && <SoloQueuePanel />}
     {context && <div className="play-selection-feedback">
-    {error && <p role="alert">{t(error)}</p>}
+    <MessageNotification message={error} attempt={attempt} />
     {premade && error === 'selectionSaveError' && <button type="button" disabled={!canSave} onClick={() => void saveSelection()}>{t('charactersRetry')}</button>}
     {error === 'selectionConflict' && <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('selectionReload')}</button>}
-    {contextStale && !error && <p role="alert">{t('selectionConflict')} <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('selectionReload')}</button></p>}
+    <MessageNotification message={contextStale && !error ? 'selectionConflict' : null} />
+    {contextStale && !error && <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('selectionReload')}</button>}
     </div>}
-    {character && <>
+    {(character || hasMatchTooltip) && !queueActive && <>
       <div className="play-match-action">
         <div className="play-match-control">
-          <CompanionStatus accountId={accountId} matchAction onLinkedDeviceChange={setCompanionDeviceId} />
+          {character && <CompanionStatus accountId={accountId} matchAction onLinkedDeviceChange={setCompanionDeviceId} />}
           <span className="find-match-tooltip-trigger" data-tooltip-dismissed={matchTooltipDismissed} data-tooltip-open={matchTooltipOpen}
             tabIndex={hasMatchTooltip && !canFind ? 0 : undefined} aria-label={hasMatchTooltip && !canFind ? t('findMatch') : undefined}
             aria-describedby={hasMatchTooltip ? matchTooltipId : undefined}
@@ -293,17 +322,18 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
             }}>
             <button type="button" className={`find-match${premade ? ' is-premade' : ''}`} disabled={!canFind} onClick={() => void findMatch()}
               aria-describedby={hasMatchTooltip ? matchTooltipId : 'queue-availability'}>
-              {t(saving ? 'selectionSaving' : 'findMatch')}
+              {t(saving || queueBusy ? 'selectionSaving' : 'findMatch')}
             </button>
             {hasMatchTooltip && <span id={matchTooltipId} className="captain-tooltip find-match-steps" role="tooltip">
               {matchMessages.map(message => <span key={message}>{t(message)}</span>)}
             </span>}
           </span>
         </div>
-        {!incompletePremade && <p id="queue-availability" className="availability" role={saved ? 'status' : undefined}>
+        {!seasonMessage && !incompletePremade && <p id="queue-availability" className="availability" role={saved ? 'status' : undefined}>
           {t(!premade && lobby.group ? 'playLeaveForSolo' : premade && !lobby.captain ? 'playLeaderStartsMatch' : saved ? 'selectionSavedQueuePending' : 'queuePending')}
         </p>}
-        {premade && lobby.error && <p role="alert">{t(lobby.error)} <button type="button" onClick={() => void lobby.reload(true)}>{t('groupRefresh')}</button></p>}
+        <MessageNotification message={premade ? lobby.error : null} />
+        {premade && lobby.error && <button type="button" onClick={() => void lobby.reload(true)}>{t('groupRefresh')}</button>}
         {premade && lobby.error === 'groupMatchBlocked' && <Link to="/match-history">{t('navigationHistory')}</Link>}
       </div>
     </>}

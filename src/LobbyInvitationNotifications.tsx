@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { createPortal } from 'react-dom';
+import { FloatingNotificationGroup } from './FloatingNotifications';
 import { useNavigate } from 'react-router-dom';
 import { useLocale } from './locales';
 import { localizedPath } from './locale-routing';
@@ -73,12 +73,12 @@ export function LobbyInvitationNotifications({ lobby }: { lobby: GroupLobby }) {
     } finally { running.current = false; }
   }
   if (typeof document === 'undefined') return null;
-  return createPortal(<>
+  return <FloatingNotificationGroup>
     <div className="sr-only" role="status" aria-live="polite" aria-atomic="false" aria-relevant="additions text">
       {removal && <span key={removal.expiresAt}>{t('lobbyRemovedMessage')}</span>}
       {visible.slice(0, 3).map(invite => <span key={`${invite.id}:${invite.expiresAt}`}>{invite.captainName} {t('lobbyInviteMessage')}</span>)}
     </div>
-    {(visible.length > 0 || removal) && <section className="lobby-invite-notifications" aria-label={t('lobbyNotifications')}>
+    {(visible.length > 0 || removal) && <div className="lobby-notification-group">
     {removal && <article key={removal.expiresAt} className="lobby-invite-notice lobby-removal-notice" onKeyDown={event => {
       if (event.key === 'Escape') { event.stopPropagation(); lobby.dismissRemovalNotice(); }
     }}>
@@ -111,5 +111,5 @@ export function LobbyInvitationNotifications({ lobby }: { lobby: GroupLobby }) {
       </article>;
     })}
     {visible.length > 3 && <span className="lobby-invite-more">{t(visible.length === 4 ? 'lobbyInviteMoreOne' : 'lobbyInviteMore').replace('{count}', String(visible.length - 3))}</span>}
-  </section>}</>, document.body);
+  </div>}</FloatingNotificationGroup>;
 }

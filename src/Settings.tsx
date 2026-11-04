@@ -3,6 +3,7 @@ import { useLocale } from './locales';
 import { fcIconAsset, useFcIconPreference, type FcIcon } from './fc-icon-preference';
 import './Settings.css';
 import { DeviceSettings } from './DeviceSettings';
+import { MatchReadySoundSelect } from './MatchReadySoundSelect';
 
 export function Settings({ accountId }: { accountId: string }) {
   const { t } = useLocale();
@@ -24,6 +25,10 @@ export function Settings({ accountId }: { accountId: string }) {
           </label>)}
         </fieldset>
       </div>
+    </section>
+    <section className="profile-settings-section">
+      <div className="profile-section-heading"><h2>{t('matchReadySoundLabel')}</h2><p>{t('matchReadySoundDescription')}</p></div>
+      <MatchReadySoundSelect />
     </section>
     <DeviceSettings accountId={accountId} />
   </div>;

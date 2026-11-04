@@ -24,3 +24,13 @@
 @keyframes lobby-invite-countdown { from { transform: scaleX(var(--invite-remaining)); } to { transform: scaleX(0); } }
 
 .lobby-removal-notice .lobby-invite-notice-icon { color: #f07c7c; }
+.floating-notifications:empty { display: none; }
+.floating-notifications { pointer-events: none; }
+.floating-notifications .lobby-invite-notice { pointer-events: auto; }
+.lobby-notification-group { display: contents; }
+.message-notification .lobby-invite-notice-icon { color: #f07c7c; flex-shrink: 0; }
+.message-notification .lobby-invite-notice-heading { align-items: flex-start; }
+.message-notification .lobby-invite-notice-heading > strong { min-width: 0; line-height: 1.5; overflow-wrap: anywhere; }
+.message-notification .lobby-invite-dismiss { flex-shrink: 0; }
+.message-notification-actions { margin-top: .85rem; }
+.message-notification-actions .battle-net-button { width: 100%; justify-content: center; box-sizing: border-box; }

@@ -13,8 +13,10 @@ import { BackToTop } from './BackToTop';
 import { LanguageMenu } from './LanguageMenu';
 import { SeasonSelection } from './SeasonSelection';
 import { AuthenticatedLobby } from './LobbySession';
+import { AuthenticatedSoloQueue } from './SoloQueueSession';
 import { Settings } from './Settings';
 import { ModeratorMatches } from './ModeratorMatches';
+import { TesterPopup } from './TesterPopup';
 import { MatchHistory } from './MatchHistory';
 import {pendingCompanionLink} from './companion-link';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
@@ -22,6 +24,8 @@ import { SeasonNotificationsProvider, useSeasonNotice } from './SeasonNotificati
 import pageTitles from './page-titles.json';
 import pageDescriptions from './page-descriptions.json';
 import internalRoutes from './internal-routes.json';
+import { SoloQueueLabPage } from './SoloQueueLab';
+import { FloatingNotificationsProvider } from './FloatingNotifications';
 
 function useSession() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -148,7 +152,9 @@ function NotFound() {
 }
 
 export function App() {
-  return <SeasonNotificationsProvider><AppContent /></SeasonNotificationsProvider>;
+  const location = useLocation();
+  if (import.meta.env.DEV && basePath(location.pathname) === '/soloq-lab') return <SoloQueueLabPage />;
+  return <FloatingNotificationsProvider><SeasonNotificationsProvider><AppContent /></SeasonNotificationsProvider></FloatingNotificationsProvider>;
 }
 
 function AppContent() {
@@ -222,7 +228,7 @@ function AppContent() {
     });
     return () => cancelAnimationFrame(frame);
   }, [location.pathname, location.hash]);
-  return <AuthenticatedLobby accountId={session.profile?.id ?? null}><div className="app-shell">
+  return <AuthenticatedSoloQueue accountId={session.profile?.id ?? null}><AuthenticatedLobby accountId={session.profile?.id ?? null}><div className="app-shell">
     <header className="header"><Link className="brand" to="/">{t('appName')}</Link>
       <button type="button" className="menu-toggle" aria-label={t('navigationMenu')} aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(open => !open)}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
@@ -234,7 +240,7 @@ function AppContent() {
         <NavLink to="/downloads">{t('navigationDownloads')}</NavLink>
         <Link to="/#how-it-works">{t('navigationGuide')}</Link>
         <a className="nav-community" href="https://discord.gg/RfBgfszUPM" target="_blank" rel="noopener noreferrer">{t('navigationCommunity')}<img src="/external-link.svg" width="14" height="14" alt="" aria-hidden="true" /></a>
-        {session.profile?.role === 'MODERATOR' && <NavLink className="nav-moderator" to="/moderator">{t('navigationModerator')}</NavLink>}
+        {(session.profile?.role === 'MODERATOR' || session.profile?.role === 'ADMIN') && <NavLink className="nav-moderator" to="/moderator">{t('navigationModerator')}</NavLink>}
         <NavLink className="nav-play" to="/play" onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) openSeasonNotice(); }}>{t('navigationPlay')}</NavLink>
         {session.loading ? <span role="status">{t('authChecking')}</span> : session.profile
           ? <details className="account-menu" key={location.pathname}><summary>
@@ -254,7 +260,11 @@ function AppContent() {
       <Routes location={{ ...location, pathname: basePath(location.pathname) }}><Route path="/" element={<Home {...session} />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/downloads" element={<InfoPage heading="navigationDownloads" introduction="downloadsIntro"><div className="info-grid">
-          <article><h2>{t('companionHeading')}</h2><p>{t('companionDescription')}</p><span className="availability">{t('releasePending')}</span></article>
+          <article><h2>{t('companionHeading')}</h2><p>{t('companionDescription')}</p>
+            {session.profile && ['TESTER', 'MODERATOR', 'ADMIN'].includes(session.profile.role)
+              ? <a className="button" href="https://github.com/gallardoS/companion.rbgs.io/releases/latest" target="_blank" rel="noopener noreferrer">{t('companionDownload')}</a>
+              : <span className="availability">{t('releasePending')}</span>}
+          </article>
           <article><h2>{t('addonHeading')}</h2><p>{t('addonDescription')}</p><span className="availability">{t('releasePending')}</span></article>
         </div><Link className="button" to="/#how-it-works">{t('navigationGuide')}</Link></InfoPage>} />
         <Route path="/how-it-works" element={<Navigate to={`${localizedPath('/', language)}#how-it-works`} replace />} />
@@ -287,14 +297,16 @@ function AppContent() {
           ? <Settings key={session.profile.id} accountId={session.profile.id} /> : <BattleNetLoginButton />}</InfoPage>} />
         <Route path="/moderator" element={session.loading
           ? <InfoPage heading="navigationModerator"><p role="status">{t('authChecking')}</p></InfoPage>
-          : session.profile?.role === 'MODERATOR'
+          : (session.profile?.role === 'MODERATOR' || session.profile?.role === 'ADMIN')
             ? <InfoPage heading="navigationModerator"><div className="profile-settings"><ModeratorMatches key={session.profile.id} accountId={session.profile.id} /></div></InfoPage>
             : <Navigate to={localizedPath('/', language)} replace />} />
         <Route path="/status" element={<Status />} /><Route path="*" element={<NotFound />} /></Routes>
+      {session.profile && (session.profile.role === 'TESTER' || session.profile.role === 'MODERATOR' || session.profile.role === 'ADMIN') &&
+        <TesterPopup key={session.profile.id} accountId={session.profile.id} />}
       <footer className="footer"><span className="brand">{t('appName')}</span><Link to="/status">{t('navigationStatus')}</Link></footer>
     </div>
     <BackToTop />
-  </div></AuthenticatedLobby>;
+  </div></AuthenticatedLobby></AuthenticatedSoloQueue>;
 }
 
 function GroupRedirect() {

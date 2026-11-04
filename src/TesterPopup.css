@@ -1,0 +1,39 @@
+.tester-popup-toggle {
+  --tester-edge: 1.25rem;
+  position: fixed;
+  right: 5px;
+  bottom: calc(max(var(--tester-edge), env(safe-area-inset-bottom)) + 56px);
+  z-index: 19;
+  padding: 3px;
+  min-width: 46px;
+  min-height: 46px;
+  width: 46px;
+  height: 46px;
+  box-sizing: border-box;
+  border: 1px solid #a88946;
+  border-radius: .4rem;
+  background: #181710;
+}
+body:has(.season-quest-toggle) .tester-popup-toggle {
+  bottom: calc(max(var(--tester-edge), env(safe-area-inset-bottom)) + 120px);
+}
+@media (max-width: 600px) {
+  .tester-popup-toggle { --tester-edge: 1rem; }
+}
+.tester-popup-toggle img { border-radius: .25rem; }
+.tester-popup {
+  width: min(42rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  box-sizing: border-box;
+  padding: 1.25rem;
+  border: 1px solid #a88946;
+  border-radius: .75rem;
+  background: #141815;
+  color: #f5f2e8;
+  overflow: auto;
+}
+.tester-popup::backdrop { background: #000a; }
+.tester-popup > header { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.tester-popup > header h2 { margin: 0; }
+.tester-popup > header button { min-width: 44px; min-height: 44px; padding: .25rem; }
+.tester-popup .profile-settings-section { margin-top: 1rem; }

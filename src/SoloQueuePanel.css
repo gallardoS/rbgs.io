@@ -1,0 +1,11 @@
+.solo-queue-panel { max-width: 60rem; margin: 1.5rem auto; }
+.solo-queue-search { text-align: center; border: 1px solid #d4b57666; border-radius: .5rem; padding: 1rem; }
+.solo-queue-room { padding: 1.5rem; border: 1px solid #ffffff25; background: #121714; border-radius: .75rem; }
+.solo-queue-room h2 { margin-top: 0; color: #ead098; }
+.solo-queue-teams { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1.5rem; }
+.solo-queue-teams ul { list-style: none; padding: 0; }
+.solo-queue-teams li { display: grid; grid-template-columns: minmax(0,1fr) 4.5rem 1rem; gap: .5rem; border-bottom: 1px solid #ffffff15; padding: .5rem 0; font-size: .85rem; }
+.solo-queue-teams li span:first-child { overflow-wrap: anywhere; }
+.solo-queue-blockers { margin-top: 1rem; color: #b5b5ab; font-size: .85rem; }
+.solo-queue-blockers summary { cursor: pointer; }
+@media(max-width:600px) { .solo-queue-teams { grid-template-columns: 1fr; } .solo-queue-room { padding: 1rem; } }
