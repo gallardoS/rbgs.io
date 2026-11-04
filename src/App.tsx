@@ -265,7 +265,11 @@ function AppContent() {
               ? <a className="button" href="https://github.com/gallardoS/companion.rbgs.io/releases/latest/download/rbgs.io-companion-setup.exe">{t('companionDownload')}</a>
               : <span className="availability">{t('releasePending')}</span>}
           </article>
-          <article><h2>{t('addonHeading')}</h2><p>{t('addonDescription')}</p><span className="availability">{t('releasePending')}</span></article>
+          <article><h2>{t('addonHeading')}</h2><p>{t('addonDescription')}</p>
+            {session.profile && ['TESTER', 'MODERATOR', 'ADMIN'].includes(session.profile.role)
+              ? <a className="button" href="https://www.curseforge.com/wow/addons/rbgs-io" target="_blank" rel="noopener noreferrer">{t('companionDownload')}</a>
+              : <span className="availability">{t('releasePending')}</span>}
+          </article>
         </div><Link className="button" to="/#how-it-works">{t('navigationGuide')}</Link></InfoPage>} />
         <Route path="/how-it-works" element={<Navigate to={`${localizedPath('/', language)}#how-it-works`} replace />} />
         <Route path="/play" element={<main className="content play-page">
