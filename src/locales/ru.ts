@@ -1,6 +1,27 @@
 import type { MessageKey } from './en';
 
 export const messages = {
+  premadeQueueLobbyChanged: "Состав лобби изменился. Поиск отменён; капитан должен начать новый поиск.",
+  premadeLobbyMatchLocked: "Отклоните или завершите текущий матч, прежде чем менять состав или капитана.",
+  premadeLabChangeCaptain: "Сменить тестового капитана",
+  premadeGroupingIncompatible: "Эти персонажи не могут создать совместимую группу в игре.",
+  premadeOpenMatch: "Открыть матч",
+  premadeOpenCompanion: "Открыть companion",
+  premadeQueueStatusError: "Не удалось обновить очередь готовых групп. Попробуйте ещё раз.",
+  premadeQueueBlocked: "Группа не может войти в очередь. Проверьте требования.",
+  premadeLabTitle: "Тестовая комната готовых групп",
+  premadeLabBanner: "Локальная симуляция · тестовые группы · без подключения к игре и рейтинга",
+  premadeLabInstructions: "Создайте десять тестовых групп. От имени капитана начните поиск и добавьте соперника. Каждый игрок должен принять матч; остальные подтверждения можно сымитировать.",
+  premadeLabReset: "Создать / сбросить симуляцию",
+  premadeLabActor: "Смотреть от имени тестового игрока",
+  premadeLabDepth: "Группы в очереди",
+  premadeLabRoster: "Игроки вашей группы",
+  premadeLabAddOne: "Добавить одну группу соперников",
+  premadeLabAddNine: "Добавить девять групп соперников",
+  premadeLabAcceptOthers: "Принять за остальных тестовых игроков",
+  premadeLabEnd: "Завершить симуляцию",
+  premadeLabPrepared: "Все игроки приняли матч. Эта симуляция не запускает игру и не меняет рейтинги.",
+
   testerChoosePlayCharacter: "Выберите персонажа в разделе «Играть», прежде чем создавать тестовый матч.",
   testerOpenPlay: "Открыть «Играть»",
   testerTools: "Инструменты тестирования",

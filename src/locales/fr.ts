@@ -1,6 +1,27 @@
 import type { MessageKey } from './en';
 
 export const messages: Record<MessageKey, string> = {
+  premadeQueueLobbyChanged: "Le lobby a changé. La recherche a été annulée ; le capitaine doit en lancer une nouvelle.",
+  premadeLobbyMatchLocked: "Refusez ou terminez le match actuel avant de modifier les joueurs ou le capitaine.",
+  premadeLabChangeCaptain: "Changer le capitaine de test",
+  premadeGroupingIncompatible: "Ces personnages ne peuvent pas former un groupe compatible en jeu.",
+  premadeOpenMatch: "Voir le match",
+  premadeOpenCompanion: "Ouvrir le companion",
+  premadeQueueStatusError: "Impossible de mettre à jour la file premade. Réessayez.",
+  premadeQueueBlocked: "Le groupe ne peut pas rejoindre la file. Vérifiez ses conditions d’accès.",
+  premadeLabTitle: "Salle de test premade",
+  premadeLabBanner: "Simulation locale · groupes fictifs · sans connexion au jeu ni classement",
+  premadeLabInstructions: "Créez dix groupes fictifs. En tant que capitaine, cherchez un match et ajoutez un adversaire. Chaque joueur doit accepter ; vous pouvez simuler les autres acceptations.",
+  premadeLabReset: "Créer / réinitialiser la simulation",
+  premadeLabActor: "Voir comme joueur de test",
+  premadeLabDepth: "Groupes en attente",
+  premadeLabRoster: "Joueurs de votre groupe",
+  premadeLabAddOne: "Ajouter un groupe adverse à la file",
+  premadeLabAddNine: "Ajouter neuf groupes adverses à la file",
+  premadeLabAcceptOthers: "Accepter pour les autres joueurs fictifs",
+  premadeLabEnd: "Terminer la simulation",
+  premadeLabPrepared: "Tous les joueurs ont accepté. Cette simulation ne lance pas le jeu et ne modifie aucun classement.",
+
   testerChoosePlayCharacter: "Choisissez votre personnage dans Jouer avant de créer un match de test.",
   testerOpenPlay: "Ouvrir Jouer",
   testerTools: "Outils de test",

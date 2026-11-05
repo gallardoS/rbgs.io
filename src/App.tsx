@@ -14,7 +14,7 @@ import { BackToTop } from './BackToTop';
 import { LanguageMenu } from './LanguageMenu';
 import { SeasonSelection } from './SeasonSelection';
 import { AuthenticatedLobby } from './LobbySession';
-import { AuthenticatedSoloQueue } from './SoloQueueSession';
+import { AuthenticatedPremadeQueue, AuthenticatedSoloQueue } from './SoloQueueSession';
 import { Settings } from './Settings';
 import { ModeratorMatches } from './ModeratorMatches';
 import { TesterPopup } from './TesterPopup';
@@ -27,6 +27,7 @@ import pageTitles from './page-titles.json';
 import pageDescriptions from './page-descriptions.json';
 import internalRoutes from './internal-routes.json';
 import { SoloQueueLabPage } from './SoloQueueLab';
+import { PremadeQueueLabPage } from './PremadeQueueLab';
 import { FloatingNotificationsProvider } from './FloatingNotifications';
 
 function useSession() {
@@ -157,6 +158,7 @@ function NotFound() {
 
 export function App() {
   const location = useLocation();
+  if (import.meta.env.DEV && basePath(location.pathname) === '/premade-lab') return <FloatingNotificationsProvider><PremadeQueueLabPage /></FloatingNotificationsProvider>;
   if (import.meta.env.DEV && basePath(location.pathname) === '/soloq-lab') return <SoloQueueLabPage />;
   return <FloatingNotificationsProvider><SeasonNotificationsProvider><AppContent /></SeasonNotificationsProvider></FloatingNotificationsProvider>;
 }
@@ -232,7 +234,7 @@ function AppContent() {
     });
     return () => cancelAnimationFrame(frame);
   }, [location.pathname, location.hash]);
-  return <AuthenticatedSoloQueue accountId={session.profile?.id ?? null}><AuthenticatedLobby accountId={session.profile?.id ?? null}><div className="app-shell">
+  return <AuthenticatedSoloQueue accountId={session.profile?.id ?? null}><AuthenticatedPremadeQueue accountId={session.profile?.id ?? null}><AuthenticatedLobby accountId={session.profile?.id ?? null}><div className="app-shell">
     <header className="header"><Link className="brand" to="/">{t('appName')}</Link>
       <button type="button" className="menu-toggle" aria-label={t('navigationMenu')} aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(open => !open)}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
@@ -314,7 +316,7 @@ function AppContent() {
       <footer className="footer"><span className="brand">{t('appName')}</span><Link to="/status">{t('navigationStatus')}</Link></footer>
     </div>
     <BackToTop />
-  </div></AuthenticatedLobby></AuthenticatedSoloQueue>;
+  </div></AuthenticatedLobby></AuthenticatedPremadeQueue></AuthenticatedSoloQueue>;
 }
 
 function GroupRedirect() {

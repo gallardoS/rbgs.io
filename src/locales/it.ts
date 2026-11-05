@@ -1,6 +1,27 @@
 import type { MessageKey } from './en';
 
 export const messages = {
+  premadeQueueLobbyChanged: "La lobby è cambiata. La ricerca è stata annullata; il capitano deve avviarne una nuova.",
+  premadeLobbyMatchLocked: "Rifiuta o termina la partita attuale prima di cambiare i giocatori o il capitano.",
+  premadeLabChangeCaptain: "Cambia capitano di prova",
+  premadeGroupingIncompatible: "Questi personaggi non possono formare un gruppo compatibile nel gioco.",
+  premadeOpenMatch: "Apri partita",
+  premadeOpenCompanion: "Apri companion",
+  premadeQueueStatusError: "Impossibile aggiornare la coda premade. Riprova.",
+  premadeQueueBlocked: "Il gruppo non può entrare in coda. Controlla i requisiti.",
+  premadeLabTitle: "Sala di prova premade",
+  premadeLabBanner: "Simulazione locale · gruppi fittizi · senza connessione al gioco o valutazioni",
+  premadeLabInstructions: "Crea dieci gruppi fittizi. Come capitano, cerca una partita e aggiungi un avversario. Ogni giocatore deve accettare; puoi simulare le altre accettazioni.",
+  premadeLabReset: "Crea / reimposta simulazione",
+  premadeLabActor: "Visualizza come giocatore di prova",
+  premadeLabDepth: "Gruppi in attesa",
+  premadeLabRoster: "Giocatori del tuo gruppo",
+  premadeLabAddOne: "Aggiungi un gruppo avversario alla coda",
+  premadeLabAddNine: "Aggiungi nove gruppi avversari alla coda",
+  premadeLabAcceptOthers: "Accetta per gli altri giocatori fittizi",
+  premadeLabEnd: "Termina simulazione",
+  premadeLabPrepared: "Tutti hanno accettato. Questa simulazione non avvia il gioco e non modifica le valutazioni.",
+
   testerChoosePlayCharacter: "Seleziona il tuo personaggio in Gioca prima di creare una partita di prova.",
   testerOpenPlay: "Apri Gioca",
   testerTools: "Strumenti di prova",

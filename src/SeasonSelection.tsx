@@ -17,7 +17,7 @@ import { useLobbySession } from './LobbySession';
 import { LobbyInvitationNotifications } from './LobbyInvitationNotifications';
 import { useLobbyDialogs } from './LobbyDialogs';
 import { MessageNotification } from './FloatingNotifications';
-import { useSoloQueueSession } from './SoloQueueSession';
+import { usePremadeQueueSession, useSoloQueueSession } from './SoloQueueSession';
 import { SoloQueuePanel } from './SoloQueuePanel';
 
 type Selection = {
@@ -88,9 +88,10 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
   const [attempt, setAttempt] = useState(0);
   const [error, setError] = useState<MessageKey | null>(null);
   const [saved, setSaved] = useState(false);
-  const queue = useSoloQueueSession();
-  const queueBusy = queue?.busy ?? false;
-  const queueActive = queue?.active ?? false;
+  const soloQueue = useSoloQueueSession(), premadeQueue = usePremadeQueueSession();
+  const queue = premade ? premadeQueue : soloQueue;
+  const queueBusy = !!soloQueue?.busy || !!premadeQueue?.busy;
+  const queueActive = !!soloQueue?.active || !!premadeQueue?.active;
   const [character, setCharacter] = useState<Character | null>(null);
   const [role, setRole] = useState<Role>('DPS');
   const [premadeRole, setPremadeRole] = useState<Role>(() => storedPremadeRole(accountId));
@@ -126,7 +127,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
   const contextStale = !!context && (!!lobby.context && (lobby.context.season?.id !== context.season?.id
     || lobby.context.season?.version !== context.season?.version)
     || !!lobby.me && lobby.me.selectionVersion !== (context.selection?.version ?? null));
-  const canSave = !queueActive && !loading && !saving && !contextStale && context?.season?.ratingSubjectType === 'ACCOUNT'
+  const canSave = !queueActive && !queueBusy && !loading && !saving && !contextStale && context?.season?.ratingSubjectType === 'ACCOUNT'
     && !!character && (premade || !!role) && !!companionDeviceId && error !== 'selectionConflict';
   const selectionDirty = contextStale || !context?.selection || !character || context.selection.name !== character.name
     || context.selection.realm !== (character.realm.name || character.realm.slug)
@@ -147,6 +148,11 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
     if (incompletePremade) matchSteps.push('groupNeedTen');
     if (lobby.group && !lobby.captain) matchSteps.push('playLeaderStartsMatch');
     if (!character) matchSteps.push('playChooseCharacter');
+    const reasons: Record<string,MessageKey> = {...groupBlockerMessages,
+      GROUP_REQUIRED:'groupNeedTen', GROUPING_INCOMPATIBLE:'premadeGroupingIncompatible',
+      GAME_PRESENCE_UNVERIFIED:'soloQueueGamePending', PREMADE_COMPETITIVE_DATA_UNAVAILABLE:'soloQueueDataPending',
+      MATCH_ROOM_UNAVAILABLE:'soloQueueRoomPending'};
+    for(const reason of queueBlockers)if(reasons[reason])matchSteps.push(reasons[reason]);
     const hasSetupIssue = lobby.group?.members.some(member => member.blockers.some(reason => reason !== 'ADDON_STATUS_UNVERIFIED'));
     if (hasSetupIssue) matchSteps.push('groupNeedSetup');
     for (const reason of lobby.me?.blockers ?? []) {
@@ -176,15 +182,15 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
     if (!canFind) return;
     if (canSave) {
       const selection = await saveSelection();
-      if (!premade && selection && context?.season && queue) {
-        await queue.enter({seasonId: context.season.id, seasonVersion: context.season.version, selectionVersion: selection.version});
+      if (selection && context?.season && queue) {
+        if(premade && lobby.group) await queue.enter({groupId:lobby.group.id,groupRevision:lobby.group.revision});
+        else if(!premade) await queue.enter({seasonId: context.season.id, seasonVersion: context.season.version, selectionVersion: selection.version});
       }
     }
     else if (contextStale || error === 'selectionConflict') setError('selectionConflict');
     else if (!context?.season) setError('groupSeasonUnavailable');
     else if (!character || (!premade && !role)) setError('groupSelectionRequired');
     else if (!companionDeviceId) setError('selectionCompanionRequired');
-    // Premade admission belongs to feature 10. SoloQ reports the server's compatibility gate.
   }
   async function saveSelection() {
     if (!canSave || !context?.season || !character || (!premade && !role) || saveController.current) return;
@@ -295,7 +301,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
       <LobbyActions lobby={lobby} onPanel={openPanel} characterReady={!!character} />
     </div>
     <PlayLobbyStage premade={premade} lobby={lobby} ownRole={lobby.me?.role ?? premadeRole} onSlot={openSlot}>{content}</PlayLobbyStage>
-    {!premade && <SoloQueuePanel />}
+    <SoloQueuePanel premade={premade} />
     {context && <div className="play-selection-feedback">
     <MessageNotification message={error} attempt={attempt} />
     {premade && error === 'selectionSaveError' && <button type="button" disabled={!canSave} onClick={() => void saveSelection()}>{t('charactersRetry')}</button>}

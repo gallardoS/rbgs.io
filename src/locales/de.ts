@@ -1,6 +1,27 @@
 import type { MessageKey } from './en';
 
 export const messages = {
+  premadeQueueLobbyChanged: "Die Lobby wurde geändert. Die Suche wurde abgebrochen; der Kapitän muss eine neue Suche starten.",
+  premadeLobbyMatchLocked: "Lehne das aktuelle Spiel ab oder beende es, bevor du die Spieler oder den Kapitän änderst.",
+  premadeLabChangeCaptain: "Testkapitän wechseln",
+  premadeGroupingIncompatible: "Diese Charaktere können keine kompatible Gruppe im Spiel bilden.",
+  premadeOpenMatch: "Spiel öffnen",
+  premadeOpenCompanion: "Companion öffnen",
+  premadeQueueStatusError: "Die Premade-Warteschlange konnte nicht aktualisiert werden. Versuche es erneut.",
+  premadeQueueBlocked: "Die Gruppe kann der Warteschlange nicht beitreten. Prüfe die Voraussetzungen.",
+  premadeLabTitle: "Premade-Testraum",
+  premadeLabBanner: "Lokale Simulation · Testgruppen · ohne Spielverbindung oder Wertung",
+  premadeLabInstructions: "Erstelle zehn Testgruppen. Suche als Kapitän ein Spiel und füge einen Gegner hinzu. Jeder Spieler muss annehmen; die anderen Annahmen kannst du simulieren.",
+  premadeLabReset: "Simulation erstellen / zurücksetzen",
+  premadeLabActor: "Als Testspieler ansehen",
+  premadeLabDepth: "Wartende Gruppen",
+  premadeLabRoster: "Spieler deiner Gruppe",
+  premadeLabAddOne: "Eine Gegnergruppe einreihen",
+  premadeLabAddNine: "Neun Gegnergruppen einreihen",
+  premadeLabAcceptOthers: "Für die anderen Testspieler annehmen",
+  premadeLabEnd: "Simulation beenden",
+  premadeLabPrepared: "Alle Spieler haben angenommen. Diese Simulation startet kein Spiel und ändert keine Wertungen.",
+
   testerChoosePlayCharacter: "Wähle deinen Charakter unter Spielen, bevor du ein Testmatch erstellst.",
   testerOpenPlay: "Spielen öffnen",
   testerTools: "Testwerkzeuge",

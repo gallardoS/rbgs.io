@@ -116,6 +116,7 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
       : reason instanceof GroupError && reason.detail === 'Could not invite this BattleTag. Check that the player has signed in to rbgs.io' ? 'groupInviteUnknown'
       : reason instanceof GroupError && reason.detail === 'This invitation has expired' ? 'groupInviteExpired'
       : reason instanceof GroupError && ['Resolve the current match before joining a group', 'Resolve your current match before preparing for another one'].includes(reason.detail) ? 'groupMatchBlocked'
+      : reason instanceof GroupError && reason.detail === 'Finish or decline the proposed match before changing the lobby' ? 'premadeLobbyMatchLocked'
       : reason instanceof GroupError && reason.status === 409 ? 'groupConflict'
       : reason instanceof GroupError && reason.status === 404 ? 'groupGone' : mutation ? 'groupActionError' : 'groupLoadError');
   }

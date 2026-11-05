@@ -1,6 +1,27 @@
 import type { MessageKey } from './en';
 
 export const messages: Record<MessageKey, string> = {
+  premadeQueueLobbyChanged: "El lobby ha cambiado. La búsqueda se ha cancelado; el capitán debe iniciar una nueva.",
+  premadeLobbyMatchLocked: "Rechaza o finaliza la partida actual antes de cambiar el roster o el capitán.",
+  premadeLabChangeCaptain: "Cambiar capitán de prueba",
+  premadeGroupingIncompatible: "Estos personajes no pueden formar un grupo compatible dentro del juego.",
+  premadeOpenMatch: "Ver partida",
+  premadeOpenCompanion: "Abrir companion",
+  premadeQueueStatusError: "No se pudo actualizar la cola premade. Inténtalo de nuevo.",
+  premadeQueueBlocked: "El grupo no puede entrar en cola. Revisa sus requisitos.",
+  premadeLabTitle: "Sala de prueba premade",
+  premadeLabBanner: "Simulación local · grupos ficticios · sin conexión al juego ni rating",
+  premadeLabInstructions: "Crea diez grupos ficticios. Como capitán, busca partida y añade un rival. Cada jugador debe aceptar; puedes simular las demás aceptaciones.",
+  premadeLabReset: "Crear / reiniciar simulación",
+  premadeLabActor: "Ver como jugador de prueba",
+  premadeLabDepth: "Grupos esperando",
+  premadeLabRoster: "Jugadores de tu grupo",
+  premadeLabAddOne: "Añadir un grupo rival a la cola",
+  premadeLabAddNine: "Añadir nueve grupos rivales a la cola",
+  premadeLabAcceptOthers: "Aceptar por los otros jugadores ficticios",
+  premadeLabEnd: "Finalizar simulación",
+  premadeLabPrepared: "Todos han aceptado. Esta simulación no inicia el juego ni cambia ratings.",
+
   testerChoosePlayCharacter: "Selecciona tu personaje en Jugar antes de crear una partida de prueba.",
   testerOpenPlay: "Ir a Jugar",
   testerTools: "Herramientas de prueba",
