@@ -15,7 +15,7 @@ export function CaptureTestAdmin({ accountId, onCreated, tester = false }: { acc
   const [proposal, setProposal] = useState<{ room: QueueRoom; serverTime: string; expiresAt: number } | null>(null);
   const inFlight = useRef(false);
   const [kind, setKind] = useState<TestKind>('CAPTURE_ONLY');
-  const [profile, setProfile] = useState('TBC_ANNIVERSARY_WSG_TEST');
+  const [profile, setProfile] = useState('FOREVER_WSG_TEST');
   const [name, setName] = useState('');
   const [realm, setRealm] = useState('');
   const [opponent, setOpponent] = useState('');
@@ -52,7 +52,7 @@ export function CaptureTestAdmin({ accountId, onCreated, tester = false }: { acc
         setSelectedCharacter(reference);
         setName(selected.name);
         setRealm(selected.realm);
-        setProfile(selected.namespace.startsWith('profile-classicann-') ? 'TBC_ANNIVERSARY_WSG_TEST' : 'DARKSPEAR_DIAGNOSTIC');
+        setProfile(selected.namespace.startsWith('profile-classicann-') ? 'TBC_ANNIVERSARY_WSG_TEST' : selected.namespace.startsWith('profile-forever-') ? 'FOREVER_WSG_TEST' : 'DARKSPEAR_DIAGNOSTIC');
       })
       .catch(() => { if (!controller.signal.aborted) setPlayCharacter(null); })
       .finally(() => { if (!controller.signal.aborted) setPlayLoading(false); });
@@ -60,8 +60,10 @@ export function CaptureTestAdmin({ accountId, onCreated, tester = false }: { acc
   }, [tester, accountId]);
   const captureOnly = kind === 'CAPTURE_ONLY';
   const anniversary = profile === 'TBC_ANNIVERSARY_WSG_TEST';
+  const forever = profile === 'FOREVER_WSG_TEST';
+  const ownedTest = anniversary || forever;
 
-  const canCreate = !busy && !playLoading && (!tester || !!playCharacter) && (anniversary ? !!selectedCharacter : !!name.trim() && (captureOnly || !!opponent.trim()));
+  const canCreate = !busy && !playLoading && (!tester || !!playCharacter) && (ownedTest ? !!selectedCharacter : !!name.trim() && (captureOnly || !!opponent.trim()));
 
   async function simulate() {
     if (!canCreate || inFlight.current) return;
@@ -110,10 +112,10 @@ export function CaptureTestAdmin({ accountId, onCreated, tester = false }: { acc
       const roster = captureOnly
         ? [{ accountId, character, teamKey: null }]
         : [{ accountId, character, teamKey: 'A' }, { accountId: null, character: { name: opponent.trim(), realm: realm.trim() || null }, teamKey: 'B' }];
-      const response = await fetch(anniversary ? endpoint + '/anniversary' : endpoint, {
+      const response = await fetch(ownedTest ? endpoint + (forever ? '/forever' : '/anniversary') : endpoint, {
         method: 'POST', credentials: 'same-origin', cache: 'no-store',
         headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': decodeURIComponent(token) },
-        body: JSON.stringify(anniversary ? { armMinutes: 60, character: selectedCharacter }
+        body: JSON.stringify(ownedTest ? { armMinutes: 60, character: selectedCharacter }
           : { armMinutes: 60, testKind: kind, expectedMapProfile: profile, roster }),
       });
       if (!response.ok) {
@@ -122,7 +124,7 @@ export function CaptureTestAdmin({ accountId, onCreated, tester = false }: { acc
           setMessage(t('testerChoosePlayCharacter'));
           return;
         }
-        if (anniversary && [401, 403, 422].includes(response.status)) {
+        if (ownedTest && [401, 403, 422].includes(response.status)) {
           setSelectedCharacter(null); setPickerAttempt(value => value + 1);
           if (tester) setPlayCharacter(null);
           setMessage(t(tester && response.status === 422 ? 'testerChoosePlayCharacter' : response.status === 422 ? 'captureTestCharacterUnavailable' : 'charactersAuthorization'));
@@ -160,13 +162,14 @@ export function CaptureTestAdmin({ accountId, onCreated, tester = false }: { acc
     <div className="profile-section-heading"><h2>{t('captureTestHeading')}</h2><p>{t('captureTestDescription')}</p></div>
     <form className="device-pair-form" onSubmit={e => { e.preventDefault(); proposeIndividual(); }}>
       {!tester && <label>{t('captureTestEnvironment')}<select value={profile} disabled={busy} onChange={e => { setProfile(e.target.value); setKind('CAPTURE_ONLY'); setSelectedCharacter(null); setMessage(''); setCreated(false); }}>
+        <option value="FOREVER_WSG_TEST">{t('captureTestForeverWsg')}</option>
         <option value="TBC_ANNIVERSARY_WSG_TEST">{t('captureTestAnniversary')}</option>
         <option value="DARKSPEAR_DIAGNOSTIC">{t('captureTestForever')}</option>
       </select></label>}
       {profile === 'TBC_ANNIVERSARY_WSG_TEST' && <p>{t('captureTestTemporary')}</p>}
       <label>{t('captureTestKind')}<select value={kind} disabled={busy} onChange={e => { setKind(e.target.value as TestKind); setMessage(''); setCreated(false); }}>
         <option value="CAPTURE_ONLY">{t('captureTestRandom')}</option>
-        <option value="ROSTER_CONTROLLED" disabled={profile === 'TBC_ANNIVERSARY_WSG_TEST'}>{t('captureTestRoster')}</option>
+        <option value="ROSTER_CONTROLLED" disabled={ownedTest}>{t('captureTestRoster')}</option>
       </select></label>
       {captureOnly && <p>{t('captureTestRandomDescription')}</p>}
       {tester ? <div className="tester-play-character">
@@ -174,7 +177,7 @@ export function CaptureTestAdmin({ accountId, onCreated, tester = false }: { acc
           ? <p>{playCharacter.name} · {playCharacter.realm}</p>
           : <p role="status">{t('testerChoosePlayCharacter')}</p>}
         <Link to="/play" onClick={event => event.currentTarget.closest('dialog')?.close()}>{t('testerOpenPlay')}</Link>
-      </div> : anniversary ? <AnniversaryTestCharacterSelection key={`${accountId}:${pickerAttempt}`} disabled={busy} onChange={setSelectedCharacter} endpoint={endpoint} /> : <>
+      </div> : ownedTest ? <AnniversaryTestCharacterSelection key={`${accountId}:${pickerAttempt}`} disabled={busy} onChange={setSelectedCharacter} endpoint={endpoint} product={forever ? 'forever' : 'anniversary'} /> : <>
         <label>{t('captureTestCharacter')}<input required maxLength={128} value={name} disabled={busy} onChange={e => setName(e.target.value)} /></label>
         <label>{t('captureTestRealm')}<input maxLength={128} value={realm} disabled={busy} onChange={e => setRealm(e.target.value)} /></label>
       </>}

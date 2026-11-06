@@ -6,8 +6,8 @@ import type { MessageKey } from './locales/en';
 export type TestCharacterReference = { namespace: string; wowAccountId: number; realmId: number; characterId: number };
 type Choice = { key: string; reference: TestCharacterReference; name: string; realm: string; level: number };
 
-export function AnniversaryTestCharacterSelection({ disabled, onChange, endpoint = '/api/v1/moderation/capture-tests' }: {
-  endpoint?: string;
+export function AnniversaryTestCharacterSelection({ disabled, onChange, endpoint = '/api/v1/moderation/capture-tests', product = 'anniversary' }: {
+  endpoint?: string; product?: 'anniversary' | 'forever';
   disabled: boolean; onChange: (value: TestCharacterReference | null) => void;
 }) {
   const { t } = useLocale();
@@ -20,7 +20,7 @@ export function AnniversaryTestCharacterSelection({ disabled, onChange, endpoint
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true); setError(null); setChoices([]); setSelected(''); onChange(null);
-    fetch(endpoint + '/anniversary/characters', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
+    fetch(endpoint + '/' + product + '/characters', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
       .then(async response => {
         if (!response.ok) {
           if (!controller.signal.aborted) setError(response.status === 401 || response.status === 403
@@ -33,7 +33,7 @@ export function AnniversaryTestCharacterSelection({ disabled, onChange, endpoint
         for (const account of data.wow_accounts) {
           if (!Number.isSafeInteger(account?.id) || !Array.isArray(account.characters)) throw Error();
           for (const c of account.characters) {
-            if (!['profile-classicann-eu', 'profile-classicann-us'].includes(c?.namespace) || !Number.isSafeInteger(c.id)
+            if (!(product === 'forever' ? ['profile-forever-eu', 'profile-forever-us'] : ['profile-classicann-eu', 'profile-classicann-us']).includes(c?.namespace) || !Number.isSafeInteger(c.id)
               || typeof c.name !== 'string' || !c.name.trim() || !Number.isSafeInteger(c.realm?.id)
               || typeof (c.realm.name || c.realm.slug) !== 'string' || !Number.isInteger(c.level) || c.level < 1) throw Error();
             const reference = { namespace: c.namespace, wowAccountId: account.id, realmId: c.realm.id, characterId: c.id };
@@ -46,7 +46,7 @@ export function AnniversaryTestCharacterSelection({ disabled, onChange, endpoint
       .catch(() => { if (!controller.signal.aborted) setError('charactersError'); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [attempt, endpoint, onChange]);
+  }, [attempt, endpoint, product, onChange]);
 
   const current = choices.find(choice => choice.key === selected);
   return <>
