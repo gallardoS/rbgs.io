@@ -68,8 +68,7 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
             : `${account.id}:${character.realm.id}:${character.id}`, character,
           reference: { namespace: character.namespace ?? 'profile-classic1x-eu', wowAccountId: account.id, realmId: character.realm.id, characterId: character.id },
         }))).sort((a, b) =>
-          Number(b.character.namespace?.startsWith('profile-forever-') ?? false)
-          - Number(a.character.namespace?.startsWith('profile-forever-') ?? false)
+          b.character.level - a.character.level
           || a.character.name.localeCompare(b.character.name));
         if (controller.signal.aborted) return;
         setCharacters(choices);
@@ -146,7 +145,7 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
       {choiceError === 'charactersAuthorization' && <BattleNetLoginButton />}
     </MessageNotification>
     <MessageNotification message={error} attempt={attempt} />
-    {loading ? <PlayerCardSkeleton /> : error ? <>
+    {loading ? <PlayerCardSkeleton small={small} /> : error ? <>
       {error === 'charactersAuthorization'
         ? <BattleNetLoginButton />
         : <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('charactersRetry')}</button>}

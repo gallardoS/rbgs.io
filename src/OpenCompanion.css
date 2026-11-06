@@ -2,7 +2,13 @@
 .companion-launch-message { max-width: 55ch; margin: .5rem 0 0; font-size: .8rem; line-height: 1.5; color: #b6b7bb; }
 .companion-launch-message[role=alert] { color: #ffbd8a; }
 .companion-launch.is-compact { display: contents; }
-.companion-launch.is-compact p { flex-basis: 100%; margin: 0; max-width: none; text-align: center; font-size: .68rem; }
-.companion-launch-button { min-height: 0; border: 0; border-radius: 0; background: transparent; padding: .25rem 0; color: #facc15; font: inherit; font-size: .7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+.companion-launch-button { display: inline-grid; flex-shrink: 0; min-height: 0; border: 0; border-radius: 0; background: transparent; padding: .25rem 0; color: #facc15; font: inherit; font-size: .7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+.companion-launch-button > span { grid-area: 1 / 1; }
+.companion-launch-button > span[aria-hidden=true] { visibility: hidden; }
 .companion-launch-button:hover { background: transparent; box-shadow: none; color: #fff0a3; text-decoration: underline; }
 .companion-launch-button:disabled { opacity: .6; cursor: wait; }
+.message-notification-actions .companion-reopen-action { display: flex; align-items: center; justify-content: center; gap: .5rem; box-sizing: border-box; width: 100%; min-height: 38px; padding: .55rem .85rem; border: 1px solid #facc1559; border-radius: .45rem; background: #facc150d; color: #facc15; font-size: .8rem; font-weight: 600; line-height: 1.25; text-decoration: none; transition: background .2s, border-color .2s, color .2s; }
+.message-notification-actions .companion-reopen-action svg { flex-shrink: 0; }
+.message-notification-actions .companion-reopen-action:hover { border-color: #facc15; background: #facc151f; color: #fff0a3; text-decoration: none; }
+.message-notification-actions .companion-reopen-action:focus-visible { outline: 2px solid #facc15; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .message-notification-actions .companion-reopen-action { transition: none; } }

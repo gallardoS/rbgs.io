@@ -7,13 +7,14 @@
 .browser-pairing h3 { margin-top: 0; }
 .browser-pairing-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
 .companion-presence-dot { flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%; background: #facc15; }
-.companion-match-status { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .6rem 1.25rem; min-width: 220px; max-width: 100%; padding: .65rem .9rem; border: 1px solid #facc1559; border-radius: .35rem; background: #121514; color: #b6b7bb; font-size: .75rem; line-height: 1.4; }
+.companion-match-status { --companion-control-gap: 1rem; position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .6rem var(--companion-control-gap); width: min(28rem, 100%); min-width: min(220px, 100%); min-height: 3rem; box-sizing: border-box; padding: .65rem .9rem; border: 1px solid #facc1559; border-radius: .35rem; background: #121514; color: #b6b7bb; font-size: .75rem; line-height: 1.4; }
 .companion-match-status.is-connected { border-color: #9ec09e50; color: #9ec09e; }
-.companion-match-status:has(.companion-launch) { max-width: min(28rem, 100%); box-sizing: border-box; }
 .companion-presence-dot.is-connected, .companion-match-status.is-connected .companion-presence-dot { background: #22c55e; box-shadow: 0 0 8px #22c55e66; }
 .companion-match-message { display: inline-flex; align-items: center; gap: .5rem; min-width: 0; }
 .companion-match-message a { color: inherit; text-decoration: none; overflow-wrap: anywhere; }
 .companion-match-message a:hover { text-decoration: underline; }
-.companion-match-actions { display: inline-flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: 1.25rem; }
+.companion-match-actions { display: inline-flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: var(--companion-control-gap); }
+.companion-match-actions .companion-launch-button { justify-items: start; }
+.companion-match-actions .companion-launch-button > span[aria-hidden=true] { position: absolute; }
 .companion-match-actions a { padding-block: .25rem; color: #facc15; font-size: .7rem; font-weight: 700; letter-spacing: .02em; text-decoration: none; text-transform: uppercase; }
 .companion-match-actions a:hover { color: #fff0a3; text-decoration: underline; }

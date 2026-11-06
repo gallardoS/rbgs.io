@@ -4,6 +4,7 @@ import { fcIconAsset, useFcIconPreference, type FcIcon } from './fc-icon-prefere
 import './Settings.css';
 import { DeviceSettings } from './DeviceSettings';
 import { MatchReadySoundSelect } from './MatchReadySoundSelect';
+import { AvatarStyleSelect } from './AvatarStyleSelect';
 
 export function Settings({ accountId }: { accountId: string }) {
   const { t } = useLocale();
@@ -26,6 +27,7 @@ export function Settings({ accountId }: { accountId: string }) {
         </fieldset>
       </div>
     </section>
+    <AvatarStyleSelect accountId={accountId} />
     <section className="profile-settings-section">
       <div className="profile-section-heading"><h2>{t('matchReadySoundLabel')}</h2><p>{t('matchReadySoundDescription')}</p></div>
       <MatchReadySoundSelect />

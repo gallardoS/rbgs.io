@@ -47,7 +47,8 @@ function validMemberCharacter(v: any): v is Character | null | undefined {
     && v.level >= (typeof v.namespace === 'string' && v.namespace.startsWith('profile-forever-') ? 1 : 60)
     && v.realm && Number.isSafeInteger(v.realm.id) && typeof v.realm.slug === 'string' && (v.realm.name == null || typeof v.realm.name === 'string')
     && typeof v.namespace === 'string' && /^profile-(classic(1x|ann)?|forever)-(eu|us)$/.test(v.namespace)
-    && [v.playable_class, v.playable_race, v.faction, v.guild, v.gender].every(named) && image(v.avatarUrl) && image(v.insetUrl);
+    && [v.playable_class, v.playable_race, v.faction, v.guild, v.gender].every(named)
+    && image(v.avatarUrl) && image(v.avatarSdUrl) && image(v.avatarHdUrl) && image(v.insetUrl);
 }
 function validGroup(v: any): v is PremadeGroup | null {
   return v === null || v && typeof v.id === 'string' && typeof v.captainId === 'string' && Number.isSafeInteger(v.revision)
@@ -90,6 +91,7 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
   const [battleTag, setBattleTag] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [copied, setCopied] = useState(false);
+  const copiedTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const [removalNotice, setRemovalNotice] = useState<{ expiresAt: string } | null>(null);
   const controller = useRef<AbortController | null>(null);
   const mutating = useRef(false);
@@ -204,7 +206,13 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
       window.removeEventListener('focus', focus);
     };
   }, [accountId, active, receiveInvitations, pollDelay]);
-  useEffect(() => { setCopied(false); }, [group?.id, group?.captainId, group?.lobbyCode]);
+  useEffect(() => {
+    setCopied(false);
+    return () => {
+      if (copiedTimer.current !== null) window.clearTimeout(copiedTimer.current);
+      copiedTimer.current = null;
+    };
+  }, [group?.id, group?.captainId, group?.lobbyCode]);
 
   async function action(path: string, body: unknown) {
     if (mutating.current) return false;
@@ -255,7 +263,17 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
   const expires = (at: string) => new Date(at).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' });
   async function copyCode() {
     if (!group?.lobbyCode) return;
-    try { await navigator.clipboard.writeText(group.lobbyCode); if (mounted.current) setCopied(true); }
+    try {
+      await navigator.clipboard.writeText(group.lobbyCode);
+      if (mounted.current) {
+        if (copiedTimer.current !== null) window.clearTimeout(copiedTimer.current);
+        setCopied(true);
+        copiedTimer.current = window.setTimeout(() => {
+          setCopied(false);
+          copiedTimer.current = null;
+        }, 3000);
+      }
+    }
     catch { if (mounted.current) setError('groupCopyError'); }
   }
 

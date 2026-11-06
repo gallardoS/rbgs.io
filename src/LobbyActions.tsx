@@ -3,7 +3,6 @@ import { useLocale } from './locales';
 import { ClipboardIcon } from './ClipboardIcon';
 import type { GroupLobby } from './GroupPage';
 
-export type LobbyPanel = 'join';
 type IconName = 'copy' | 'check' | 'refresh' | 'shuffle' | 'invitations' | 'lock' | 'unlock' | 'leave' | 'join' | 'create';
 
 function LobbyIcon({ name }: { name: IconName }) {
@@ -21,8 +20,8 @@ function LobbyIcon({ name }: { name: IconName }) {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
 
-export function LobbyActionButton({ label, hint, icon, onClick, disabled = false, danger = false, active = false, badge = 0, className = '', pressed }: {
-  label: string; hint?: string; icon: IconName; onClick: () => void; disabled?: boolean; danger?: boolean; active?: boolean;
+export function LobbyActionButton({ label, hint, icon, onClick, type = 'button', disabled = false, danger = false, active = false, badge = 0, className = '', pressed }: {
+  label: string; hint?: string; icon: IconName; onClick?: () => void; type?: 'button' | 'submit'; disabled?: boolean; danger?: boolean; active?: boolean;
   badge?: number; className?: string; pressed?: boolean;
 }) {
   const tooltipId = useId();
@@ -31,23 +30,60 @@ export function LobbyActionButton({ label, hint, icon, onClick, disabled = false
     aria-label={disabled ? label : undefined} aria-describedby={disabled ? tooltipId : undefined}
     onPointerEnter={() => setDismissed(false)} onFocusCapture={() => setDismissed(false)}
     onKeyDown={event => { if (event.key === 'Escape') setDismissed(true); }}>
-    <button type="button" className={`lobby-action-button${danger ? ' is-danger' : ''}${active ? ' is-active' : ''} ${className}`}
+    <button type={type} className={`lobby-action-button${danger ? ' is-danger' : ''}${active ? ' is-active' : ''} ${className}`}
       disabled={disabled} aria-label={badge > 0 ? `${label} (${badge})` : label} aria-describedby={tooltipId} aria-pressed={pressed}
-      onClick={() => { setDismissed(true); onClick(); }}>
+      onClick={() => { setDismissed(true); onClick?.(); }}>
       <LobbyIcon name={icon} />{badge > 0 && <span className="lobby-action-badge" aria-hidden="true">{badge > 99 ? '99+' : badge}</span>}
     </button>
     <span id={tooltipId} className="captain-tooltip lobby-icon-tooltip" role="tooltip"><strong>{label}</strong>{hint && <span>{hint}</span>}</span>
   </span>;
 }
 
-export function LobbyActions({ lobby, onPanel, characterReady = true }: {
-  lobby: GroupLobby; onPanel: (panel: LobbyPanel) => void; characterReady?: boolean;
+export function LobbyCodeSwitch({ enabled, disabled, onChange }: {
+  enabled: boolean; disabled: boolean; onChange: (enabled: boolean) => void;
+}) {
+  const { t } = useLocale();
+  const tooltipId = useId();
+  const [dismissed, setDismissed] = useState(false);
+  return <span className="lobby-icon-action" data-tooltip-dismissed={dismissed}
+    onPointerEnter={() => setDismissed(false)} onFocusCapture={() => setDismissed(false)}
+    onKeyDown={event => { if (event.key === 'Escape') setDismissed(true); }}>
+    <button type="button" role="switch" aria-checked={enabled} aria-label={t('groupLobbyCode')}
+      aria-describedby={tooltipId} disabled={disabled} className="lobby-code-switch"
+      onClick={() => { setDismissed(true); onChange(!enabled); }}>
+      <span className="lobby-code-switch-thumb"><LobbyIcon name={enabled ? 'unlock' : 'lock'} /></span>
+    </button>
+    <span id={tooltipId} className="captain-tooltip lobby-icon-tooltip" role="tooltip">
+      <strong>{t(enabled ? 'groupDisableCode' : 'groupEnableCode')}</strong>
+    </span>
+  </span>;
+}
+
+export function LobbyActions({ lobby, onJoined, characterReady = true }: {
+  lobby: GroupLobby; onJoined: () => void; characterReady?: boolean;
 }) {
   const { t } = useLocale();
   const { group, busy, loading } = lobby;
+  const [joinFailed, setJoinFailed] = useState(false);
+  const id = useId();
   return <div className="play-lobby-actions">
     <div className="lobby-action-list" role="group" aria-label={t('playLobbyActions')}>
-        <LobbyActionButton label={t('groupJoinCode')} icon="join" disabled={busy || loading} onClick={() => onPanel('join')} />
+      <form className="lobby-join-inline" onSubmit={async event => {
+        event.preventDefault();
+        const code = lobby.joinCode.trim();
+        if (busy || loading || !/^[A-HJ-NP-Z2-9]{8}$/.test(code)) return;
+        setJoinFailed(false);
+        if (await lobby.action('/api/v1/groups/join', { code })) onJoined();
+        else setJoinFailed(true);
+      }}>
+        <input aria-label={t('groupJoinCode')} placeholder={t('groupJoinCode')} value={lobby.joinCode}
+          onChange={event => { lobby.setJoinCode(event.target.value.toUpperCase()); setJoinFailed(false); }}
+          aria-describedby={joinFailed && lobby.error ? `${id}-error` : undefined}
+          required minLength={8} maxLength={8} pattern="[A-HJ-NP-Z2-9]{8}" autoCapitalize="characters"
+          autoComplete="off" spellCheck={false} disabled={busy || loading} />
+        <LobbyActionButton type="submit" label={t('groupJoin')} icon="join"
+          disabled={busy || loading || !/^[A-HJ-NP-Z2-9]{8}$/.test(lobby.joinCode.trim())} />
+      </form>
       {group ? <>
         <LobbyActionButton label={t('groupLeave')} icon="leave"
           danger disabled={busy} onClick={() => void lobby.command('members/remove', { accountId: lobby.accountId })} />
@@ -55,6 +91,7 @@ export function LobbyActions({ lobby, onPanel, characterReady = true }: {
         <LobbyActionButton label={t('groupCreate')} icon="create" disabled={busy || loading || !characterReady} onClick={() => void lobby.action('/api/v1/groups', {})} />
       </>}
     </div>
+    {joinFailed && lobby.error && <p id={`${id}-error`} className="lobby-join-error" role="alert">{t(lobby.error)}</p>}
     <span className="sr-only" role="status">{busy ? t('groupSaving') : ''}</span>
   </div>;
 }

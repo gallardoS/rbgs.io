@@ -26,15 +26,15 @@ export function FloatingNotificationGroup({ children }: { children: ReactNode })
 }
 
 /** Error state owns lifetime. Dismissal hides the notice until the state clears or a new attempt starts. */
-export function MessageNotification({ message, attempt = 0, container, children }: {
-  message: MessageKey | null; attempt?: number; container?: HTMLElement | null; children?: ReactNode;
+export function MessageNotification({ message, attempt = 0, container, children, role = 'alert' }: {
+  message: MessageKey | null; attempt?: number; container?: HTMLElement | null; children?: ReactNode; role?: 'alert' | 'status';
 }) {
   const { t } = useLocale();
   const target = useContext(NotificationTarget);
   const [dismissed, setDismissed] = useState(false);
   useEffect(() => { setDismissed(false); }, [message, attempt]);
   if (!message || dismissed || !(container || target)) return null;
-  const notice = <article className="lobby-invite-notice message-notification" role="alert"
+  const notice = <article className="lobby-invite-notice message-notification" role={role}
     onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setDismissed(true); } }}>
     <div className="lobby-invite-notice-heading">
       <span className="lobby-invite-notice-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24"

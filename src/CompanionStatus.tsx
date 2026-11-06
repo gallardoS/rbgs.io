@@ -28,7 +28,7 @@ export function CompanionStatus({accountId,matchAction=false,onLinkedDeviceChang
    <span className="companion-presence-dot" aria-hidden="true" />
    <Link to="/settings" title={status}>{t(failed?'companionPresenceCheckFailed':devices===null?'companionPresenceCheckingShort':online?'companionPresenceConnected':!selected&&active.length>1?'companionChooseDevice':active.length===0?'companionPresenceNotLinked':'companionPresenceDisconnected')}</Link>
   </span>
-  {!online&&(failed||devices!==null)&&<><span className="companion-match-actions"><Link to="/downloads">{t('companionDownload')}</Link></span><OpenCompanion accountId={accountId} compact /></>}
+  {!online&&<div className="companion-match-actions"><Link to="/downloads">{t('companionDownload')}</Link><OpenCompanion accountId={accountId} compact /></div>}
  </aside>;
  return <aside className={`companion-status ${online?'connected':''}`} aria-label={t('devicesHeading')}>
   <p role="status">{status}</p>

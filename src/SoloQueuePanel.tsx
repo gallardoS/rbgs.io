@@ -8,7 +8,7 @@ export function SoloQueuePanel({premade=false}:{premade?:boolean}) {
   const solo=useSoloQueueSession(),group=usePremadeQueueSession();const queue=premade?group:solo;const {t}=useLocale();const [now,setNow]=useState(Date.now());
   useEffect(()=>{const timer=window.setInterval(()=>setNow(Date.now()),1000);return()=>window.clearInterval(timer);},[]);
   if(!queue)return null;const status=queue.status;
-  if(!status)return <p className="availability">{t('soloQueueChecking')}</p>;
+  if(!status)return null;
   const lobbyChanged=premade&&status.ticket?.state==='CANCELLED'&&status.ticket.cancellationReason==='LOBBY_CHANGED';
   if (!status.room && status.ticket?.state !== 'QUEUED' && !lobbyChanged) return null;
   const elapsed=status.ticket?Math.max(0,Math.floor((now-Date.parse(status.ticket.enteredAt))/1000)):0;

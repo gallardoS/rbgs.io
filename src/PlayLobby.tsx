@@ -3,7 +3,7 @@ import { useLocale } from './locales';
 import type { GroupLobby, GroupMember } from './GroupPage';
 import { PlayerCard, setPlayerCardTilt, resetPlayerCardTilt, type Character } from './PlayerCard';
 import { fcIconAsset, useFcIconPreference, type FcIcon } from './fc-icon-preference';
-import { LobbyActionButton } from './LobbyActions';
+import { LobbyActionButton, LobbyCodeSwitch } from './LobbyActions';
 import { CaptainCrown } from './CaptainConsent';
 import { LobbyMemberMenu } from './LobbyMemberMenu';
 import './PlayLobby.css';
@@ -47,19 +47,20 @@ export function PlayLobbyCode({ lobby }: { lobby: GroupLobby }) {
   if (!lobby.group) return null;
   const copyLabel = t(lobby.copied ? 'groupCodeCopied' : 'groupCopyCode');
   return <div className="play-lobby-code">
-    <span className="play-lobby-code-main"><strong className="play-lobby-region" aria-label={`${t('playLobbyRegion')}: ${lobby.group.region}`}>{lobby.group.region}</strong><span className="play-lobby-code-label">{t('playLobbyCodeLabel')}</span>
-    {lobby.group.lobbyCode ? <strong className="play-premade-code">{lobby.group.lobbyCode}</strong> : <span className="play-code-disabled">{t('groupCodeDisabled')}</span>}
+    <span className="play-lobby-code-main"><strong className="play-lobby-region" aria-label={`${t('playLobbyRegion')}: ${lobby.group.region}`}>{lobby.group.region}</strong><span className="play-lobby-code-label">{t('playLobbyCodeLabel')}</span></span>
+    <span className="play-code-details">
+      <span className={`play-code-enabled${lobby.group.lobbyCode ? '' : ' is-unavailable'}`} aria-hidden={!lobby.group.lobbyCode}>
+        <strong className="play-premade-code">{lobby.group.lobbyCode ?? 'ABCDEFGH'}</strong>
+        <LobbyActionButton label={copyLabel} icon={lobby.copied ? 'check' : 'copy'} active={lobby.copied}
+          disabled={lobby.busy || !lobby.group.lobbyCode} onClick={() => void lobby.copyCode()} />
+        {lobby.captain && <LobbyActionButton label={t('groupRegenerateCode')} icon="refresh" disabled={lobby.busy || !lobby.group.lobbyCode}
+          onClick={() => void lobby.command('code', { enabled: true })} />}
+      </span>
+      <span className={`play-code-disabled${lobby.group.lobbyCode ? ' is-unavailable' : ''}`} aria-hidden={!!lobby.group.lobbyCode}>{t('groupCodeDisabled')}</span>
     </span>
     <span className="play-code-actions">
-      {lobby.group.lobbyCode && <LobbyActionButton label={copyLabel} icon={lobby.copied ? 'check' : 'copy'} active={lobby.copied}
-        disabled={lobby.busy} onClick={() => void lobby.copyCode()} />}
-      {lobby.captain && <>
-      <LobbyActionButton label={t(lobby.group.lobbyCode ? 'groupRegenerateCode' : 'groupEnableCode')}
-        icon={lobby.group.lobbyCode ? 'refresh' : 'unlock'} disabled={lobby.busy}
-        onClick={() => void lobby.command('code', { enabled: true })} />
-      {lobby.group.lobbyCode && <LobbyActionButton label={t('groupDisableCode')} icon="lock" disabled={lobby.busy}
-        onClick={() => void lobby.command('code', { enabled: false })} />}
-      </>}
+      {lobby.captain && <LobbyCodeSwitch enabled={!!lobby.group.lobbyCode} disabled={lobby.busy}
+        onChange={enabled => void lobby.command('code', { enabled })} />}
     </span>
     <span className="sr-only" role="status">{lobby.copied ? t('groupCodeCopied') : ''}</span>
   </div>;

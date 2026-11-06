@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useLocale } from './locales';
+import { useAvatarPreference, type AvatarStyle } from './avatar-preference';
 
 export type Character = {
   id: number; name: string; level: number;
@@ -7,6 +8,8 @@ export type Character = {
   realm: { id: number; name: string; slug: string };
   playable_class?: { id?: number; name: string }; playable_race?: { name: string }; faction?: { name: string };
   avatarUrl?: string | null;
+  avatarSdUrl?: string | null;
+  avatarHdUrl?: string | null;
   insetUrl?: string | null;
   guild?: { name: string | null } | null;
   gender?: { type: string | null; name?: string | null } | null;
@@ -15,16 +18,16 @@ export function characterRegion(character: Character): 'EU' | 'NA' {
   return character.namespace?.endsWith('-us') ? 'NA' : 'EU';
 }
 export function isPickerCharacter(character: Pick<Character, 'namespace' | 'level'>): boolean {
-  return character.level >= (character.namespace?.startsWith('profile-forever-') ? 1 : 60);
+  return /^profile-forever-(eu|us)$/.test(character.namespace ?? '') && character.level >= 1;
 }
-export function PlayerCardSkeleton() {
+export function PlayerCardSkeleton({ small = false }: { small?: boolean }) {
   const { t } = useLocale();
   return <div className="character-picker" role="status" aria-label={t('charactersLoading')}>
-    <div className="profile-card player-card player-card-skeleton" aria-hidden="true">
+    <div className={`profile-card player-card player-card-skeleton${small ? ' player-card-small' : ''}`} aria-hidden="true">
       <span className="profile-card-header"><span className="skeleton-block skeleton-realm" /><span className="skeleton-block skeleton-icons" /></span>
       <span className="character-avatar skeleton-block" />
       <span className="skeleton-block skeleton-name" />
-      <span className="skeleton-block skeleton-guild" />
+      <span className="profile-card-guild skeleton-block skeleton-guild" />
       <span className="profile-card-stats">{[0, 1, 2].map(column => <span key={column}><span className="skeleton-block skeleton-stat-label" /><span className="skeleton-block skeleton-stat-value" /></span>)}</span>
       <span className="profile-card-ratings">{[0, 1].map(column => <span className="profile-card-rating" key={column}><span className="skeleton-block skeleton-rating" /></span>)}</span>
     </div>
@@ -49,7 +52,7 @@ export function PlayerCard({ character, compact = false, tilt = false, size = 'n
 }) {
   return <div className={`profile-card player-card${compact ? ' player-card-compact' : ''}${tilt ? ' lobby-card' : ''}${size === 'small' ? ' player-card-small' : ''}`}
     onPointerMove={event => { if (tilt) setPlayerCardTilt(event.currentTarget, event); }} onPointerLeave={event => resetPlayerCardTilt(event.currentTarget)}>
-    <span className="profile-card-header"><span className="profile-card-realm">{showLevel ? `${character.realm.name || character.realm.slug} · ${character.level}` : character.realm.name || character.realm.slug}</span><CharacterIcons character={character} leadingIcon={headerIcon} /></span>
+    <span className="profile-card-header"><span className="profile-card-realm">{showLevel ? `${characterRegion(character)} · ${character.level}` : characterRegion(character)}</span><CharacterIcons character={character} leadingIcon={headerIcon} /></span>
     {avatarBadge ? <span className="player-card-avatar-with-badge"><span className="player-card-avatar-badge">{avatarBadge}</span><CharacterAvatar character={character} fallback={avatarFallback} /></span> : <CharacterAvatar character={character} fallback={avatarFallback} />}
     <strong className="profile-card-name">{character.name}</strong>
     {character.guild?.name && <span className="profile-card-guild">{`< ${character.guild.name} >`}</span>}
@@ -106,11 +109,15 @@ export function CharacterIcons({ character, leadingIcon }: { character: Characte
   </span>;
 }
 
-export function CharacterAvatar({ character, fallback }: { character: Character; fallback?: ReactNode }) {
+export function CharacterAvatar({ character, fallback, style }: { character: Character; fallback?: ReactNode; style?: AvatarStyle }) {
+  const preference = useAvatarPreference();
   const [failedUrls, setFailedUrls] = useState<string[]>([]);
   const [className, color] = classAvatars[character.playable_class?.id ?? 0] ?? ['', '#b6b7bb'];
   const classIcon = className ? `/media/character/class_${className}.jpg` : null;
-  const source = [character.avatarUrl, classIcon]
+  const portraits = (style ?? preference.style) === 'sd'
+    ? [character.avatarSdUrl, character.avatarUrl, character.avatarHdUrl]
+    : [character.avatarHdUrl, character.avatarUrl, character.avatarSdUrl];
+  const source = [...portraits, classIcon]
     .find((url): url is string => !!url && !failedUrls.includes(url));
   return <span className={`character-avatar${source === classIcon ? ' is-class-icon' : ''}`} style={{ color }} aria-hidden="true">
     {source

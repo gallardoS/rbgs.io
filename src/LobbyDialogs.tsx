@@ -1,7 +1,6 @@
 import { useId, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useLocale } from './locales';
 import { type GroupLobby } from './GroupPage';
-import type { LobbyPanel } from './LobbyActions';
 
 function LobbyPopup({ dialogRef, title, children, focusClose = true, className = '' }: {
   dialogRef: RefObject<HTMLDialogElement | null>; title: string; children: ReactNode; focusClose?: boolean; className?: string;
@@ -22,17 +21,12 @@ function LobbyPopup({ dialogRef, title, children, focusClose = true, className =
 
 export function useLobbyDialogs(lobby: GroupLobby, onJoined: () => void) {
   const { t } = useLocale();
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const inviteRef = useRef<HTMLDialogElement>(null);
   const [invited, setInvited] = useState<string | null>(null);
   const openSlot = () => {
     setInvited(null);
     inviteRef.current?.showModal();
     inviteRef.current?.querySelector<HTMLInputElement>('input')?.focus();
-  };
-  const openPanel = (_next: LobbyPanel) => {
-    dialogRef.current?.showModal();
-    dialogRef.current?.querySelector<HTMLInputElement>('input')?.focus();
   };
   async function invite() {
     const recipient = lobby.battleTag.trim();
@@ -75,18 +69,6 @@ export function useLobbyDialogs(lobby: GroupLobby, onJoined: () => void) {
         </ul></section>}
       </section>
     </LobbyPopup>
-    <LobbyPopup dialogRef={dialogRef} title={t('groupJoinCode')} focusClose={false} className="play-join-dialog">
-      {error}
-      <form className="play-join-code-form" onSubmit={async event => {
-        event.preventDefault();
-        if (await lobby.action('/api/v1/groups/join', { code: lobby.joinCode.trim() })) { onJoined(); dialogRef.current?.close(); }
-      }}>
-        <input id="play-join-code" aria-label={t('groupLobbyCode')} placeholder={t('playJoinPlaceholder')} value={lobby.joinCode} onChange={event => lobby.setJoinCode(event.target.value.toUpperCase())}
-          autoFocus required minLength={8} maxLength={8} pattern="[A-HJ-NP-Z2-9]{8}" autoCapitalize="characters" autoComplete="off" spellCheck={false} disabled={lobby.busy} />
-        <button className="lobby-primary-action" disabled={lobby.busy || lobby.joinCode.length !== 8}>{t('playJoinShort')}</button>
-      </form>
-      {lobby.busy && <p role="status">{t('groupSaving')}</p>}
-    </LobbyPopup>
   </>;
-  return { dialogRef, openSlot, openPanel, dialogs };
+  return { openSlot, dialogs };
 }

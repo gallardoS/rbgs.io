@@ -2,6 +2,7 @@ import {useEffect,useRef,useState} from 'react';
 import {useLocale} from './locales';
 import {selectCompanion} from './companion-link';
 import type {MessageKey} from './locales/en';
+import {MessageNotification} from './FloatingNotifications';
 import './OpenCompanion.css';
 
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -9,12 +10,13 @@ export function OpenCompanion({accountId,compact=false,onConnected}:{accountId:s
   const {t}=useLocale();
   const [busy,setBusy]=useState(false);const [url,setUrl]=useState<string|null>(null);
   const [message,setMessage]=useState<MessageKey|null>(null);const [error,setError]=useState(false);
+  const [attempt,setAttempt]=useState(0);
   const run=useRef<{controller:AbortController;timer?:ReturnType<typeof setTimeout>}|null>(null);
   useEffect(()=>()=>{run.current?.controller.abort();clearTimeout(run.current?.timer);run.current=null;},[accountId]);
   async function open(){
     if(run.current)return;
     const task={controller:new AbortController(),timer:undefined as ReturnType<typeof setTimeout>|undefined};run.current=task;
-    setBusy(true);setError(false);setMessage('companionOpening');setUrl(null);
+    setAttempt(value=>value+1);setBusy(true);setError(false);setMessage('companionOpening');setUrl(null);
     const request=async(path:string,options:RequestInit={})=>{
       const controller=new AbortController();const abort=()=>controller.abort();task.controller.signal.addEventListener('abort',abort);
       const timeout=setTimeout(abort,8000);
@@ -56,7 +58,16 @@ export function OpenCompanion({accountId,compact=false,onConnected}:{accountId:s
   }
   return <div className={`companion-launch ${compact?'is-compact':''}`}>
     {!compact&&<p className="companion-launch-message">{t('companionLaunchAccess')}</p>}
-    <button className={compact?'companion-launch-button':'button'} type="button" disabled={busy} onClick={()=>void open()}>{t(busy?'companionOpening':compact?'companionStart':'companionOpenConnect')}</button>
-    {message&&<p className="companion-launch-message" role={error?'alert':'status'}>{t(message)}{url&&<> <a href={url}>{t('companionOpenAgain')}</a></>}</p>}
+    <button className={compact?'companion-launch-button':'button'} type="button" disabled={busy} onClick={()=>void open()}>
+      {compact?<><span aria-hidden={busy}>{t('companionStart')}</span><span aria-hidden={!busy}>{t('companionOpening')}</span></>:t(busy?'companionOpening':'companionOpenConnect')}
+    </button>
+    {compact?<MessageNotification message={message} attempt={attempt} role={error?'alert':'status'}>
+      {url&&<a className="companion-reopen-action" href={url}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M20 7v5h-5M4 17v-5h5" /><path d="M6.1 7a7 7 0 0 1 11.5-1L20 9M4 15l2.4 3A7 7 0 0 0 17.9 17" />
+        </svg>
+        <span>{t('companionOpenAgain')}</span>
+      </a>}
+    </MessageNotification>:message&&<p className="companion-launch-message" role={error?'alert':'status'}>{t(message)}{url&&<> <a href={url}>{t('companionOpenAgain')}</a></>}</p>}
   </div>;
 }
