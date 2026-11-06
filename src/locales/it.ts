@@ -512,7 +512,7 @@ export const messages = {
   groupPending: "La creazione dei gruppi e gli inviti arriveranno con il matchmaking Premade.",
   settingsIntro: "Gestisci le preferenze dell’account e la connessione all’app desktop.",
   settingsAvatar: "Avatar del personaggio preferito",
-  settingsAvatarDescription: "Scegli ritratti SD o HD per le schede dei personaggi. SD è la scelta predefinita.",
+  settingsAvatarDescription: "Scegli come gli altri giocatori vedono il tuo personaggio: SD o HD. SD è la scelta predefinita.",
   settingsAvatarPreviewUnavailable: "Entrambe le anteprime appariranno quando Blizzard fornirà i ritratti SD e HD del tuo personaggio.",
   settingsFcIcon: "Icona FC preferita",
   settingsFcIconDescription: "Scegli l’icona del portabandiera (FC) in Gioca.",

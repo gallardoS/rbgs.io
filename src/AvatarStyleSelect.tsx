@@ -5,7 +5,7 @@ import { useLocale } from './locales';
 
 export function AvatarStyleSelect({ accountId }: { accountId: string }) {
   const { t } = useLocale();
-  const { style, setStyle } = useAvatarPreference();
+  const { style, setStyle, loading: preferenceLoading, saving, failed } = useAvatarPreference();
   const id = useId();
   const [character, setCharacter] = useState<Character | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,15 +40,16 @@ export function AvatarStyleSelect({ accountId }: { accountId: string }) {
       <p>{t('settingsAvatarDescription')}</p>
     </div>
     <div>
-      <fieldset className="fc-icon-options avatar-style-options">
+      <fieldset className="fc-icon-options avatar-style-options" disabled={preferenceLoading || saving}>
         <legend className="fc-icon-legend">{t('settingsAvatar')}</legend>
         {(['sd', 'hd'] as AvatarStyle[]).map(option => <label className="fc-icon-option avatar-style-option" key={option}>
-          <input type="radio" name={id} value={option} checked={style === option} onChange={() => setStyle(option)} />
+          <input type="radio" name={id} value={option} checked={style === option} onChange={() => void setStyle(option)} />
           {character && <CharacterAvatar character={character} style={option} />}
           <span>{option.toUpperCase()}</span>
         </label>)}
       </fieldset>
-      {loading && <p role="status">{t('charactersLoading')}</p>}
+      {(loading || preferenceLoading) && <p role="status">{t('charactersLoading')}</p>}
+      {failed && <p role="alert">{t('selectionSaveError')}</p>}
       {error && <p role="status">{t('charactersError')} <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('charactersRetry')}</button></p>}
       {!loading && !error && (!character?.avatarSdUrl || !character.avatarHdUrl) && <p>{t('settingsAvatarPreviewUnavailable')}</p>}
     </div>

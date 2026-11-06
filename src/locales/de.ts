@@ -512,7 +512,7 @@ export const messages = {
   groupPending: "Gruppenerstellung und Einladungen kommen mit der Premade-Spielsuche.",
   settingsIntro: "Verwalte deine Kontoeinstellungen und die Verbindung zur Desktop-App.",
   settingsAvatar: "Bevorzugter Charakteravatar",
-  settingsAvatarDescription: "Wähle SD- oder HD-Porträts für Charakterkarten. SD ist die Standardeinstellung.",
+  settingsAvatarDescription: "Wähle, wie andere Spieler deinen Charakter sehen: SD oder HD. SD ist die Standardeinstellung.",
   settingsAvatarPreviewUnavailable: "Beide Vorschauen erscheinen, sobald Blizzard SD- und HD-Porträts für deinen Charakter bereitstellt.",
   settingsFcIcon: "Bevorzugtes FC-Symbol",
   settingsFcIconDescription: "Wähle das Symbol für den Flaggenträger (FC) unter Spielen.",

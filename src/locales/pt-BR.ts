@@ -512,7 +512,7 @@ export const messages = {
   groupPending: "A criação de grupos e os convites chegarão com a busca de partidas de grupo fechado.",
   settingsIntro: "Gerencie as preferências da conta e a conexão do aplicativo.",
   settingsAvatar: "Avatar de personagem preferido",
-  settingsAvatarDescription: "Escolha retratos SD ou HD para os cartões de personagens. SD é a opção padrão.",
+  settingsAvatarDescription: "Escolha como os outros jogadores veem seu personagem: SD ou HD. SD é a opção padrão.",
   settingsAvatarPreviewUnavailable: "As duas prévias aparecerão quando a Blizzard fornecer os retratos SD e HD do seu personagem.",
   settingsFcIcon: "Ícone preferido de FC",
   settingsFcIconDescription: "Escolha o ícone de porta-bandeira (FC) em Jogar.",

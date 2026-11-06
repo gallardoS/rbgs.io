@@ -148,8 +148,8 @@ function LobbyPlayerCard({ member, fcIcon }: { member: GroupMember; fcIcon: FcIc
   const roleIcon = <LobbyRoleIcon role={member.role} fcIcon={fcIcon} />;
   const crown = member.captain ? <span className="premade-captain-badge" role="img" aria-label={t('groupCaptain')} title={t('groupCaptain')}><CaptainCrown size={20} className="premade-captain-crown" /></span> : undefined;
   return <>
-    <PlayerCard character={character} size="small" showLevel={!!member.character} avatarFallback={avatar} footer={roleIcon} avatarBadge={crown} />
-    <span className="premade-card-preview" aria-hidden="true"><PlayerCard character={character} tilt showLevel={!!member.character} avatarFallback={avatar} headerIcon={roleIcon} footer={member.captain ? t('groupCaptain') : undefined} /></span>
+    <PlayerCard ownerAvatar character={character} size="small" showLevel={!!member.character} avatarFallback={avatar} footer={roleIcon} avatarBadge={crown} />
+    <span className="premade-card-preview" aria-hidden="true"><PlayerCard ownerAvatar character={character} tilt showLevel={!!member.character} avatarFallback={avatar} headerIcon={roleIcon} footer={member.captain ? t('groupCaptain') : undefined} /></span>
   </>;
 }
 

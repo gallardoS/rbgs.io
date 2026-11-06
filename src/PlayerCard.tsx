@@ -46,14 +46,14 @@ export function resetPlayerCardTilt(card: HTMLElement) {
   card.style.setProperty('--card-rotate-x', '0deg'); card.style.setProperty('--card-rotate-y', '0deg');
 }
 
-export function PlayerCard({ character, compact = false, tilt = false, size = 'normal', showLevel = true, avatarFallback, footer, headerIcon, avatarBadge }: {
+export function PlayerCard({ character, compact = false, tilt = false, size = 'normal', showLevel = true, avatarFallback, footer, headerIcon, avatarBadge, ownerAvatar = false }: {
   character: Character; compact?: boolean; tilt?: boolean; size?: 'normal' | 'small';
-  showLevel?: boolean; avatarFallback?: ReactNode; footer?: ReactNode; headerIcon?: ReactNode; avatarBadge?: ReactNode;
+  ownerAvatar?: boolean; showLevel?: boolean; avatarFallback?: ReactNode; footer?: ReactNode; headerIcon?: ReactNode; avatarBadge?: ReactNode;
 }) {
   return <div className={`profile-card player-card${compact ? ' player-card-compact' : ''}${tilt ? ' lobby-card' : ''}${size === 'small' ? ' player-card-small' : ''}`}
     onPointerMove={event => { if (tilt) setPlayerCardTilt(event.currentTarget, event); }} onPointerLeave={event => resetPlayerCardTilt(event.currentTarget)}>
     <span className="profile-card-header"><span className="profile-card-realm">{showLevel ? `${characterRegion(character)} · ${character.level}` : characterRegion(character)}</span><CharacterIcons character={character} leadingIcon={headerIcon} /></span>
-    {avatarBadge ? <span className="player-card-avatar-with-badge"><span className="player-card-avatar-badge">{avatarBadge}</span><CharacterAvatar character={character} fallback={avatarFallback} /></span> : <CharacterAvatar character={character} fallback={avatarFallback} />}
+    {avatarBadge ? <span className="player-card-avatar-with-badge"><span className="player-card-avatar-badge">{avatarBadge}</span><CharacterAvatar character={character} fallback={avatarFallback} ownerAvatar={ownerAvatar} /></span> : <CharacterAvatar character={character} fallback={avatarFallback} ownerAvatar={ownerAvatar} />}
     <strong className="profile-card-name">{character.name}</strong>
     {character.guild?.name && <span className="profile-card-guild">{`< ${character.guild.name} >`}</span>}
     <CharacterStats />
@@ -109,12 +109,12 @@ export function CharacterIcons({ character, leadingIcon }: { character: Characte
   </span>;
 }
 
-export function CharacterAvatar({ character, fallback, style }: { character: Character; fallback?: ReactNode; style?: AvatarStyle }) {
+export function CharacterAvatar({ character, fallback, style, ownerAvatar = false }: { character: Character; fallback?: ReactNode; style?: AvatarStyle; ownerAvatar?: boolean }) {
   const preference = useAvatarPreference();
   const [failedUrls, setFailedUrls] = useState<string[]>([]);
   const [className, color] = classAvatars[character.playable_class?.id ?? 0] ?? ['', '#b6b7bb'];
   const classIcon = className ? `/media/character/class_${className}.jpg` : null;
-  const portraits = (style ?? preference.style) === 'sd'
+  const portraits = ownerAvatar && !style ? [character.avatarUrl, character.avatarSdUrl, character.avatarHdUrl] : (style ?? preference.style) === 'sd'
     ? [character.avatarSdUrl, character.avatarUrl, character.avatarHdUrl]
     : [character.avatarHdUrl, character.avatarUrl, character.avatarSdUrl];
   const source = [...portraits, classIcon]

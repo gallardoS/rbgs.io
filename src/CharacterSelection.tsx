@@ -22,9 +22,10 @@ async function persistChoice(choice: Choice, signal: AbortSignal) {
 }
 
 
-export function CharacterSelection({ accountId, onChange, preferred, disabled = false, small = false, smallFooter, previewHeaderIcon }: {
+export function CharacterSelection({ accountId, onChange, preferred, disabled = false, small = false, smallFooter, previewHeaderIcon, dialogOnly = false, onPickerClose }: {
   accountId: string; onChange?: (character: Character | null) => void;
   preferred?: { name: string; realm: string }; disabled?: boolean; small?: boolean; smallFooter?: ReactNode; previewHeaderIcon?: ReactNode;
+  dialogOnly?: boolean; onPickerClose?: () => void;
 }) {
   const { t } = useLocale();
   const [characters, setCharacters] = useState<Choice[]>([]);
@@ -43,6 +44,21 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
   changeListener.current = onChange;
   const preferredChoice = useRef(preferred);
   preferredChoice.current = preferred;
+  useEffect(() => {
+    if (dialogOnly) { dialog.current?.showModal(); setDialogOpen(true); }
+  }, [dialogOnly]);
+  useEffect(() => {
+    const changed = (event: Event) => {
+      const detail = (event as CustomEvent<{ accountId: string; reference: Reference }>).detail;
+      if (detail?.accountId !== accountId) return;
+      const choice = characters.find(item => sameReference(item.reference, detail.reference));
+      if (!choice) { setAttempt(value => value + 1); return; }
+      setSelected(choice.key); persistedKey.current = choice.key;
+      changeListener.current?.(choice.character);
+    };
+    window.addEventListener('rbgs-play-character-selected', changed);
+    return () => window.removeEventListener('rbgs-play-character-selected', changed);
+  }, [accountId, characters]);
   // Retain the legacy key so existing EU choices survive; other namespaces have distinct choice keys.
   const storageKey = `rbgs.character.classic1x.eu.${accountId}`;
 
@@ -111,6 +127,7 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
       if (controller.signal.aborted) return;
       persistedKey.current = key; setSelected(key);
       changeListener.current?.(choice.character);
+      window.dispatchEvent(new CustomEvent('rbgs-play-character-selected', { detail: { accountId, reference: choice.reference } }));
       dialog.current?.close();
       try { localStorage.setItem(storageKey, key); } catch { /* Keep the accepted choice in memory. */ }
     } catch (reason) {
@@ -140,6 +157,25 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
           </li>)}
         </ul>
   );
+  if (dialogOnly) return <dialog ref={dialog} className="character-selection-dialog" aria-labelledby="account-character-selection-title"
+    onClose={() => { setDialogOpen(false); onPickerClose?.(); }}
+    onClick={event => {
+      if (event.target !== event.currentTarget) return;
+      const bounds = event.currentTarget.getBoundingClientRect();
+      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.current?.close();
+    }}>
+    <header className="character-selection-heading">
+      <h2 id="account-character-selection-title">{t('charactersChange')}</h2>
+      <button type="button" className="character-selection-close" aria-label={t('charactersClose')} onClick={() => dialog.current?.close()} autoFocus>×</button>
+    </header>
+    <MessageNotification message={choiceError} attempt={attempt} container={dialogOpen ? dialog.current : null}>
+      {choiceError === 'charactersAuthorization' && <BattleNetLoginButton />}
+    </MessageNotification>
+    {loading ? <p className="account-character-picker-status" role="status">{t('charactersLoading')}</p> : error ? <div className="account-character-picker-status" role="alert">
+      <p>{t(error)}</p>
+      {error === 'charactersAuthorization' ? <BattleNetLoginButton /> : <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('charactersRetry')}</button>}
+    </div> : characters.length === 0 ? <p className="account-character-picker-status" role="status">{t('charactersEmpty')}</p> : choicesList}
+  </dialog>;
   return <section className="character-selection" aria-label={t('charactersHeading')}>
     <MessageNotification message={choiceError} attempt={attempt} container={dialogOpen ? dialog.current : null}>
       {choiceError === 'charactersAuthorization' && <BattleNetLoginButton />}

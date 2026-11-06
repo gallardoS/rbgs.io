@@ -569,7 +569,7 @@ export const messages: Record<MessageKey, string> = {
   groupPending: 'La creación de grupos y las invitaciones llegarán con el emparejamiento de premades.',
   settingsIntro: "Gestiona las preferencias de tu cuenta y la conexión de la app de escritorio.",
   settingsAvatar: "Avatar de personaje preferido",
-  settingsAvatarDescription: "Elige retratos SD o HD para las tarjetas de personajes. SD es la opción predeterminada.",
+  settingsAvatarDescription: "Elige cómo ven tu personaje los demás jugadores: SD o HD. SD es la opción predeterminada.",
   settingsAvatarPreviewUnavailable: "Las dos vistas previas aparecerán cuando Blizzard proporcione los retratos SD y HD de tu personaje.",
   settingsFcIcon: 'Icono de FC preferido',
   settingsFcIconDescription: 'Elige el icono de portador de bandera (FC) que aparece en Jugar.',

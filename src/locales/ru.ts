@@ -512,7 +512,7 @@ export const messages = {
   groupPending: "Создание групп и приглашения появятся вместе с подбором матчей для готовых групп.",
   settingsIntro: "Управляйте настройками аккаунта и подключением приложения.",
   settingsAvatar: "Предпочитаемый аватар персонажа",
-  settingsAvatarDescription: "Выберите портреты SD или HD для карточек персонажей. По умолчанию используется SD.",
+  settingsAvatarDescription: "Выберите, как другие игроки видят вашего персонажа: SD или HD. По умолчанию используется SD.",
   settingsAvatarPreviewUnavailable: "Оба портрета появятся, когда Blizzard предоставит изображения SD и HD вашего персонажа.",
   settingsFcIcon: "Предпочитаемый значок FC",
   settingsFcIconDescription: "Выберите значок знаменосца (FC) в разделе «Играть».",

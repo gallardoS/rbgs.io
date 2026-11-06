@@ -16,7 +16,8 @@ import { SeasonSelection } from './SeasonSelection';
 import { AuthenticatedLobby } from './LobbySession';
 import { AuthenticatedPremadeQueue, AuthenticatedSoloQueue } from './SoloQueueSession';
 import { Settings } from './Settings';
-import { AvatarPreferenceAccount } from './avatar-preference';
+import { AccountMenu } from './AccountMenu';
+import { AvatarPreferenceProvider } from './avatar-preference';
 import { ModeratorMatches } from './ModeratorMatches';
 import { TesterPopup } from './TesterPopup';
 import { MatchHistory } from './MatchHistory';
@@ -235,7 +236,7 @@ function AppContent() {
     });
     return () => cancelAnimationFrame(frame);
   }, [location.pathname, location.hash]);
-  return <AvatarPreferenceAccount.Provider value={session.profile?.id ?? null}><AuthenticatedSoloQueue accountId={session.profile?.id ?? null}><AuthenticatedPremadeQueue accountId={session.profile?.id ?? null}><AuthenticatedLobby accountId={session.profile?.id ?? null}><div className="app-shell">
+  return <AvatarPreferenceProvider key={session.profile?.id ?? "anonymous"} accountId={session.profile?.id ?? null}><AuthenticatedSoloQueue accountId={session.profile?.id ?? null}><AuthenticatedPremadeQueue accountId={session.profile?.id ?? null}><AuthenticatedLobby accountId={session.profile?.id ?? null}><div className="app-shell">
     <header className="header"><Link className="brand" to="/">{t('appName')}</Link>
       <button type="button" className="menu-toggle" aria-label={t('navigationMenu')} aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(open => !open)}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
@@ -250,15 +251,7 @@ function AppContent() {
         {(session.profile?.role === 'MODERATOR' || session.profile?.role === 'ADMIN') && <NavLink className="nav-moderator" to="/moderator">{t('navigationModerator')}</NavLink>}
         <NavLink className="nav-play" to="/play" onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) openSeasonNotice(); }}>{t('navigationPlay')}</NavLink>
         {session.loading ? <span role="status">{t('authChecking')}</span> : session.profile
-          ? <details className="account-menu" key={location.pathname}><summary>
-            <svg className="user-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21v-2a8 8 0 0 1 16 0v2" /></svg>
-            <span>{session.profile.displayName}</span></summary><div>
-              <Link to="/account">{t('navigationProfile')}</Link>
-              <Link to="/match-history">{t('navigationHistory')}</Link>
-              <Link to="/my-group">{t('navigationGroup')}</Link>
-              <Link to="/settings">{t('navigationSettings')}</Link>
-              <button onClick={() => void session.logout()}>{t('logout')}</button>
-            </div></details>
+          ? <AccountMenu key={`${session.profile.id}:${location.pathname}`} accountId={session.profile.id} displayName={session.profile.displayName} onLogout={session.logout} />
           : <a className="nav-login" href="/oauth2/authorization/battle-net"><img src="/battle-net.svg" width="20" height="20" alt="" />{t('navigationLogin')}</a>}
         <LanguageMenu />
       </nav>
@@ -317,7 +310,7 @@ function AppContent() {
       <footer className="footer"><span className="brand">{t('appName')}</span><Link to="/status">{t('navigationStatus')}</Link></footer>
     </div>
     <BackToTop />
-  </div></AuthenticatedLobby></AuthenticatedPremadeQueue></AuthenticatedSoloQueue></AvatarPreferenceAccount.Provider>;
+  </div></AuthenticatedLobby></AuthenticatedPremadeQueue></AuthenticatedSoloQueue></AvatarPreferenceProvider>;
 }
 
 function GroupRedirect() {

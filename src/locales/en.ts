@@ -510,7 +510,7 @@ export const messages = {
   groupPending: 'Group creation and invitations are coming with premade matchmaking.',
   settingsIntro: "Manage your account preferences and desktop app connection.",
   settingsAvatar: "Preferred character avatar",
-  settingsAvatarDescription: "Choose SD or HD portraits for character cards. SD is the default.",
+  settingsAvatarDescription: "Choose how your character appears to other players: SD or HD. SD is the default.",
   settingsAvatarPreviewUnavailable: "Both previews will appear when Blizzard provides SD and HD portraits for your character.",
   settingsFcIcon: 'Preferred FC icon',
   settingsFcIconDescription: 'Choose the icon used for Flag Carrier (FC) in Play.',

@@ -512,7 +512,7 @@ export const messages: Record<MessageKey, string> = {
   groupPending: 'La création de groupes et les invitations arriveront avec le matchmaking en groupe prédéfini.',
   settingsIntro: "Gérez les préférences de votre compte et la connexion de l’application de bureau.",
   settingsAvatar: "Avatar de personnage préféré",
-  settingsAvatarDescription: "Choisissez les portraits SD ou HD pour les fiches de personnage. SD est le choix par défaut.",
+  settingsAvatarDescription: "Choisissez comment les autres joueurs voient votre personnage : SD ou HD. SD est le choix par défaut.",
   settingsAvatarPreviewUnavailable: "Les deux aperçus apparaîtront lorsque Blizzard fournira les portraits SD et HD de votre personnage.",
   settingsFcIcon: 'Icône FC préférée',
   settingsFcIconDescription: 'Choisissez l’icône du porteur de drapeau (FC) affichée dans Jouer.',
