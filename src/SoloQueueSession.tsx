@@ -4,19 +4,52 @@ import { MessageNotification } from './FloatingNotifications';
 import type { MessageKey } from './locales/en';
 import { useLocale } from './locales';
 
+export type SimulatedMatch = { captainAReady: boolean; captainBReady: boolean; assignment: string; winner: 'A' | 'B' | null };
+export type FinishedRoomState = 'AWAITING_EVIDENCE' | 'UNDER_REVIEW' | 'RESOLVED';
+export type RecentRoom = { id: string; status: FinishedRoomState; winner: SimulatedMatch['winner']; version: number };
+export const isFinishedRoom = (status: unknown): status is FinishedRoomState =>
+  status === 'AWAITING_EVIDENCE' || status === 'UNDER_REVIEW' || status === 'RESOLVED';
+const isWinner = (winner: unknown) => winner === null || winner === 'A' || winner === 'B';
+
+export function validSimulatedMatch(value: unknown): value is SimulatedMatch {
+  if (!value || typeof value !== 'object') return false;
+  const match = value as SimulatedMatch;
+  return typeof match.captainAReady === 'boolean' && typeof match.captainBReady === 'boolean'
+    && typeof match.assignment === 'string' && /^LAB:[0-9a-f-]{36}$/.test(match.assignment) && isWinner(match.winner);
+}
+
+export function validQueueRoom(value: unknown, simulation: boolean): value is QueueRoom {
+  if (!value || typeof value !== 'object') return false;
+  const room = value as QueueRoom;
+  const member=(m:any)=>m&&typeof m.accountId==='string'&&typeof m.name==='string'&&['FC','HEALER','DPS'].includes(m.role)&&typeof m.captain==='boolean'&&typeof m.accepted==='boolean';
+  return room.source === (simulation ? 'SIMULATION' : 'FOREVER') && typeof room.id === 'string'
+    && (['PROPOSED','PREPARING','CANCELLED'].includes(room.status) || simulation && (room.status === 'PLAYING' || isFinishedRoom(room.status)))
+    && Number.isFinite(Date.parse(room.acceptanceDeadline)) && Array.isArray(room.teamA) && room.teamA.length === 10 && room.teamA.every(member)
+    && Array.isArray(room.teamB) && room.teamB.length === 10 && room.teamB.every(member);
+}
+
 export type SoloQueueStatus = { available: boolean; blockers: string[]; ticket: {
   id: string; state: 'QUEUED'|'PROPOSED'|'CANCELLED'; enteredAt: string; proposalId: string|null; version: number; cancellationReason: string|null
 } | null; room: QueueRoom|null; matchId: string|null; serverTime: string; revision: string;
-  simulation?: boolean; groupId?: string|null; groupRevision?: number|null; captainId?: string|null; canControl?: boolean };
+  simulation?: boolean; simulatedMatch?: SimulatedMatch | null; recentRooms?: RecentRoom[];
+  groupId?: string|null; groupRevision?: number|null; captainId?: string|null; canControl?: boolean };
 export function validSoloQueue(value: unknown, simulation = false): value is SoloQueueStatus {
   if(!value||typeof value!=='object')return false;
   const s=value as SoloQueueStatus;
-  const member=(m:any)=>m&&typeof m.accountId==='string'&&typeof m.name==='string'&&['FC','HEALER','DPS'].includes(m.role)&&typeof m.captain==='boolean'&&typeof m.accepted==='boolean';
+  const match = s.simulatedMatch;
+  const validMatch = match
+    ? simulation && validSimulatedMatch(match)
+      && typeof s.room?.preparationDeadline === 'string' && Number.isFinite(Date.parse(s.room.preparationDeadline))
+    : match == null;
+  const recent = s.recentRooms;
+  const validRecent = recent === undefined || Array.isArray(recent) && recent.length <= (simulation ? 10 : 0)
+    && recent.every(room => room && typeof room.id === 'string' && isFinishedRoom(room.status)
+      && isWinner(room.winner) && Number.isSafeInteger(room.version));
   return typeof s.available==='boolean'&&Array.isArray(s.blockers)&&s.blockers.every(b=>typeof b==='string')&&typeof s.revision==='string'
+    &&validMatch&&validRecent
     &&Number.isFinite(Date.parse(s.serverTime))&&(s.ticket===null||!!s.ticket&&typeof s.ticket.id==='string'&&['QUEUED','PROPOSED','CANCELLED'].includes(s.ticket.state)&&Number.isFinite(Date.parse(s.ticket.enteredAt)))
-    &&(s.room===null||!!s.room&&s.room.source===(simulation?'SIMULATION':'FOREVER')&&typeof s.room.id==='string'&&['PROPOSED','PREPARING','CANCELLED'].includes(s.room.status)
-      &&Number.isFinite(Date.parse(s.room.acceptanceDeadline))&&Array.isArray(s.room.teamA)&&s.room.teamA.length===10&&s.room.teamA.every(member)
-      &&Array.isArray(s.room.teamB)&&s.room.teamB.length===10&&s.room.teamB.every(member));
+    &&(s.room===null||validQueueRoom(s.room,simulation)
+      && (s.room.status !== 'PLAYING' && !isFinishedRoom(s.room.status) || !!match));
 }
 export type QueueSession = { status: SoloQueueStatus|null; busy: boolean; error: MessageKey|null; active: boolean;
   refresh: ()=>Promise<void>; enter: (request:{seasonId:string;seasonVersion:number;selectionVersion:number}|{groupId:string;groupRevision:number})=>Promise<void>;

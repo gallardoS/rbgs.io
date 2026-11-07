@@ -24,4 +24,18 @@
 .soloq-lab-teams li { display: grid; grid-template-columns: minmax(0,1fr) 5rem 1.5rem; gap: .5rem; padding: .6rem; border-bottom: 1px solid #303337; }
 .soloq-lab-teams li[data-self=true] { background: #332b1b; }
 .soloq-lab-teams li span:first-child { overflow-wrap: anywhere; }
+.premade-simulated-room { padding-bottom: 1rem; border-bottom: 1px solid #ffffff25; }
+.premade-room-map { color: #d4b576; font-weight: 700; }
+.premade-room-captains { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .6rem; padding: 0; list-style: none; }
+.premade-room-captains li { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: space-between; padding: .6rem; border: 1px solid #ffffff25; border-radius: .35rem; overflow-wrap: anywhere; }
+.premade-room-captains strong { color: #d4b576; }
+.premade-room-captains strong[data-ready=true] { color: #9ed3a8; }
+.premade-room-assignment label { display: grid; gap: .4rem; max-width: 28rem; }
+.premade-room-assignment input { min-width: 0; padding: .55rem .7rem; border: 1px solid #655b43; border-radius: .35rem; background: #1c1e20; color: inherit; font: .85rem monospace; }
+.premade-recent-rooms { display: grid; gap: .5rem; padding: 0; list-style: none; }
+.premade-recent-rooms button { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .4rem 1rem; width: 100%; text-align: left; }
+.premade-recent-rooms button[aria-pressed=true] { border-color: #d4b576; }
+.premade-recent-rooms span { color: #d4b576; }
+.premade-past-room { margin-top: 1rem; }
+@media (max-width: 600px) { .premade-room-captains { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .soloq-lab-teams { grid-template-columns: 1fr; gap: .5rem; } .soloq-lab-selection { align-items: flex-start; flex-direction: column; } }

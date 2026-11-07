@@ -4,7 +4,7 @@ import './MatchReadyDialog.css';
 import { playMatchReadySound, prepareMatchReadySound } from './match-ready-sound';
 
 export type QueueMember = { accountId: string; name: string; role: 'FC' | 'HEALER' | 'DPS'; captain: boolean; accepted: boolean };
-export type QueueRoom = { id: string; source: 'SIMULATION' | 'FOREVER'; status: 'PROPOSED' | 'PREPARING' | 'CANCELLED';
+export type QueueRoom = { id: string; source: 'SIMULATION' | 'FOREVER'; status: 'PROPOSED' | 'PREPARING' | 'CANCELLED' | 'PLAYING' | 'AWAITING_EVIDENCE' | 'UNDER_REVIEW' | 'RESOLVED';
   acceptanceDeadline: string; preparationDeadline: string | null; cancellationReason: string | null;
   version: number; teamA: QueueMember[]; teamB: QueueMember[] };
 
