@@ -159,7 +159,7 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .standings-profile-link { color: inherit; text-decoration: underline; text-underline-offset: .2em; }
 @media (max-height: 300px) { .standings-player-card { overflow: auto; } }
 .standings-realm { color: #999e94; }
-.standings-pagination { display: flex; align-items: center; gap: .6rem; margin-top: 1rem; }
+.standings-pagination { display: flex; align-items: center; justify-content: flex-end; gap: .6rem; margin-top: 1rem; }
 .standings-page-count { min-width: 4.5rem; color: #a4a49a; text-align: center; font-size: .875rem; font-variant-numeric: tabular-nums; }
 .standings-pagination button:disabled { opacity: .45; cursor: default; }
 .demo-note, .leaderboard-empty { font-size: .8rem; color: #8d9488; }
