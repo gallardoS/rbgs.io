@@ -7,7 +7,8 @@ import type { MessageKey } from './locales/en';
 import { HeroBackground } from './HeroBackground';
 import GradualBlur from './GradualBlur';
 import { HeroCopy } from './HeroCopy';
-import { Leaderboard } from './Leaderboard';
+import { Leaderboard, localStandings } from './Leaderboard';
+import { LeaderboardProfile } from './LeaderboardProfile';
 import { MatchJourney } from './MatchJourney';
 import { BrandText } from './BrandText';
 import { BackToTop } from './BackToTop';
@@ -178,13 +179,17 @@ function AppContent() {
     const homepage = localizedPath('/', language) as keyof typeof pageTitles;
     const isPublicPage = Object.hasOwn(pageTitles, pathname);
     const isKnownRoute = Object.hasOwn(pageTitles, pathname) || internalRoutes.includes(basePath(pathname)) || basePath(pathname) === '/how-it-works';
-    const title = basePath(pathname) === '/match-history' ? `${t('navigationHistory')} | rbgs.io`
+    const isLocalPlayerProfile = localStandings && (basePath(pathname) === '/leaderboard/player'
+      || /^\/player\/[^/]+\/[^/]+\/[^/]+$/.test(basePath(pathname)));
+    const title = isLocalPlayerProfile ? `${t('leaderboardViewProfile')} | rbgs.io`
+      : basePath(pathname) === '/match-history' ? `${t('navigationHistory')} | rbgs.io`
       : isKnownRoute ? pageTitles[pathname as keyof typeof pageTitles] ?? pageTitles[homepage] : `${t('notFoundHeading')} | rbgs.io`;
     document.title = title;
     document.querySelector('meta[name="robots"]')?.setAttribute('content', isPublicPage ? 'index, follow' : 'noindex, follow');
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
     document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
-    const description = basePath(pathname) === '/match-history' ? t('historyIntroNew')
+    const description = isLocalPlayerProfile ? t('leaderboardProfileMatches')
+      : basePath(pathname) === '/match-history' ? t('historyIntroNew')
       : isKnownRoute ? pageDescriptions[pathname as keyof typeof pageDescriptions] ?? pageDescriptions[homepage] : t('notFoundHeading');
     document.querySelector('meta[property="og:locale"]')?.setAttribute('content', languageLocales[language].replace('-', '_'));
     document.querySelectorAll('link[rel="alternate"][hreflang]').forEach(link => link.remove());
@@ -259,6 +264,8 @@ function AppContent() {
     <div id="page-scroll" className="page-scroll">
       <Routes location={{ ...location, pathname: basePath(location.pathname) }}><Route path="/" element={<Home {...session} />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        {localStandings && <Route path="/leaderboard/player" element={<LeaderboardProfile />} />}
+        {localStandings && <Route path="/player/:region/:realm/:name" element={<LeaderboardProfile />} />}
         <Route path="/downloads" element={<InfoPage heading="navigationDownloads" introduction="downloadsIntro"><div className="info-grid">
           <article><h2>{t('companionHeading')}</h2><p>{t('companionDescription')}</p>
             {session.profile && ['TESTER', 'MODERATOR', 'ADMIN'].includes(session.profile.role)

@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useLocale } from './locales';
+import { languageLocales } from './locale-routing';
 import { useAvatarPreference, type AvatarStyle } from './avatar-preference';
 
 export type Character = {
@@ -14,7 +15,7 @@ export type Character = {
   guild?: { name: string | null } | null;
   gender?: { type: string | null; name?: string | null } | null;
 };
-export function characterRegion(character: Character): 'EU' | 'NA' {
+export function characterRegion(character: Pick<Character, 'namespace'>): 'EU' | 'NA' {
   return character.namespace?.endsWith('-us') ? 'NA' : 'EU';
 }
 export function isPickerCharacter(character: Pick<Character, 'namespace' | 'level'>): boolean {
@@ -46,27 +47,35 @@ export function resetPlayerCardTilt(card: HTMLElement) {
   card.style.setProperty('--card-rotate-x', '0deg'); card.style.setProperty('--card-rotate-y', '0deg');
 }
 
-export function PlayerCard({ character, compact = false, tilt = false, size = 'normal', showLevel = true, avatarFallback, footer, headerIcon, avatarBadge, ownerAvatar = false }: {
-  character: Character; compact?: boolean; tilt?: boolean; size?: 'normal' | 'small';
+type CardCharacter = Pick<Character, 'name' | 'namespace' | 'playable_class' | 'playable_race' | 'gender'
+  | 'avatarUrl' | 'avatarSdUrl' | 'avatarHdUrl' | 'guild'> & { level?: number };
+type CompetitiveSummary = { solo?: number; premade?: number; games?: number; winRate?: number };
+
+export function PlayerCard({ character, compact = false, tilt = false, size = 'normal', showLevel = true,
+  locationLabel, competitive, avatarFallback, footer, headerIcon, avatarBadge, ownerAvatar = false }: {
+  character: CardCharacter; compact?: boolean; tilt?: boolean; size?: 'normal' | 'small';
+  locationLabel?: string; competitive?: CompetitiveSummary;
   ownerAvatar?: boolean; showLevel?: boolean; avatarFallback?: ReactNode; footer?: ReactNode; headerIcon?: ReactNode; avatarBadge?: ReactNode;
 }) {
   return <div className={`profile-card player-card${compact ? ' player-card-compact' : ''}${tilt ? ' lobby-card' : ''}${size === 'small' ? ' player-card-small' : ''}`}
     onPointerMove={event => { if (tilt) setPlayerCardTilt(event.currentTarget, event); }} onPointerLeave={event => resetPlayerCardTilt(event.currentTarget)}>
-    <span className="profile-card-header"><span className="profile-card-realm">{showLevel ? `${characterRegion(character)} · ${character.level}` : characterRegion(character)}</span><CharacterIcons character={character} leadingIcon={headerIcon} /></span>
+    <span className="profile-card-header"><span className="profile-card-realm">{locationLabel ??
+      (showLevel && character.level != null ? `${characterRegion(character)} · ${character.level}` : characterRegion(character))}</span><CharacterIcons character={character} leadingIcon={headerIcon} /></span>
     {avatarBadge ? <span className="player-card-avatar-with-badge"><span className="player-card-avatar-badge">{avatarBadge}</span><CharacterAvatar character={character} fallback={avatarFallback} ownerAvatar={ownerAvatar} /></span> : <CharacterAvatar character={character} fallback={avatarFallback} ownerAvatar={ownerAvatar} />}
     <strong className="profile-card-name">{character.name}</strong>
     {character.guild?.name && <span className="profile-card-guild">{`< ${character.guild.name} >`}</span>}
-    <CharacterStats />
-    <span className="profile-card-ratings"><CharacterRating /><CharacterRating premade /></span>
+    <CharacterStats competitive={competitive} />
+    <span className="profile-card-ratings"><CharacterRating rating={competitive?.solo} /><CharacterRating premade rating={competitive?.premade} /></span>
     {footer && <span className="player-card-footer">{footer}</span>}
   </div>;
 }
 
-function CharacterRating({ premade = false }: { premade?: boolean }) {
-  const { t } = useLocale();
+function CharacterRating({ premade = false, rating }: { premade?: boolean; rating?: number }) {
+  const { t, language } = useLocale();
   const label = t(premade ? 'premadeHeading' : 'soloHeading');
-  return <span className="profile-card-rating" title={label} aria-label={`${label}: —`} >
-    <strong>—</strong>
+  const value = rating?.toLocaleString(languageLocales[language]) ?? '—';
+  return <span className="profile-card-rating" title={label} aria-label={`${label}: ${value}`}>
+    <strong>{value}</strong>
     <svg width="18" height="18" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {premade && <><circle cx="6" cy="12" r="3.5" /><circle cx="26" cy="12" r="3.5" />
         <path d="M9 19a6 6 0 0 0-8 6v2h7M23 19a6 6 0 0 1 8 6v2h-7" /></>}
@@ -76,11 +85,11 @@ function CharacterRating({ premade = false }: { premade?: boolean }) {
   </span>;
 }
 
-function CharacterStats() {
-  const { t } = useLocale();
+function CharacterStats({ competitive }: { competitive?: CompetitiveSummary }) {
+  const { t, language } = useLocale();
   return <span className="profile-card-stats">
-    <span><span>{t('charactersGamesPlayed')}</span><strong>—</strong></span>
-    <span><span>{t('charactersWinrate')}</span><strong>—</strong></span>
+    <span><span>{t('charactersGamesPlayed')}</span><strong>{competitive?.games?.toLocaleString(languageLocales[language]) ?? '—'}</strong></span>
+    <span><span>{t('charactersWinrate')}</span><strong>{competitive?.winRate == null ? '—' : `${competitive.winRate}%`}</strong></span>
     <span><span>{t('charactersLastMatches')}</span><strong>—</strong></span>
   </span>;
 }
@@ -91,25 +100,41 @@ const classAvatars: Record<number, [string, string]> = {
   8: ['mage', '#69ccf0'], 9: ['warlock', '#9482c9'], 11: ['druid', '#ff7d0a'],
 };
 
+export function playableClassFromToken(token?: string | null): Character['playable_class'] {
+  const className = token?.trim().toLowerCase();
+  const entry = Object.entries(classAvatars).find(([, [name]]) => name === className);
+  if (!entry) return undefined;
+  const [id, [name]] = entry;
+  return { id: Number(id), name: name[0].toUpperCase() + name.slice(1) };
+}
+
 const raceIcons: Record<string, string> = {
   Human: 'human', Orc: 'orc', Dwarf: 'dwarf', 'Night Elf': 'nightelf', Undead: 'scourge',
-  Tauren: 'tauren', Gnome: 'gnome', Troll: 'troll',
+  Tauren: 'tauren', Gnome: 'gnome', Troll: 'troll', Skyborne: 'skyborne',
 };
 
-export function CharacterIcons({ character, leadingIcon }: { character: Character; leadingIcon?: ReactNode }) {
+export function characterRaceIcon(race?: string | null, gender?: string | null): string | undefined {
+  if (!race || !Object.hasOwn(raceIcons, race) || (gender !== 'MALE' && gender !== 'FEMALE')) return undefined;
+  return `${raceIcons[race]}_${gender.toLowerCase()}`;
+}
+
+export function CharacterIcons({ character, leadingIcon }: {
+  character: Pick<Character, 'playable_class' | 'playable_race' | 'gender'>; leadingIcon?: ReactNode;
+}) {
   const className = classAvatars[character.playable_class?.id ?? 0]?.[0];
   const race = character.playable_race?.name;
-  const raceIcon = race ? raceIcons[race] : undefined;
-  const gender = character.gender?.type === 'FEMALE' ? 'female'
-    : character.gender?.type === 'MALE' ? 'male' : undefined;
+  const raceIcon = characterRaceIcon(race, character.gender?.type);
   return <span className="profile-card-icons">
     {leadingIcon}
-    {raceIcon && gender && <img src={`/media/character/race_${raceIcon}_${gender}.jpg`} width="18" height="18" alt={race} title={race} />}
+    {raceIcon && <img src={`/media/character/race_${raceIcon}.jpg`} width="18" height="18" alt={race} title={race} />}
     {className && <img src={`/media/character/class_${className}.jpg`} width="18" height="18" alt={character.playable_class?.name} title={character.playable_class?.name} />}
   </span>;
 }
 
-export function CharacterAvatar({ character, fallback, style, ownerAvatar = false }: { character: Character; fallback?: ReactNode; style?: AvatarStyle; ownerAvatar?: boolean }) {
+export function CharacterAvatar({ character, fallback, style, ownerAvatar = false }: {
+  character: Pick<Character, 'playable_class' | 'avatarUrl' | 'avatarSdUrl' | 'avatarHdUrl'>;
+  fallback?: ReactNode; style?: AvatarStyle; ownerAvatar?: boolean;
+}) {
   const preference = useAvatarPreference();
   const [failedUrls, setFailedUrls] = useState<string[]>([]);
   const [className, color] = classAvatars[character.playable_class?.id ?? 0] ?? ['', '#b6b7bb'];

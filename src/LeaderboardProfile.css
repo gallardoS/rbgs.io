@@ -1,0 +1,130 @@
+.content.leaderboard-player-profile { max-width: 61rem; padding-top: clamp(1rem, 3vh, 1.75rem); }
+.leaderboard-profile-topline {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: .6rem 1rem;
+  font-size: .85rem;
+}
+.leaderboard-profile-topline .demo-badge { justify-self: end; margin-top: 0; }
+.leaderboard-profile-season { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .65rem; margin: .75rem 0 .65rem; font-size: .85rem; }
+.leaderboard-profile-season strong { padding: .4rem .6rem; border: 1px solid #ffffff20; border-radius: .4rem; background: #101311; }
+.leaderboard-profile-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: clamp(.65rem, 2vw, 1rem);
+  margin-top: .85rem;
+  padding: .7rem 2.7rem .7rem .8rem;
+  border: 1px solid #ffffff20;
+  border-radius: .8rem;
+  background: linear-gradient(100deg, #1b201d, #101311 65%);
+}
+.leaderboard-profile-banner > .character-avatar { width: 3.75rem; height: 3.75rem; border-radius: 50%; }
+.leaderboard-profile-banner > .character-avatar.is-class-icon img { width: 1.75rem; height: 1.75rem; }
+.leaderboard-profile-banner > .profile-card-icons { margin-inline-start: auto; }
+.leaderboard-banner-identity { min-width: 0; overflow-wrap: anywhere; }
+.leaderboard-banner-identity h1 { margin: 0; font-size: clamp(1.25rem, 3vw, 1.75rem); }
+.leaderboard-banner-identity p { margin: .12rem 0 0; font-size: .8rem; line-height: 1.25; }
+.leaderboard-banner-identity .leaderboard-banner-realm { color: #e6cc77; }
+.leaderboard-banner-trigger {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  background: transparent;
+}
+.leaderboard-banner-trigger:hover, .leaderboard-banner-trigger[aria-expanded="true"] { background: #facc1506; border-color: #e6cc7755; }
+.leaderboard-banner-trigger::after {
+  position: absolute;
+  inset-inline-end: 1rem;
+  width: .45rem;
+  height: .45rem;
+  border-right: 2px solid #e6cc77;
+  border-bottom: 2px solid #e6cc77;
+  transform: translateY(-25%) rotate(45deg);
+  content: '';
+}
+.leaderboard-profile-overview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(.5rem, 1vw, .85rem);
+  align-self: start;
+}
+.leaderboard-rating-option {
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: .35rem;
+  min-width: 0;
+  padding: .8rem clamp(.6rem, 2vw, 1rem);
+  border-radius: .8rem;
+  background: #101311;
+  font-weight: 500;
+  text-align: center;
+}
+.leaderboard-rating-option[aria-pressed="true"] {
+  border-color: #e6cc77;
+  background: linear-gradient(160deg, #22231a, #101311 70%);
+  box-shadow: inset 0 1px #facc1520;
+}
+.leaderboard-rating-queue { font-size: 1.15rem; font-weight: 700; }
+.leaderboard-rating-number { color: #facc15; font-size: clamp(1.75rem, 5vw, 2.65rem); font-variant-numeric: tabular-nums; }
+.leaderboard-rating-record {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .3rem .6rem;
+  min-height: 2.2em;
+  color: #b6b7bb;
+  font-size: .8rem;
+}
+.leaderboard-rating-wins { color: #9ec09e; }
+.leaderboard-rating-losses { color: #ee9a8c; }
+.leaderboard-rating-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .4rem;
+  width: 100%;
+  padding-top: .4rem;
+  border-top: 1px solid #ffffff15;
+  color: #b6b7bb;
+  font-size: .8rem;
+}
+.leaderboard-rating-stat strong { color: #f5f5ed; font-size: 1rem; }
+.leaderboard-profile-details { display: grid; gap: .85rem; }
+.leaderboard-rating-chart { min-width: 0; padding: clamp(.8rem, 2vw, 1.1rem); border: 1px solid #ffffff15; border-radius: .8rem; background: #101311; --profile-plot-height: clamp(7rem, 17vh, 11rem); }
+.leaderboard-profile-details h2 { margin: 0; font-size: clamp(1rem, 2vw, 1.25rem); }
+.leaderboard-profile-history { margin-top: 1rem; }
+.leaderboard-profile-history h2 { font-size: .9rem; }
+.leaderboard-profile-history .standings-scroll { margin-top: .65rem; }
+.leaderboard-profile-history .standings { min-width: 0; font-size: .8rem; overflow-wrap: anywhere; }
+.leaderboard-profile-history .standings thead { overflow-wrap: normal; }
+.leaderboard-profile-history .standings :is(th, td) { padding: .55rem .5rem; }
+.leaderboard-profile-history .standings-realm { display: block; margin-top: .15rem; }
+.leaderboard-chart { margin: .65rem 0 0; }
+.leaderboard-chart figcaption { margin-bottom: .55rem; color: #b6b7bb; font-size: .85rem; }
+.leaderboard-chart figcaption strong { margin-inline-start: .5rem; color: #facc15; font-variant-numeric: tabular-nums; }
+.leaderboard-chart-body { display: grid; grid-template-columns: 3.25rem minmax(0, 1fr); }
+.leaderboard-chart-scale { display: flex; flex-direction: column; justify-content: space-between; }
+.leaderboard-chart-scale, .leaderboard-chart-axis { color: #a4a49a; font-size: .75rem; font-variant-numeric: tabular-nums; }
+.leaderboard-chart-plot { position: relative; height: var(--profile-plot-height); cursor: crosshair; }
+.leaderboard-chart-plot:focus-visible { outline: 2px solid #facc15; outline-offset: .35rem; }
+.leaderboard-chart-plot svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.leaderboard-chart-grid { fill: none; stroke: #ffffff20; stroke-width: 1; }
+.leaderboard-chart-area { fill: #facc1514; }
+.leaderboard-chart-line { fill: none; stroke: #facc15; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.leaderboard-chart-dot { position: absolute; width: .5rem; height: .5rem; border-radius: 50%; background: #facc15; transform: translate(-50%, -50%); pointer-events: none; }
+.leaderboard-chart-axis { display: flex; justify-content: space-between; gap: .4rem; margin: .6rem 0 0 3.25rem; }
+.leaderboard-chart-empty { margin: .65rem 0 0; min-height: calc(var(--profile-plot-height) + 2.5rem); display: grid; place-items: center; text-align: center; font-size: .9rem; }
+@media (min-width: 900px) {
+  .leaderboard-profile-details { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); }
+  .leaderboard-profile-history .standings-scroll { max-height: clamp(7rem, 20vh, 12rem); }
+  .leaderboard-profile-history .standings thead { position: sticky; top: 0; }
+}
+@media (max-width: 650px) {
+  .leaderboard-profile-banner > .character-avatar { width: 3rem; height: 3rem; }
+}
