@@ -558,7 +558,6 @@ export const messages = {
   leaderboardNoRatedPlayers: "Nessun giocatore ha un risultato classificato per questa stagione e coda.",
   leaderboardLoading: "Caricamento della classifica…",
   leaderboardLoadError: "Impossibile caricare la classifica. Riprova.",
-  leaderboardRefresh: "Aggiorna",
   leaderboardPrevious: "Precedente",
   leaderboardNext: "Successiva",
   leaderboardPageCount: "{current} di {total}",

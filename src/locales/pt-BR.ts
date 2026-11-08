@@ -558,7 +558,6 @@ export const messages = {
   leaderboardNoRatedPlayers: "Nenhum jogador tem resultado ranqueado nesta temporada e fila.",
   leaderboardLoading: "Carregando classificação…",
   leaderboardLoadError: "Não foi possível carregar a classificação. Tente atualizar.",
-  leaderboardRefresh: "Atualizar",
   leaderboardPrevious: "Anterior",
   leaderboardNext: "Próxima",
   leaderboardPageCount: "{current} de {total}",

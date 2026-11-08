@@ -189,23 +189,23 @@ function RatedLeaderboard() {
   const [search, setSearch] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [offset, setOffset] = useState(0);
-  const [refresh, setRefresh] = useState(0);
   const [loaded, setLoaded] = useState<{ key: string; scope: string; page: Page; offset: number } | null>(null);
   const [failed, setFailed] = useState('');
   const scope = queue + ':' + season;
   const params = new URLSearchParams({ queue: queue.toUpperCase(), search: searchTerm, offset: String(offset), limit: String(pageSize) });
   if (season) params.set('season', season);
   const query = params.toString();
-  const key = query + ':' + refresh;
-  const page = loaded?.key === key ? loaded.page : null;
-  const failedRequest = !page && failed === key;
+  const page = loaded?.key === query ? loaded.page : null;
+  const failedRequest = !page && failed === query;
   const searchPending = search.trim() !== searchTerm;
   const busy = searchPending || (!page && !failedRequest);
   const displayed = !failedRequest && loaded?.scope === scope ? loaded : null;
   const entries = displayed?.page.entries.map(ratedEntry) ?? [];
-  const pageCount = displayed && displayed.page.totalPages > 0 ? t('leaderboardPageCount')
-    .replace('{current}', (displayed.offset / pageSize + 1).toLocaleString(languageLocales[language]))
-    .replace('{total}', displayed.page.totalPages.toLocaleString(languageLocales[language])) : '';
+  const totalPages = Math.max(1, displayed?.page.totalPages ?? 0);
+  const currentPage = (displayed?.offset ?? 0) / pageSize + 1;
+  const pageCount = t('leaderboardPageCount')
+    .replace('{current}', currentPage.toLocaleString(languageLocales[language]))
+    .replace('{total}', totalPages.toLocaleString(languageLocales[language]));
   const selected = loaded?.page.seasons.find(item => item.id === (season || loaded.page.seasonId));
 
   useEffect(() => {
@@ -223,7 +223,7 @@ function RatedLeaderboard() {
     setFailed('');
     const controller = new AbortController();
     const timeout = window.setTimeout(() => {
-      setFailed(key);
+      setFailed(query);
       controller.abort();
     }, 10000);
     async function load() {
@@ -238,14 +238,14 @@ function RatedLeaderboard() {
           setOffset(lastOffset);
           return;
         }
-        setLoaded({ key, scope, page: payload, offset });
+        setLoaded({ key: query, scope, page: payload, offset });
       } catch {
-        if (!controller.signal.aborted) setFailed(key);
+        if (!controller.signal.aborted) setFailed(query);
       } finally { window.clearTimeout(timeout); }
     }
     void load();
     return () => { controller.abort(); window.clearTimeout(timeout); };
-  }, [query, key, scope, offset, searchPending]);
+  }, [query, scope, offset, searchPending]);
 
   return <main className="content leaderboard-page info-page">
     <div className="leaderboard-heading"><div><h1>{t('leaderboardHeading')}</h1><p>{t('leaderboardIntro')}</p></div>
@@ -268,19 +268,16 @@ function RatedLeaderboard() {
       seasonId={loaded?.scope === scope ? loaded.page.seasonId : undefined}
       empty={t(busy ? 'leaderboardLoading' : failedRequest ? 'leaderboardLoadError'
         : searchTerm ? 'leaderboardEmpty' : 'leaderboardNoRatedPlayers')} />
-    <div className="standings-actions">
-      <button type="button" disabled={busy} onClick={() => { setOffset(0); setRefresh(value => value + 1); }}>{t('leaderboardRefresh')}</button>
-      <div className="standings-pagination">
-        <button type="button" className="standings-page-button" aria-label={t('leaderboardPrevious')} title={t('leaderboardPrevious')}
-          disabled={busy || !page || offset === 0} onClick={() => setOffset(value => Math.max(0, value - pageSize))}>
-          <ArrowIcon direction="left" />
-        </button>
-        <span className="standings-page-count" role="status">{pageCount}</span>
-        <button type="button" className="standings-page-button" aria-label={t('leaderboardNext')} title={t('leaderboardNext')}
-          disabled={busy || page?.nextOffset == null} onClick={() => page?.nextOffset != null && setOffset(page.nextOffset)}>
-          <ArrowIcon direction="right" />
-        </button>
-      </div>
+    <div className="standings-pagination">
+      <button type="button" className="standings-page-button" aria-label={t('leaderboardPrevious')} title={t('leaderboardPrevious')}
+        disabled={busy || !page || offset === 0} onClick={() => setOffset(value => Math.max(0, value - pageSize))}>
+        <ArrowIcon direction="left" />
+      </button>
+      <span className="standings-page-count" role="status">{pageCount}</span>
+      <button type="button" className="standings-page-button" aria-label={t('leaderboardNext')} title={t('leaderboardNext')}
+        disabled={busy || page?.nextOffset == null} onClick={() => page?.nextOffset != null && setOffset(page.nextOffset)}>
+        <ArrowIcon direction="right" />
+      </button>
     </div>
   </main>;
 }

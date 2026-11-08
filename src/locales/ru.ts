@@ -558,7 +558,6 @@ export const messages = {
   leaderboardNoRatedPlayers: "В этом сезоне и очереди пока нет рейтинговых результатов.",
   leaderboardLoading: "Загрузка таблицы лидеров…",
   leaderboardLoadError: "Не удалось загрузить таблицу лидеров. Обновите её.",
-  leaderboardRefresh: "Обновить",
   leaderboardPrevious: "Назад",
   leaderboardNext: "Далее",
   leaderboardPageCount: "{current} из {total}",

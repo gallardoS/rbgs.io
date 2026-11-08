@@ -558,7 +558,6 @@ export const messages: Record<MessageKey, string> = {
   leaderboardNoRatedPlayers: "Aucun joueur n’a de résultat classé pour cette saison et cette file.",
   leaderboardLoading: "Chargement du classement…",
   leaderboardLoadError: "Impossible de charger le classement. Réessayez.",
-  leaderboardRefresh: "Actualiser",
   leaderboardPrevious: "Précédent",
   leaderboardNext: "Suivant",
   leaderboardPageCount: "{current} sur {total}",

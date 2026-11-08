@@ -159,10 +159,9 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .standings-profile-link { color: inherit; text-decoration: underline; text-underline-offset: .2em; }
 @media (max-height: 300px) { .standings-player-card { overflow: auto; } }
 .standings-realm { color: #999e94; }
-.standings-actions, .standings-pagination { display: flex; align-items: center; gap: .6rem; }
-.standings-actions { flex-wrap: wrap; margin-top: 1rem; }
+.standings-pagination { display: flex; align-items: center; gap: .6rem; margin-top: 1rem; }
 .standings-page-count { min-width: 4.5rem; color: #a4a49a; text-align: center; font-size: .875rem; font-variant-numeric: tabular-nums; }
-.standings-actions button:disabled { opacity: .45; cursor: default; }
+.standings-pagination button:disabled { opacity: .45; cursor: default; }
 .demo-note, .leaderboard-empty { font-size: .8rem; color: #8d9488; }
 .leaderboard-empty { padding: 1rem; }
 @media (max-width: 600px) { .leaderboard-heading { flex-direction: column; gap: .8rem; } .player-search, .player-search input, .player-search select { width: 100%; } .leaderboard-toolbar { margin-top: 2rem; } }

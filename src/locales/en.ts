@@ -556,7 +556,6 @@ export const messages = {
   leaderboardNoRatedPlayers: "No players have a rated result in this season and queue.",
   leaderboardLoading: "Loading standings…",
   leaderboardLoadError: "Could not load the standings. Try refreshing.",
-  leaderboardRefresh: "Refresh",
   leaderboardPrevious: "Previous",
   leaderboardNext: "Next",
   leaderboardPageCount: "{current} of {total}",

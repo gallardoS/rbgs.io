@@ -558,7 +558,6 @@ export const messages = {
   leaderboardNoRatedPlayers: "In dieser Saison und Warteschlange gibt es noch keine gewerteten Ergebnisse.",
   leaderboardLoading: "Rangliste wird geladen…",
   leaderboardLoadError: "Die Rangliste konnte nicht geladen werden. Versuche es erneut.",
-  leaderboardRefresh: "Aktualisieren",
   leaderboardPrevious: "Zurück",
   leaderboardNext: "Weiter",
   leaderboardPageCount: "{current} von {total}",
