@@ -5,12 +5,32 @@ import './Settings.css';
 import { DeviceSettings } from './DeviceSettings';
 import { MatchReadySoundSelect } from './MatchReadySoundSelect';
 import { AvatarStyleSelect } from './AvatarStyleSelect';
+import { ProfileRegions } from './ProfileRegions';
 
-export function Settings({ accountId }: { accountId: string }) {
+export function Settings({ accountId, displayName, onLogout }: {
+  accountId: string; displayName: string; onLogout: () => Promise<void>;
+}) {
   const { t } = useLocale();
   const { icon, setIcon } = useFcIconPreference(accountId);
   const groupId = useId();
   return <div className="profile-settings">
+    <section className="profile-settings-section" aria-labelledby={`${groupId}-account`}>
+      <div className="profile-section-heading">
+        <h2 id={`${groupId}-account`}>{t('profileAccountHeading')}</h2>
+        <p>{t('profileAccountDescription')}</p>
+      </div>
+      <div className="profile-account-options">
+        <dl className="profile-account-details">
+          <div><dt>Battle.net</dt><dd>{displayName}</dd></div>
+          <div><dt>{t('profileRegion')}</dt><dd><ProfileRegions accountId={accountId} /></dd></div>
+        </dl>
+        <div className="profile-section-heading">
+          <h3>{t('profileSessionHeading')}</h3>
+          <p>{t('profileSessionDescription')}</p>
+        </div>
+        <button type="button" onClick={() => void onLogout()}>{t('logout')}</button>
+      </div>
+    </section>
     <section className="profile-settings-section" aria-labelledby={`${groupId}-title`}>
       <div className="profile-section-heading">
         <h2 id={`${groupId}-title`}>{t('settingsFcIcon')}</h2>

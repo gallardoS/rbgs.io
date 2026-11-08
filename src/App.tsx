@@ -9,7 +9,7 @@ import GradualBlur from './GradualBlur';
 import { HeroCopy } from './HeroCopy';
 import { Leaderboard } from './Leaderboard';
 import { standingsEnabled } from './leaderboard-config';
-import { LeaderboardProfile } from './LeaderboardProfile';
+import { LeaderboardProfile, MyProfile } from './LeaderboardProfile';
 import { MatchJourney } from './MatchJourney';
 import { BrandText } from './BrandText';
 import { BackToTop } from './BackToTop';
@@ -23,7 +23,6 @@ import { AvatarPreferenceProvider } from './avatar-preference';
 import { ModeratorMatches } from './ModeratorMatches';
 import { TesterPopup } from './TesterPopup';
 import { MatchHistory } from './MatchHistory';
-import { ProfileRegions } from './ProfileRegions';
 import {pendingCompanionLink} from './companion-link';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
 import { SeasonNotificationsProvider, useSeasonNotice } from './SeasonNotifications';
@@ -183,6 +182,7 @@ function AppContent() {
     const isPlayerProfile = standingsEnabled && (basePath(pathname) === '/leaderboard/player'
       || /^\/player\/[^/]+\/[^/]+\/[^/]+$/.test(basePath(pathname)));
     const title = isPlayerProfile ? `${t('leaderboardViewProfile')} | rbgs.io`
+      : basePath(pathname) === '/account' ? `${t('navigationProfile')} | rbgs.io`
       : basePath(pathname) === '/match-history' ? `${t('navigationHistory')} | rbgs.io`
       : isKnownRoute ? pageTitles[pathname as keyof typeof pageTitles] ?? pageTitles[homepage] : `${t('notFoundHeading')} | rbgs.io`;
     document.title = title;
@@ -289,24 +289,19 @@ function AppContent() {
                 {session.authError && <p role="alert">{t('authError')}</p>}
               </div>}
           </div></main>} />
-        <Route path="/account" element={<InfoPage heading="navigationProfile" introduction="profileIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
-          ? <div className="profile-settings">
-            <section className="profile-settings-section" aria-labelledby="profile-account-title">
-              <div className="profile-section-heading"><h2 id="profile-account-title">{t('profileAccountHeading')}</h2><p>{t('profileAccountDescription')}</p></div>
-              <dl className="profile-account-details"><div><dt>Battle.net</dt><dd>{session.profile.displayName}</dd></div><div><dt>{t('profileRegion')}</dt><dd><ProfileRegions key={session.profile.id} accountId={session.profile.id} /></dd></div></dl>
-            </section>
-            <section className="profile-settings-section" aria-labelledby="profile-session-title">
-              <div className="profile-section-heading"><h2 id="profile-session-title">{t('profileSessionHeading')}</h2><p>{t('profileSessionDescription')}</p></div>
-              <div><button onClick={() => void session.logout()}>{t('logout')}</button></div>
-            </section>
-          </div>
-          : <a className="button" href="/oauth2/authorization/battle-net">{t('login')}</a>}{session.authError && <p role="alert">{t('authError')}</p>}</InfoPage>} />
+        <Route path="/account" element={session.profile
+          ? <MyProfile key={session.profile.id} accountId={session.profile.id} />
+          : <InfoPage heading="navigationProfile">
+            {session.loading ? <p role="status">{t('authChecking')}</p> : <BattleNetLoginButton />}
+            {session.authError && <p role="alert">{t('authError')}</p>}
+          </InfoPage>} />
         <Route path="/match-history" element={session.profile
           ? <MatchHistory key={session.profile.id} />
           : <InfoPage heading="navigationHistory" introduction="historyIntro"><p role={session.authError ? 'alert' : 'status'}>{t(session.loading ? 'authChecking' : session.authError ? 'authError' : 'historySignIn')}</p>{!session.loading && <BattleNetLoginButton />}</InfoPage>} />
         <Route path="/my-group" element={<GroupRedirect />} />
         <Route path="/settings" element={<InfoPage heading="navigationSettings" introduction="settingsIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
-          ? <Settings key={session.profile.id} accountId={session.profile.id} /> : <BattleNetLoginButton />}</InfoPage>} />
+          ? <Settings key={session.profile.id} accountId={session.profile.id}
+            displayName={session.profile.displayName} onLogout={session.logout} /> : <BattleNetLoginButton />}</InfoPage>} />
         <Route path="/moderator" element={session.loading
           ? <InfoPage heading="navigationModerator"><p role="status">{t('authChecking')}</p></InfoPage>
           : (session.profile?.role === 'MODERATOR' || session.profile?.role === 'ADMIN')

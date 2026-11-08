@@ -3,9 +3,9 @@ import { useLocation, useNavigate, useParams, useSearchParams } from 'react-rout
 import { Link } from './LocalizedLink';
 import { useLocale } from './locales';
 import { languageLocales, localizedPath } from './locale-routing';
-import { CharacterAvatar, CharacterIcons, PlayerCard, playableClassFromToken } from './PlayerCard';
+import { CharacterAvatar, CharacterIcons, PlayerCard, playableClassFromToken, type Character } from './PlayerCard';
 import { PlayerCardPopover } from './PlayerCardPopover';
-import { localStandings, standingsApi } from './leaderboard-config';
+import { localStandings, standingsApi, standingsEnabled } from './leaderboard-config';
 import './LeaderboardProfile.css';
 
 type RatingPoint = { rating: number; playedAt: string };
@@ -30,6 +30,7 @@ type Profile = {
   premade: QueueRating | null;
   matches: ProfileMatch[];
 };
+type SelectedCharacter = { name: string; realm: string; region: string; character: Character | null };
 
 const outcomes = { WIN: 'historyWin', LOSS: 'historyLoss', DRAW: 'historyDraw' } as const;
 const queues = { SOLO: 'soloHeading', PREMADE: 'premadeHeading' } as const;
@@ -62,7 +63,50 @@ function validProfile(value: unknown, season: string): value is Profile {
       && Number.isSafeInteger(match.rating) && match.rating >= 0);
 }
 
-export function LeaderboardProfile() {
+export function MyProfile({ accountId }: { accountId: string }) {
+  const { t } = useLocale();
+  const [selected, setSelected] = useState<SelectedCharacter | null>();
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let request: AbortController;
+    async function load() {
+      request?.abort();
+      const controller = new AbortController();
+      request = controller;
+      setSelected(undefined);
+      setFailed(false);
+      try {
+        const response = await fetch('/api/v1/me/play-character', { cache: 'no-store', signal: controller.signal });
+        if (!response.ok) throw new Error();
+        const body = await response.text();
+        const selection: SelectedCharacter | null = body ? JSON.parse(body) : null;
+        if (!controller.signal.aborted) setSelected(selection);
+      } catch {
+        if (!controller.signal.aborted) setFailed(true);
+      }
+    }
+    const change = (event: Event) => {
+      if ((event as CustomEvent<{ accountId: string }>).detail?.accountId === accountId) void load();
+    };
+    void load();
+    window.addEventListener('rbgs-play-character-selected', change);
+    return () => {
+      request.abort();
+      window.removeEventListener('rbgs-play-character-selected', change);
+    };
+  }, [accountId]);
+
+  if (selected) return <LeaderboardProfile selected={selected} />;
+  return <main className="content info-page">
+    <h1>{t('navigationProfile')}</h1>
+    {failed ? <p role="alert">{t('charactersError')}</p>
+      : selected === undefined ? <p role="status">{t('charactersLoading')}</p>
+      : <Link className="button" to="/play">{t('playChooseCharacter')}</Link>}
+  </main>;
+}
+
+export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter }) {
   const { t, language } = useLocale();
   const [params] = useSearchParams();
   const { region, realm, name } = useParams();
@@ -71,8 +115,12 @@ export function LeaderboardProfile() {
   const season = params.get('season')?.toLowerCase() ?? '';
   const character = params.get('character') ?? '';
   const request = new URLSearchParams();
-  if (!season || uuid.test(season)) {
-    if (region && realm && name) {
+  if (standingsEnabled && (!season || uuid.test(season))) {
+    if (selected) {
+      request.set('region', selected.region);
+      request.set('realm', selected.realm);
+      request.set('name', selected.name);
+    } else if (region && realm && name) {
       request.set('region', region);
       request.set('realm', realm);
       request.set('name', name);
@@ -115,6 +163,12 @@ export function LeaderboardProfile() {
 
   const locale = languageLocales[language];
   const date = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
+  const bannerCharacter = selected ? { ...selected.character, name: selected.name } : profile && {
+    name: profile.name,
+    playable_class: playableClassFromToken(profile.appearance.characterClass),
+    playable_race: profile.appearance.race ? { name: profile.appearance.race } : undefined,
+    gender: { type: profile.appearance.gender },
+  };
   const selectedRating = profile?.[queue];
   const recentMatches = profile?.matches.filter(match => match.queue === (queue === 'solo' ? 'SOLO' : 'PREMADE')) ?? [];
   return <main className="content leaderboard-page info-page leaderboard-player-profile">
@@ -122,19 +176,20 @@ export function LeaderboardProfile() {
       <Link className="standings-profile-link" to={back}>{t('leaderboardBack')}</Link>
       {profile && localStandings && <span className="demo-badge">{t('leaderboardLocal')}</span>}
     </div>
-    {!profile ? <>
+    {!bannerCharacter ? <>
       <h1>{t('leaderboardViewProfile')}</h1>
       <p role="status">{t(query && profile === undefined ? 'leaderboardProfileLoading' : 'leaderboardProfileUnavailable')}</p>
     </> : <>
-      <ProfileBanner key={query} profile={profile} />
-      <div className="leaderboard-profile-season">
+      <ProfileBanner key={query} character={bannerCharacter} owner={!!selected}
+        region={selected?.region ?? profile?.appearance.region ?? ''} realm={selected?.realm ?? profile?.realm ?? ''} profile={profile} />
+      {profile && <div className="leaderboard-profile-season">
         <strong>{profile.season.name}</strong>
         <span className="demo-note">{t(profile.season.subjectType === 'ACCOUNT' ? 'leaderboardAccountSeason' : 'leaderboardCharacterSeason')}</span>
-      </div>
+      </div>}
       <div className="leaderboard-profile-details">
         <div className="leaderboard-profile-overview" role="group" aria-label={t('leaderboardQueue')}>
           {(['solo', 'premade'] as const).map(key => {
-            const record = profile[key];
+            const record = profile?.[key];
             return <button key={key} type="button" className="leaderboard-rating-option"
               aria-pressed={queue === key} aria-controls="season-rating-chart"
               onClick={() => {
@@ -158,7 +213,9 @@ export function LeaderboardProfile() {
           <h2 id="season-rating-heading">{t('leaderboardProfileProgression')} · {t(queue === 'solo' ? 'soloHeading' : 'premadeHeading')}</h2>
           {selectedRating
             ? <RatingChart key={query + queue} record={selectedRating} locale={locale} />
-            : <p className="leaderboard-chart-empty" role="status">{t('leaderboardProfileNoRating')}</p>}
+            : <p className="leaderboard-chart-empty" role="status">
+              {t(query && profile === undefined ? 'leaderboardProfileLoading' : 'leaderboardProfileNoRating')}
+            </p>}
           {recentMatches.length > 0 && <div className="leaderboard-profile-history">
             <h2 id="profile-history-heading">{t('leaderboardProfileMatches')}</h2>
             <div className="standings-scroll" tabIndex={0} role="region" aria-labelledby="profile-history-heading">
@@ -180,32 +237,29 @@ export function LeaderboardProfile() {
   </main>;
 }
 
-function ProfileBanner({ profile }: { profile: Profile }) {
+function ProfileBanner({ character, region, realm, profile, owner }: {
+  character: Pick<Character, 'name'> & Partial<Character>; region: string; realm: string;
+  profile?: Profile | null; owner: boolean;
+}) {
   const { t } = useLocale();
-  const character = {
-    name: profile.name,
-    playable_class: playableClassFromToken(profile.appearance.characterClass),
-    playable_race: profile.appearance.race ? { name: profile.appearance.race } : undefined,
-    gender: { type: profile.appearance.gender },
-  };
-  const region = profile.appearance.region === 'US' ? 'NA' : profile.appearance.region;
+  region = region === 'US' ? 'NA' : region;
   const appearance = [character.playable_class?.name, region, character.playable_race?.name].filter(Boolean).join(' · ');
-  const games = (profile.solo?.games ?? 0) + (profile.premade?.games ?? 0);
-  const wins = (profile.solo?.wins ?? 0) + (profile.premade?.wins ?? 0);
+  const games = (profile?.solo?.games ?? 0) + (profile?.premade?.games ?? 0);
+  const wins = (profile?.solo?.wins ?? 0) + (profile?.premade?.wins ?? 0);
   return <header className="leaderboard-profile-banner">
-    <CharacterAvatar character={character} />
+    <CharacterAvatar character={character} ownerAvatar={owner} />
     <div className="leaderboard-banner-identity">
-      <h1>{profile.name}</h1>
-      <p className="leaderboard-banner-realm">{profile.realm}</p>
+      <h1>{character.name}</h1>
+      <p className="leaderboard-banner-realm">{realm}</p>
       {appearance && <p className="leaderboard-banner-appearance">{appearance}</p>}
     </div>
     <CharacterIcons character={character} />
     <PlayerCardPopover triggerClassName="leaderboard-banner-trigger" placement="pointer"
-      triggerLabel={t('leaderboardShowCard').replace('{name}', profile.name)}
-      card={<PlayerCard compact tilt character={character} locationLabel={`${region} · ${profile.realm}`}
+      triggerLabel={t('leaderboardShowCard').replace('{name}', character.name)}
+      card={<PlayerCard compact tilt character={character} ownerAvatar={owner} locationLabel={`${region} · ${realm}`}
         competitive={{
-          solo: profile.solo?.rating,
-          premade: profile.premade?.rating,
+          solo: profile?.solo?.rating,
+          premade: profile?.premade?.rating,
           games,
           winRate: games > 0 ? Math.round(100 * wins / games) : undefined,
         }} />} />
