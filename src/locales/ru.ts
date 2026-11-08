@@ -542,7 +542,6 @@ export const messages = {
   leaderboardLocal: "Локальная таблица лидеров",
   leaderboardViewProfile: "Посмотреть профиль",
   leaderboardShowCard: "Показать карточку игрока {name}",
-  leaderboardBack: "Вернуться к таблице лидеров",
   leaderboardProfileLoading: "Загрузка профиля игрока…",
   leaderboardProfileUnavailable: "Профиль этого игрока недоступен.",
   leaderboardProfileMatches: "Недавние рейтинговые матчи",

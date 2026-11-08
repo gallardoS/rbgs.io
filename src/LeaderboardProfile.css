@@ -7,15 +7,8 @@
   padding-top: clamp(1rem, 3vh, 1.75rem);
 }
 .leaderboard-player-profile > :is(h1, p) { margin: 0; }
-.leaderboard-profile-topline {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: .6rem 1rem;
-  font-size: .85rem;
-}
-.leaderboard-profile-topline .demo-badge { justify-self: end; margin-top: 0; }
 .leaderboard-profile-season { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .65rem; font-size: .85rem; }
+.leaderboard-profile-season .demo-badge { margin-top: 0; }
 .leaderboard-profile-season strong { padding: .4rem .6rem; border: 1px solid #ffffff20; border-radius: .4rem; background: #101311; }
 .leaderboard-profile-banner {
   position: relative;

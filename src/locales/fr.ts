@@ -542,7 +542,6 @@ export const messages: Record<MessageKey, string> = {
   leaderboardLocal: "Classement local",
   leaderboardViewProfile: "Voir le profil",
   leaderboardShowCard: "Afficher la carte de {name}",
-  leaderboardBack: "Retour au classement",
   leaderboardProfileLoading: "Chargement du profil du joueur…",
   leaderboardProfileUnavailable: "Le profil de ce joueur est indisponible.",
   leaderboardProfileMatches: "Derniers matchs classés",

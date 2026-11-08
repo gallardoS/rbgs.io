@@ -540,7 +540,6 @@ export const messages = {
   leaderboardLocal: "Local standings",
   leaderboardViewProfile: "View profile",
   leaderboardShowCard: "Show {name}’s card",
-  leaderboardBack: "Back to standings",
   leaderboardProfileLoading: "Loading player profile…",
   leaderboardProfileUnavailable: "This player profile is unavailable.",
   leaderboardProfileMatches: "Recent rated matches",

@@ -135,8 +135,6 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
   const profile = loaded?.query === query ? loaded.profile : undefined;
   const requestedQueue = params.get('queue');
   const queue = requestedQueue === 'premade' || (!requestedQueue && !profile?.solo && profile?.premade) ? 'premade' : 'solo';
-  const returnSeason = profile?.season.id ?? (uuid.test(season) ? season : '');
-  const back = returnSeason ? '/leaderboard?' + new URLSearchParams({ season: returnSeason, queue }) : '/leaderboard';
 
   useEffect(() => {
     if (!query) return;
@@ -173,10 +171,6 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
   const selectedRating = profile?.[queue];
   const recentMatches = profile?.matches.filter(match => match.queue === (queue === 'solo' ? 'SOLO' : 'PREMADE')) ?? [];
   return <main className="content leaderboard-page info-page leaderboard-player-profile">
-    <div className="leaderboard-profile-topline">
-      <Link className="standings-profile-link" to={back}>{t('leaderboardBack')}</Link>
-      {profile && localStandings && <span className="demo-badge">{t('leaderboardLocal')}</span>}
-    </div>
     {!bannerCharacter ? <>
       <h1>{t('leaderboardViewProfile')}</h1>
       <p role="status">{t(query && profile === undefined ? 'leaderboardProfileLoading' : 'leaderboardProfileUnavailable')}</p>
@@ -186,6 +180,7 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
       {profile && <div className="leaderboard-profile-season">
         <strong>{profile.season.name}</strong>
         <span className="demo-note">{t(profile.season.subjectType === 'ACCOUNT' ? 'leaderboardAccountSeason' : 'leaderboardCharacterSeason')}</span>
+        {localStandings && <span className="demo-badge">{t('leaderboardLocal')}</span>}
       </div>}
       <div className="leaderboard-profile-details">
         <div className="leaderboard-profile-overview" role="group" aria-label={t('leaderboardQueue')}>

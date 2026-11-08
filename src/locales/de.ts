@@ -542,7 +542,6 @@ export const messages = {
   leaderboardLocal: "Lokale Rangliste",
   leaderboardViewProfile: "Profil ansehen",
   leaderboardShowCard: "Karte von {name} anzeigen",
-  leaderboardBack: "Zurück zur Rangliste",
   leaderboardProfileLoading: "Spielerprofil wird geladen…",
   leaderboardProfileUnavailable: "Dieses Spielerprofil ist nicht verfügbar.",
   leaderboardProfileMatches: "Letzte gewertete Spiele",
