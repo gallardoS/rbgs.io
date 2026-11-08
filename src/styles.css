@@ -73,7 +73,7 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 
 .main-navigation { align-items: center; flex: 1; margin-left: 2rem; }
 .main-navigation .nav-play { margin-left: auto; }
-.main-navigation a.active { color: #fafaf6; }
+.main-navigation > a[aria-current="page"]:not(.nav-play) { color: #fde047; }
 .main-navigation a.nav-moderator { color: #facc15; }
 .main-navigation .nav-play, .hero-play { background: #facc15; color: #151408; border: 1px solid transparent; border-radius: .2rem; padding: .65rem 1.2rem; font-weight: 700; }
 .main-navigation .nav-play:hover, .hero-play:hover { background: #eab308; }
@@ -84,7 +84,7 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .menu-toggle { display: none; }
 .main-navigation .nav-play, .main-navigation .nav-login { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; height: 42px; min-height: 42px; padding: 0 18px; font-size: .875rem; font-weight: 600; line-height: 20px; white-space: nowrap; text-align: center; }
 .main-navigation .nav-play { min-width: 76px; }
-.main-navigation .nav-play.active { color: #151408; }
+.main-navigation .nav-play[aria-current="page"] { background: #fde047; }
 .main-navigation .nav-login { gap: 8px; background: #121514; border-color: #ffffff30; }
 .main-navigation .nav-login img { width: 18px; height: 18px; display: block; flex-shrink: 0; }
 .account-menu { position: relative; font-size: .875rem; }
