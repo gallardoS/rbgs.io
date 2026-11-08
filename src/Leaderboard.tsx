@@ -7,6 +7,7 @@ import { Link } from './LocalizedLink';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowIcon } from './ArrowIcon';
 import { localStandings, standingsApi, standingsEnabled } from './leaderboard-config';
+import { ratingTier } from './rating-tier';
 
 const classColors = {
   Druid: '#ff9c45',
@@ -112,7 +113,8 @@ function StandingsTable({ entries, queue, caption, empty, seasonId, showDraws = 
           <td className="rank-cell">#{player.rank}</td>
           <th scope="row">{showCards ? <StandingPlayer player={player} queue={queue} seasonId={seasonId} />
             : <div className="player-identity" style={classColor(player)}><StandingIdentity player={player} /></div>}</th>
-          <td className="rating-cell">{player.rating.toLocaleString(languageLocales[language])}</td><td className="wins-cell">{player.wins}</td><td>{player.losses}</td>{showDraws && <td>{player.draws}</td>}
+          <td className="rating-cell" data-rating-tier={ratingTier(player.rating)}>{player.rating.toLocaleString(languageLocales[language])}</td>
+          <td className="wins-cell">{player.wins}</td><td>{player.losses}</td>{showDraws && <td>{player.draws}</td>}
           <td>{Math.round(player.wins / (player.wins + player.losses + (player.draws ?? 0)) * 100)}%</td>
         </tr>)}</tbody>
       </table>

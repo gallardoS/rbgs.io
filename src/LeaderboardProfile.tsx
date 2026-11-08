@@ -6,6 +6,7 @@ import { languageLocales, localizedPath } from './locale-routing';
 import { CharacterAvatar, CharacterIcons, PlayerCard, playableClassFromToken, type Character } from './PlayerCard';
 import { PlayerCardPopover } from './PlayerCardPopover';
 import { localStandings, standingsApi, standingsEnabled } from './leaderboard-config';
+import { ratingTier } from './rating-tier';
 import './LeaderboardProfile.css';
 
 type RatingPoint = { rating: number; playedAt: string };
@@ -198,14 +199,28 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
                 navigate(localizedPath(pathname, language) + '?' + next, { replace: true, preventScrollReset: true });
               }}>
               <span className="leaderboard-rating-queue">{t(key === 'solo' ? 'soloHeading' : 'premadeHeading')}</span>
-              <strong className="leaderboard-rating-number">{record?.rating.toLocaleString(locale) ?? '—'}</strong>
+              <strong className="leaderboard-rating-number" data-rating-tier={ratingTier(record?.rating)}>
+                {record?.rating.toLocaleString(locale) ?? '—'}
+              </strong>
               {record ? <span className="leaderboard-rating-record">
-                <span className="leaderboard-rating-wins">{t('leaderboardWins')} {record.wins.toLocaleString(locale)}</span>
-                <span className="leaderboard-rating-losses">{t('leaderboardLosses')} {record.losses.toLocaleString(locale)}</span>
-                {record.draws > 0 && <span>{t('leaderboardDraws')} {record.draws.toLocaleString(locale)}</span>}
+                <span className="sr-only">
+                  {t('leaderboardWins')} {record.wins.toLocaleString(locale)} · {t('leaderboardLosses')} {record.losses.toLocaleString(locale)}
+                  {record.draws > 0 && ` · ${t('leaderboardDraws')} ${record.draws.toLocaleString(locale)}`}
+                </span>
+                <span aria-hidden="true" title={record.draws > 0 ? `${t('leaderboardDraws')}: ${record.draws.toLocaleString(locale)}` : undefined}>
+                  <span className="leaderboard-rating-wins">{record.wins.toLocaleString(locale)}</span>
+                  {' - '}
+                  <span className="leaderboard-rating-losses">{record.losses.toLocaleString(locale)}</span>
+                </span>
               </span> : <span className="leaderboard-rating-record">{t('leaderboardProfileNoRating')}</span>}
-              <span className="leaderboard-rating-stat">{t('leaderboardProfilePeak')} <strong>{record?.peak.toLocaleString(locale) ?? '—'}</strong></span>
-              <span className="leaderboard-rating-stat">{t('charactersGamesPlayed')} <strong>{record?.games.toLocaleString(locale) ?? '—'}</strong></span>
+              <span className="leaderboard-rating-stat">
+                <span>{t('leaderboardProfilePeak')}</span>
+                <strong data-rating-tier={ratingTier(record?.peak)}>{record?.peak.toLocaleString(locale) ?? '—'}</strong>
+              </span>
+              <span className="leaderboard-rating-stat">
+                <span>{t('charactersGamesPlayed')}</span>
+                <strong>{record?.games.toLocaleString(locale) ?? '—'}</strong>
+              </span>
             </button>;
           })}
         </div>
@@ -226,7 +241,7 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
                   <th scope="row"><time dateTime={match.playedAt}>{date.format(new Date(match.playedAt))}</time>
                     <small className="standings-realm">{match.character} · {match.realm}</small></th>
                   <td>{t(outcomes[match.outcome])}</td>
-                  <td className="rating-cell">{match.rating.toLocaleString(locale)}</td>
+                  <td className="rating-cell" data-rating-tier={ratingTier(match.rating)}>{match.rating.toLocaleString(locale)}</td>
                 </tr>)}</tbody>
               </table>
             </div>
@@ -303,7 +318,7 @@ function RatingChart({ record, locale }: { record: QueueRating; locale: string }
   }
 
   return <figure className="leaderboard-chart">
-    <figcaption>{caption} <strong>{values[active].toLocaleString(locale)}</strong></figcaption>
+    <figcaption>{caption} <strong data-rating-tier={ratingTier(values[active])}>{values[active].toLocaleString(locale)}</strong></figcaption>
     <div className="leaderboard-chart-body">
       <div className="leaderboard-chart-scale" aria-hidden="true">
         {[top, Math.round((top + bottom) / 2), bottom].map((tick, index) => <span key={index}>{tick.toLocaleString(locale)}</span>)}

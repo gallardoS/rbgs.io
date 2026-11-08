@@ -144,7 +144,14 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .standings tbody th { font-weight: 500; }
 .standings td { color: #a4a49a; }
 .standings .rank-cell { width: 70px; color: #777f73; }
-.standings .top-ranked .rank-cell, .standings .rating-cell { color: #facc15; font-weight: 600; }
+.standings .top-ranked .rank-cell { color: #facc15; font-weight: 600; }
+.standings .rating-cell { color: var(--rating-color, #aaa); font-weight: 600; }
+[data-rating-tier="poor"] { --rating-color: #aaa; }
+[data-rating-tier="common"] { --rating-color: #fff; }
+[data-rating-tier="uncommon"] { --rating-color: #1eff00; }
+[data-rating-tier="rare"] { --rating-color: #4d9dff; }
+[data-rating-tier="epic"] { --rating-color: #c17aff; }
+[data-rating-tier="legendary"] { --rating-color: #ff8000; }
 .standings .wins-cell { color: #9ec09e; }
 .player-identity { display: flex; align-items: center; gap: .85rem; }
 .character-icons { display: flex; gap: .3rem; flex-shrink: 0; }
@@ -284,7 +291,7 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .profile-card-rating { display: flex; align-items: center; justify-content: center; gap: .45rem; }
 .profile-card-rating svg { flex-shrink: 0; color: #b6b7bb; }
 .profile-card-rating + .profile-card-rating { border-left: 1px solid #ffffff15; }
-.profile-card-rating strong { font-size: 1.2rem; color: #facc15; font-variant-numeric: tabular-nums; }
+.profile-card-rating strong { font-size: 1.2rem; color: var(--rating-color, #aaa); font-variant-numeric: tabular-nums; }
 .profile-card-rating > span { font-size: .75rem; color: #b6b7bb; }
 .profile-card-stats { display: grid; grid-template-columns: .9fr .8fr 1.2fr; gap: .35rem; width: 100%; padding: .7rem .4rem; background: #ffffff06; border-radius: .35rem; text-align: center; }
 .profile-card-stats > span { display: flex; flex-direction: column; justify-content: space-between; gap: .5rem; min-width: 0; }

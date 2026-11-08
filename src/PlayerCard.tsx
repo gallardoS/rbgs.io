@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { useLocale } from './locales';
 import { languageLocales } from './locale-routing';
 import { useAvatarPreference, type AvatarStyle } from './avatar-preference';
+import { ratingTier } from './rating-tier';
 
 export type Character = {
   id: number; name: string; level: number;
@@ -75,7 +76,7 @@ function CharacterRating({ premade = false, rating }: { premade?: boolean; ratin
   const label = t(premade ? 'premadeHeading' : 'soloHeading');
   const value = rating?.toLocaleString(languageLocales[language]) ?? '—';
   return <span className="profile-card-rating" title={label} aria-label={`${label}: ${value}`}>
-    <strong>{value}</strong>
+    <strong data-rating-tier={ratingTier(rating)}>{value}</strong>
     <svg width="18" height="18" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {premade && <><circle cx="6" cy="12" r="3.5" /><circle cx="26" cy="12" r="3.5" />
         <path d="M9 19a6 6 0 0 0-8 6v2h7M23 19a6 6 0 0 1 8 6v2h-7" /></>}
