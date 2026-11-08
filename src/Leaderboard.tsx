@@ -6,6 +6,7 @@ import { PlayerCardPopover } from './PlayerCardPopover';
 import { Link } from './LocalizedLink';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowIcon } from './ArrowIcon';
+import { localStandings, standingsApi, standingsEnabled } from './leaderboard-config';
 
 const classColors = {
   Druid: '#ff9c45',
@@ -38,11 +39,9 @@ const records = {
   premade: [...players].reverse().map((player, index) => ({ ...player, rating: 2386 - index * 53, wins: 68 - index * 3, losses: 16 + index * 2 })),
 };
 
-export const localStandings = import.meta.env.DEV && import.meta.env.MODE === 'standings';
-
 export function Leaderboard({ preview = false }: { preview?: boolean }) {
-  return !preview && localStandings
-    ? <LocalLeaderboard />
+  return !preview && standingsEnabled
+    ? <RatedLeaderboard />
     : <DemoLeaderboard preview={preview} />;
 }
 
@@ -182,7 +181,7 @@ function validPage(value: unknown): value is Page {
       && row.rank > 0 && row.wins + row.losses + row.draws > 0);
 }
 
-function LocalLeaderboard() {
+function RatedLeaderboard() {
   const { t, language } = useLocale();
   const [paramsFromUrl] = useSearchParams();
   const [queue, setQueue] = useState<Queue>(() => paramsFromUrl.get('queue') === 'premade' ? 'premade' : 'solo');
@@ -229,7 +228,7 @@ function LocalLeaderboard() {
     }, 10000);
     async function load() {
       try {
-        const response = await fetch('/api/v1/local/leaderboard?' + query, { signal: controller.signal, cache: 'no-store' });
+        const response = await fetch(standingsApi + '?' + query, { signal: controller.signal, cache: 'no-store' });
         if (!response.ok) throw Error();
         const payload: unknown = await response.json();
         if (!validPage(payload)) throw Error();
@@ -250,7 +249,7 @@ function LocalLeaderboard() {
 
   return <main className="content leaderboard-page info-page">
     <div className="leaderboard-heading"><div><h1>{t('leaderboardHeading')}</h1><p>{t('leaderboardIntro')}</p></div>
-      <span className="demo-badge">{t('leaderboardLocal')}</span></div>
+      {localStandings && <span className="demo-badge">{t('leaderboardLocal')}</span>}</div>
     <div className="leaderboard-toolbar">
       <QueueSwitch queue={queue} onChange={value => { setQueue(value); setOffset(0); }} />
       <div className="player-search">

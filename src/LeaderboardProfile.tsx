@@ -5,6 +5,7 @@ import { useLocale } from './locales';
 import { languageLocales, localizedPath } from './locale-routing';
 import { CharacterAvatar, CharacterIcons, PlayerCard, playableClassFromToken } from './PlayerCard';
 import { PlayerCardPopover } from './PlayerCardPopover';
+import { localStandings, standingsApi } from './leaderboard-config';
 import './LeaderboardProfile.css';
 
 type RatingPoint = { rating: number; playedAt: string };
@@ -97,7 +98,7 @@ export function LeaderboardProfile() {
     }, 10000);
     async function load() {
       try {
-        const response = await fetch('/api/v1/local/leaderboard/profile?' + query, { signal: controller.signal, cache: 'no-store' });
+        const response = await fetch(standingsApi + '/profile?' + query, { signal: controller.signal, cache: 'no-store' });
         if (!response.ok) throw Error();
         const payload: unknown = await response.json();
         if (!validProfile(payload, season)) throw Error();
@@ -119,7 +120,7 @@ export function LeaderboardProfile() {
   return <main className="content leaderboard-page info-page leaderboard-player-profile">
     <div className="leaderboard-profile-topline">
       <Link className="standings-profile-link" to={back}>{t('leaderboardBack')}</Link>
-      {profile && <span className="demo-badge">{t('leaderboardLocal')}</span>}
+      {profile && localStandings && <span className="demo-badge">{t('leaderboardLocal')}</span>}
     </div>
     {!profile ? <>
       <h1>{t('leaderboardViewProfile')}</h1>

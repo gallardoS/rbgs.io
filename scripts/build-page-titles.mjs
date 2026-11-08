@@ -1,4 +1,5 @@
-import { readFile, mkdir, writeFile, rm } from 'node:fs/promises';
+import { appendFile, readFile, mkdir, writeFile, rm } from 'node:fs/promises';
+import { loadEnv } from 'vite';
 import { render } from '../dist/server/prerender.js';
 
 const titles = JSON.parse(await readFile(new URL('../src/page-titles.json', import.meta.url), 'utf8'));
@@ -11,6 +12,7 @@ const languageLocales = { en: 'en_US', es: 'es_ES', fr: 'fr_FR', de: 'de_DE', 'p
 const pathLanguage = path => path.match(/^\/(es|fr|de|pt-BR|ru|it)(?:\/|$)/)?.[1] ?? 'en';
 const basePath = path => path.replace(/^\/(es|fr|de|pt-BR|ru|it)(?=\/|$)/, '') || '/';
 const localizedPath = (path, language) => language === 'en' ? path : path === '/' ? `/${language}/` : `/${language}${path}`;
+const publicLeaderboard = loadEnv('production', process.cwd()).VITE_PUBLIC_LEADERBOARD === 'true';
 const websiteData = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
@@ -51,6 +53,13 @@ for (const [path, title] of Object.entries(titles)) {
 // Valid app routes need their own entry points once 404.html disables SPA fallback.
 for (const language of languages) {
   const prefix = language === 'en' ? '' : `/${language}`;
+  if (publicLeaderboard) {
+    const shell = template.replace('<html lang="en">', `<html lang="${language}">`)
+      .replace('content="index, follow"', 'content="noindex, follow"');
+    await writeFile(new URL(`../dist${prefix}/profile-shell.html`, import.meta.url), shell);
+    await appendFile(new URL('../dist/_redirects', import.meta.url),
+      `\n${prefix}/player/:region/:realm/:name ${prefix}/profile-shell 200\n${prefix}/leaderboard/player ${prefix}/profile-shell 200\n`);
+  }
   for (const route of internalRoutes) {
     const path = prefix + route;
     const html = template
