@@ -80,6 +80,7 @@ export const messages = {
   soloQueueBlocked: 'Selection saved. SoloQ is waiting for game compatibility checks before opening.',
   soloQueueStatusError: 'Could not check SoloQ availability. Try again.',
   lobbyNotifications: 'Lobby notifications',
+  lobbyIdleWarning: 'This lobby will close soon unless a match starts.',
   lobbyRemovedMessage: 'You were removed from the lobby',
   lobbyRemovedDismiss: 'Dismiss lobby notification',
   lobbyInviteMoreOne: "1 more invitation",

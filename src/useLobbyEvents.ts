@@ -16,7 +16,7 @@ export function useLobbyEvents(accountId: string, enabled: boolean, onChange: ()
       watchdog = null; if (!disposed) setConnected(false);
     };
     const open = () => {
-      if (disposed || !enabled || document.hidden || source || typeof EventSource === 'undefined') return;
+      if (disposed || !enabled || source || typeof EventSource === 'undefined') return;
       const current = new EventSource('/api/v1/me/group-events');
       source = current; lastSignal = Date.now();
       const live = () => !disposed && source === current;
@@ -32,10 +32,14 @@ export function useLobbyEvents(accountId: string, enabled: boolean, onChange: ()
         if (Date.now() - lastSignal > 45000) { close(); open(); }
       }, 15000);
     };
-    const visibility = () => { if (document.hidden) close(); else open(); };
     setConnected(false); open();
-    document.addEventListener('visibilitychange', visibility);
-    return () => { disposed = true; close(); document.removeEventListener('visibilitychange', visibility); };
+    window.addEventListener('pagehide', close);
+    window.addEventListener('pageshow', open);
+    return () => {
+      disposed = true; close();
+      window.removeEventListener('pagehide', close);
+      window.removeEventListener('pageshow', open);
+    };
   }, [accountId, enabled]);
   return connected;
 }

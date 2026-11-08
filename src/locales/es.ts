@@ -82,6 +82,7 @@ export const messages: Record<MessageKey, string> = {
   soloQueueBlocked: 'Selección guardada. SoloQ abrirá cuando se complete la verificación de compatibilidad con el juego.',
   soloQueueStatusError: 'No se pudo comprobar la disponibilidad de SoloQ. Inténtalo de nuevo.',
   lobbyNotifications: 'Notificaciones del lobby',
+  lobbyIdleWarning: 'El lobby se cerrará pronto si no empieza una partida.',
   lobbyRemovedMessage: 'Te han expulsado del lobby',
   lobbyRemovedDismiss: 'Cerrar notificación del lobby',
   lobbyInviteMoreOne: "1 invitación más",

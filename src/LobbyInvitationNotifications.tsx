@@ -15,6 +15,7 @@ function readDismissed(key: string): string[] {
 
 // Group invitations expire 60 seconds after creation or renewal (GroupInvitation).
 const INVITATION_LIFETIME_MS = 60 * 1000;
+const LOBBY_IDLE_WARNING_MS = 5 * 60 * 1000;
 
 function NotificationLifetime({ expiresAt, lifetimeMs = INVITATION_LIFETIME_MS }: { expiresAt: string; lifetimeMs?: number }) {
   const [startedAt, setStartedAt] = useState(Date.now);
@@ -44,16 +45,22 @@ export function LobbyInvitationNotifications({ lobby }: { lobby: GroupLobby }) {
   const running = useRef(false);
   const currentTime = Math.max(clock, Date.now());
   const removal = lobby.removalNotice && Date.parse(lobby.removalNotice.expiresAt) > currentTime ? lobby.removalNotice : null;
+  const idleDeadline = lobby.group?.idleClosesAt;
+  const idleAt = idleDeadline ? Date.parse(idleDeadline) : NaN;
+  const idleKey = `idle:${lobby.group?.id}:${idleDeadline}`;
+  const idleWarning = idleDeadline && idleAt > currentTime && idleAt - currentTime <= LOBBY_IDLE_WARNING_MS
+    && !dismissed.includes(idleKey) ? idleDeadline : null;
   const pending = lobby.incoming.filter(invite => Date.parse(invite.expiresAt) > currentTime);
   const visible = pending.filter(invite => !dismissed.includes(`${invite.id}:${invite.expiresAt}`));
   useEffect(() => {
     const deadlines = lobby.incoming.map(invite => Date.parse(invite.expiresAt));
     if (lobby.removalNotice) deadlines.push(Date.parse(lobby.removalNotice.expiresAt));
+    if (Number.isFinite(idleAt)) deadlines.push(idleAt - LOBBY_IDLE_WARNING_MS, idleAt);
     const next = Math.min(...deadlines.filter(at => at > Date.now()));
     if (!Number.isFinite(next)) return;
     const timeout = window.setTimeout(() => setClock(Date.now()), Math.min(next - Date.now() + 20, 2_147_483_647));
     return () => window.clearTimeout(timeout);
-  }, [lobby.incoming, lobby.removalNotice?.expiresAt, clock]);
+  }, [lobby.incoming, lobby.removalNotice?.expiresAt, idleAt, clock]);
 
   function dismiss(key: string) {
     setDismissed(previous => {
@@ -76,9 +83,22 @@ export function LobbyInvitationNotifications({ lobby }: { lobby: GroupLobby }) {
   return <FloatingNotificationGroup>
     <div className="sr-only" role="status" aria-live="polite" aria-atomic="false" aria-relevant="additions text">
       {removal && <span key={removal.expiresAt}>{t('lobbyRemovedMessage')}</span>}
+      {idleWarning && <span key={idleKey}>{t('lobbyIdleWarning')}</span>}
       {visible.slice(0, 3).map(invite => <span key={`${invite.id}:${invite.expiresAt}`}>{invite.captainName} {t('lobbyInviteMessage')}</span>)}
     </div>
-    {(visible.length > 0 || removal) && <div className="lobby-notification-group">
+    {(visible.length > 0 || removal || idleWarning) && <div className="lobby-notification-group">
+    {idleWarning && <article key={idleKey} className="lobby-invite-notice" onKeyDown={event => {
+      if (event.key === 'Escape') { event.stopPropagation(); dismiss(idleKey); }
+    }}>
+      <div className="lobby-invite-notice-heading">
+        <span className="lobby-invite-notice-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" /></svg></span>
+        <strong>{t('lobbyIdleWarning')}</strong>
+        <button type="button" className="lobby-invite-dismiss" aria-label={t('notificationDismiss')} onClick={() => dismiss(idleKey)}>×</button>
+      </div>
+      <NotificationLifetime expiresAt={idleWarning} lifetimeMs={LOBBY_IDLE_WARNING_MS} />
+    </article>}
     {removal && <article key={removal.expiresAt} className="lobby-invite-notice lobby-removal-notice" onKeyDown={event => {
       if (event.key === 'Escape') { event.stopPropagation(); lobby.dismissRemovalNotice(); }
     }}>

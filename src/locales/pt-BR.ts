@@ -82,6 +82,7 @@ export const messages = {
   soloQueueBlocked: 'Seleção salva. A SoloQ abrirá após as verificações de compatibilidade com o jogo.',
   soloQueueStatusError: 'Não foi possível verificar a disponibilidade da SoloQ. Tente novamente.',
   lobbyNotifications: 'Notificações do lobby',
+  lobbyIdleWarning: 'O lobby será fechado em breve se nenhuma partida começar.',
   lobbyRemovedMessage: 'Você foi removido do lobby',
   lobbyRemovedDismiss: 'Fechar notificação do lobby',
   lobbyInviteMoreOne: "Mais 1 convite",

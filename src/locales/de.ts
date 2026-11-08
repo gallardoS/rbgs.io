@@ -82,6 +82,7 @@ export const messages = {
   soloQueueBlocked: 'Auswahl gespeichert. SoloQ öffnet nach der Prüfung der Spielkompatibilität.',
   soloQueueStatusError: 'Die Verfügbarkeit von SoloQ konnte nicht geprüft werden. Versuche es erneut.',
   lobbyNotifications: 'Lobbybenachrichtigungen',
+  lobbyIdleWarning: 'Diese Lobby wird bald geschlossen, wenn kein Spiel beginnt.',
   lobbyRemovedMessage: 'Du wurdest aus der Lobby entfernt',
   lobbyRemovedDismiss: 'Lobbybenachrichtigung schließen',
   lobbyInviteMoreOne: "1 weitere Einladung",

@@ -82,6 +82,7 @@ export const messages = {
   soloQueueBlocked: 'Выбор сохранён. SoloQ откроется после проверки совместимости с игрой.',
   soloQueueStatusError: 'Не удалось проверить доступность SoloQ. Попробуйте ещё раз.',
   lobbyNotifications: 'Уведомления лобби',
+  lobbyIdleWarning: 'Лобби скоро закроется, если матч не начнётся.',
   lobbyRemovedMessage: 'Вас исключили из лобби',
   lobbyRemovedDismiss: 'Закрыть уведомление лобби',
   lobbyInviteMoreOne: "Ещё 1 приглашение",

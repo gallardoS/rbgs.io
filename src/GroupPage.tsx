@@ -14,7 +14,7 @@ export type GroupMember = {
   companionConnected: boolean; addonStatus: string; gamePresence: string; blockers: string[]; character?: Character | null;
 };
 type Invitation = { id: string; groupId: string; captainName: string; recipientName: string; expiresAt: string };
-export type PremadeGroup = { id: string; captainId: string; revision: number; region: 'EU' | 'NA'; lobbyCode: string | null; members: GroupMember[]; invitations: Invitation[]; queueReady: boolean; blockers: string[] };
+export type PremadeGroup = { id: string; captainId: string; revision: number; region: 'EU' | 'NA'; lobbyCode: string | null; members: GroupMember[]; invitations: Invitation[]; queueReady: boolean; blockers: string[]; idleClosesAt?: string | null };
 type Context = { season: { id: string; version: number } | null };
 export const groupBlockerMessages: Record<string, MessageKey> = {
   REGION_MISMATCH: 'groupRegionMismatch', PLAY_CHARACTER_REQUIRED: 'groupCharacterRequired',
@@ -52,6 +52,7 @@ function validMemberCharacter(v: any): v is Character | null | undefined {
 }
 function validGroup(v: any): v is PremadeGroup | null {
   return v === null || v && typeof v.id === 'string' && typeof v.captainId === 'string' && Number.isSafeInteger(v.revision)
+    && (v.idleClosesAt == null || typeof v.idleClosesAt === 'string' && Number.isFinite(Date.parse(v.idleClosesAt)))
     && ['EU', 'NA'].includes(v.region) && v.revision >= 0 && (v.lobbyCode === null || typeof v.lobbyCode === 'string' && /^[A-HJ-NP-Z2-9]{8}$/.test(v.lobbyCode))
     && typeof v.queueReady === 'boolean' && Array.isArray(v.blockers) && v.blockers.every((r: unknown) => typeof r === 'string')
     && Array.isArray(v.invitations) && v.invitations.every(validInvitation) && Array.isArray(v.members) && v.members.length <= 10
@@ -97,7 +98,6 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
   const mutating = useRef(false);
   const refreshing = useRef<AbortController | null>(null);
   const lastSnapshotAt = useRef(0);
-  const initialized = useRef(false);
   const fullSnapshotPending = useRef(false);
   const eventPending = useRef(false);
   const eventTimer = useRef<number | null>(null);
@@ -124,14 +124,13 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
   }
   async function snapshot(signal: AbortSignal, invitationsOnly = false) {
     if (invitationsOnly && !fullSnapshotPending.current) {
-      const invites = await request('/api/v1/me/group-invitations', signal);
-      // Keep acceptance eligibility current across tabs/devices whenever an invite is pending.
-      const owned = !initialized.current || (Array.isArray(invites) && invites.length > 0)
-        ? await request('/api/v1/me/group', signal) : undefined;
-      if (!Array.isArray(invites) || !invites.every(validInvitation) || (owned !== undefined && !validGroup(owned))) throw new Error('Invalid invitation response');
+      const [invites, owned] = await Promise.all([
+        request('/api/v1/me/group-invitations', signal), request('/api/v1/me/group', signal),
+      ]);
+      if (!Array.isArray(invites) || !invites.every(validInvitation) || !validGroup(owned)) throw new Error('Invalid invitation response');
       if (!signal.aborted && mounted.current) {
-        setIncoming(invites); lastSnapshotAt.current = Date.now(); initialized.current = true;
-        if (owned !== undefined) { groupRef.current = owned; setGroup(owned); }
+        setIncoming(invites); lastSnapshotAt.current = Date.now();
+        groupRef.current = owned; setGroup(owned);
       }
       return groupRef.current;
     }
@@ -142,7 +141,7 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
       || !play || !(play.season === null || play.season && typeof play.season.id === 'string' && Number.isSafeInteger(play.season.version)))
       throw new Error('Invalid group response');
     if (!signal.aborted && mounted.current) {
-      groupRef.current = next; lastSnapshotAt.current = Date.now(); initialized.current = true; fullSnapshotPending.current = false;
+      groupRef.current = next; lastSnapshotAt.current = Date.now(); fullSnapshotPending.current = false;
       setGroup(next); setIncoming(invites); setContext(play);
     }
     return next as PremadeGroup | null;
@@ -184,7 +183,7 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
   });
   useEffect(() => {
     mounted.current = true;
-    lastSnapshotAt.current = 0; initialized.current = false;
+    lastSnapshotAt.current = 0;
     void reload();
     return () => {
       mounted.current = false; controller.current?.abort(); eventPending.current = false;
@@ -192,11 +191,13 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
       eventTimer.current = null;
     };
   }, [accountId]);
-  // Outside Premade only invitation delivery stays active; the roster resumes on entering Premade.
-  const pollDelay = streamConnected ? 60000 : !active && receiveInvitations ? 15000 : (group?.members.length ?? 0) > 1 || incoming.length > 0 || (group?.invitations.length ?? 0) > 0 ? 15000 : 60000;
+  // Invitations and lobby deadlines follow the account across pages.
+  const pollDelay = streamConnected ? 60000 : group || receiveInvitations || incoming.length > 0 ? 15000 : 60000;
   useEffect(() => {
     if (active && !document.hidden && lastSnapshotAt.current > 0) { fullSnapshotPending.current = true; queueEventRefresh(); }
-    const timer = active || receiveInvitations ? window.setInterval(() => { if (!document.hidden) void reload(); }, pollDelay) : null;
+    const timer = active || receiveInvitations ? window.setInterval(() => {
+      if (!document.hidden || (!streamConnected && groupRef.current)) void reload();
+    }, pollDelay) : null;
     const focus = () => { if (!document.hidden) void reload(); };
     document.addEventListener('visibilitychange', focus);
     window.addEventListener('focus', focus);
@@ -205,7 +206,7 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
       document.removeEventListener('visibilitychange', focus);
       window.removeEventListener('focus', focus);
     };
-  }, [accountId, active, receiveInvitations, pollDelay]);
+  }, [accountId, active, receiveInvitations, pollDelay, streamConnected]);
   useEffect(() => {
     setCopied(false);
     return () => {
