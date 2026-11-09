@@ -1,5 +1,8 @@
-.match-ready-dialog { width: min(30rem,calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); box-sizing: border-box; padding: 2rem; overflow: auto; border: 1px solid #d4b57699; border-radius: .8rem; background: #111613; color: #f5f2e8; box-shadow: 0 20px 100px #000b; text-align: center; }
-.match-ready-dialog::backdrop { background: #000c; backdrop-filter: blur(5px); }
+.match-ready-dialog { position: fixed; inset: 0; width: 100%; height: 100%; height: 100dvh; max-width: none; max-height: none; box-sizing: border-box; margin: 0; padding: 0; overflow: hidden; border: 0; background: transparent; }
+.match-ready-dialog[open] { display: grid; place-items: center; }
+.match-ready-dialog::backdrop { background: #0006; backdrop-filter: blur(5px); }
+.match-ready-tunnel { position: absolute; inset: 0; opacity: .5; pointer-events: none; }
+.match-ready-panel { position: relative; width: min(30rem,calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); box-sizing: border-box; padding: 2rem; overflow: auto; border: 1px solid #d4b57699; border-radius: .8rem; background: #111613; color: #f5f2e8; box-shadow: 0 20px 100px #000b; text-align: center; }
 .match-ready-dialog h2 { color: #f5d482; margin: 0 0 1rem; font-size: 2rem; }
 .match-ready-dialog p { font-size: 1rem; }
 .match-ready-clock { position: relative; width: 8rem; height: 8rem; padding: 3px; margin: 1.5rem auto; display: flex; flex-direction: column; justify-content: center; }
@@ -19,4 +22,4 @@
 .match-ready-dialog button:disabled { opacity: .5; cursor: default; }
 .match-ready-test-controls { margin-top: 1rem; border-top: 1px solid #ffffff20; padding-top: 1rem; }
 .match-ready-test-controls button { width: 100%; font-size: .85rem; }
-@media (max-width: 420px) { .match-ready-dialog { padding: 1.25rem; } }
+@media (max-width: 420px) { .match-ready-panel { padding: 1.25rem; } }
