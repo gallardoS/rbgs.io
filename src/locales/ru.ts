@@ -605,6 +605,7 @@ export const messages = {
   profileRegionsError: "Не удалось загрузить регионы.",
   profileRegionsEmpty: "Персонажи WoW не найдены",
   profileRegion: "Регион",
+  leaderboardFilterClass: "Фильтр по классу",
   profileCharacterDescription: "Выберите персонажа, отображаемого в лобби подбора матчей. Нажмите на карточку для смены.",
   profileSessionHeading: "Сеанс",
   profileSessionDescription: "Управляйте текущим сеансом в этом браузере.",

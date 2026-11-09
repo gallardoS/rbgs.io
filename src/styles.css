@@ -134,6 +134,23 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .queue-switch button[aria-pressed="true"] { background: #facc15; color: #151408; }
 .player-search input, .player-search select { width: 17rem; max-width: 100%; height: 52px; padding: .8rem 1rem; border: 1px solid #ffffff1f; border-radius: .6rem; background: #121514; color: #fafaf6; font: inherit; font-size: .875rem; }
 .player-search input:focus-visible, .player-search select:focus-visible, .standings-scroll:focus-visible { outline: 2px solid #facc15; outline-offset: 3px; }
+.leaderboard-filters { display: flex; align-items: center; align-self: flex-start; flex-wrap: wrap; gap: .5rem; max-width: 100%; }
+.leaderboard-filters > .queue-switch { min-height: 52px; }
+.leaderboard-search-controls { display: grid; grid-template-columns: minmax(0, 1fr) 10rem; gap: .5rem; margin-left: auto; width: 27.5rem; max-width: 100%; }
+.leaderboard-search-controls > * { min-width: 0; }
+.leaderboard-search-controls .player-search input { width: 100%; }
+.leaderboard-search-controls .season-picker summary, .leaderboard-search-controls select { width: 100%; height: 52px; padding: .5rem .8rem; border: 1px solid #ffffff12; border-radius: .65rem; background: #121514; color: #fafaf6; font: inherit; font-size: .875rem; }
+.leaderboard-search-controls .season-picker summary span, .leaderboard-search-controls select { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.leaderboard-search-controls .season-picker summary::after { flex-shrink: 0; }
+.leaderboard-search-controls .season-picker summary:hover, .leaderboard-search-controls select:not(:disabled):hover { border-color: #facc1559; }
+.leaderboard-search-controls .season-picker summary:focus-visible { outline: 2px solid #facc15; outline-offset: 3px; }
+.leaderboard-search-controls .season-picker .season-picker-options { left: auto; right: 0; border-color: #ffffff1f; background: #121514; }
+.leaderboard-class-filters { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: clamp(.15rem, .5vw, .35rem); }
+.leaderboard-class-filters button { display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; flex: 0 1 36px; min-width: 0; min-height: 0; aspect-ratio: 1; padding: 2px; border: 1px solid #ffffff1f; border-radius: 50%; background: #121514; }
+.leaderboard-class-filters img { display: block; width: 100%; max-width: 28px; height: auto; border-radius: 50%; }
+.leaderboard-class-filters button:hover { border-color: #facc1580; }
+.leaderboard-class-filters button[aria-pressed="true"] { border-color: #facc15; background: #facc1533; }
+.leaderboard-class-filters button:focus-visible { outline: 2px solid #facc15; outline-offset: 2px; }
 .standings-scroll { overflow-x: auto; border: 1px solid #ffffff12; border-radius: .8rem; }
 .standings { border-collapse: collapse; width: 100%; min-width: 600px; text-align: left; font-size: .875rem; font-variant-numeric: tabular-nums; }
 .standings thead { background: #151817; color: #999e94; }
@@ -172,6 +189,10 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .demo-note, .leaderboard-empty { font-size: .8rem; color: #8d9488; }
 .leaderboard-empty { padding: 1rem; }
 @media (max-width: 600px) { .leaderboard-heading { flex-direction: column; gap: .8rem; } .player-search, .player-search input, .player-search select { width: 100%; } .leaderboard-toolbar { margin-top: 2rem; } }
+@media (max-width: 600px) {
+  .leaderboard-filters .queue-switch button { padding-inline: .75rem; }
+  .leaderboard-search-controls { width: 100%; grid-template-columns: minmax(0, 1fr) min(9rem, 44%); }
+}
 
 .hero { opacity: var(--hero-opacity, 1); }
 .forever-icon { display: block; margin: 0 auto 1.4rem; filter: drop-shadow(0 0 18px #eab30825); }

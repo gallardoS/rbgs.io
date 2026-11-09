@@ -603,6 +603,7 @@ export const messages = {
   profileRegionsError: "Could not load regions.",
   profileRegionsEmpty: "No WoW characters found",
   profileRegion: 'Region',
+  leaderboardFilterClass: "Filter by class",
   profileCharacterDescription: 'Choose the character displayed in your matchmaking lobby. Click the card to change it.',
   profileSessionHeading: 'Session',
   profileSessionDescription: 'Manage your current session on this browser.',

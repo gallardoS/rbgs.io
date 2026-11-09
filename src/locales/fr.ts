@@ -605,6 +605,7 @@ export const messages: Record<MessageKey, string> = {
   profileRegionsError: "Impossible de charger les régions.",
   profileRegionsEmpty: "Aucun personnage WoW trouvé",
   profileRegion: 'Région',
+  leaderboardFilterClass: "Filtrer par classe",
   profileCharacterDescription: 'Choisissez le personnage affiché dans votre salon de matchmaking. Cliquez sur la carte pour le changer.',
   profileSessionHeading: 'Session',
   profileSessionDescription: 'Gérez votre session actuelle dans ce navigateur.',

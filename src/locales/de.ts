@@ -605,6 +605,7 @@ export const messages = {
   profileRegionsError: "Regionen konnten nicht geladen werden.",
   profileRegionsEmpty: "Keine WoW-Charaktere gefunden",
   profileRegion: "Region",
+  leaderboardFilterClass: "Nach Klasse filtern",
   profileCharacterDescription: "Wähle den Charakter, der in deiner Spielsuche-Lobby angezeigt wird. Klicke auf die Karte, um ihn zu ändern.",
   profileSessionHeading: "Sitzung",
   profileSessionDescription: "Verwalte deine aktuelle Sitzung in diesem Browser.",

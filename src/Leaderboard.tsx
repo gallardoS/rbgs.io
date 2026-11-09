@@ -1,10 +1,10 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useLocale } from './locales';
-import { languageLocales } from './locale-routing';
+import { languageLocales, localizedPath } from './locale-routing';
 import { PlayerCard, characterRaceIcon } from './PlayerCard';
 import { PlayerCardPopover } from './PlayerCardPopover';
 import { Link } from './LocalizedLink';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowIcon } from './ArrowIcon';
 import { localStandings, standingsApi, standingsEnabled } from './leaderboard-config';
 import { ratingTier } from './rating-tier';
@@ -22,6 +22,8 @@ const classColors = {
   Priest: '#eeeeee',
   Hunter: '#abd473',
 };
+type CharacterClass = keyof typeof classColors;
+const characterClasses = Object.keys(classColors) as CharacterClass[];
 
 const players: { name: string; className: keyof typeof classColors; raceIcon: string; raceLabel: string }[] = [
   { name: 'Moonveil', className: 'Druid', raceIcon: 'tauren_female', raceLabel: 'Tauren female' },
@@ -64,7 +66,7 @@ function classColor(player: Entry): CSSProperties {
 function ratedEntry(row: RatedEntry): Entry {
   return {
     ...row,
-    className: (Object.keys(classColors) as (keyof typeof classColors)[])
+    className: characterClasses
       .find(name => name.toUpperCase() === row.characterClass?.trim().toUpperCase()),
     raceIcon: characterRaceIcon(row.race, row.gender),
     raceLabel: row.race ?? undefined,
@@ -185,16 +187,21 @@ function validPage(value: unknown): value is Page {
 function RatedLeaderboard() {
   const { t, language } = useLocale();
   const [paramsFromUrl] = useSearchParams();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const region = paramsFromUrl.get('region')?.toUpperCase() === 'NA' ? 'NA' : 'EU';
   const [queue, setQueue] = useState<Queue>(() => paramsFromUrl.get('queue') === 'premade' ? 'premade' : 'solo');
   const [season, setSeason] = useState(() => paramsFromUrl.get('season') ?? '');
+  const [classFilters, setClassFilters] = useState<CharacterClass[]>([]);
   const [search, setSearch] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [offset, setOffset] = useState(0);
   const [loaded, setLoaded] = useState<{ key: string; scope: string; page: Page; offset: number } | null>(null);
   const [failed, setFailed] = useState('');
-  const scope = queue + ':' + season;
-  const params = new URLSearchParams({ queue: queue.toUpperCase(), search: searchTerm, offset: String(offset), limit: String(pageSize) });
+  const scope = queue + ':' + season + ':' + region + ':' + classFilters.join(',');
+  const params = new URLSearchParams({ queue: queue.toUpperCase(), region, search: searchTerm, offset: String(offset), limit: String(pageSize) });
   if (season) params.set('season', season);
+  for (const characterClass of classFilters) params.append('class', characterClass.toUpperCase());
   const query = params.toString();
   const page = loaded?.key === query ? loaded.page : null;
   const failedRequest = !page && failed === query;
@@ -208,6 +215,21 @@ function RatedLeaderboard() {
     .replace('{current}', currentPage.toLocaleString(languageLocales[language]))
     .replace('{total}', totalPages.toLocaleString(languageLocales[language]));
   const selected = loaded?.page.seasons.find(item => item.id === (season || loaded.page.seasonId));
+
+  function selectRegion(nextRegion: 'EU' | 'NA') {
+    if (nextRegion === region) return;
+    const next = new URLSearchParams(paramsFromUrl);
+    next.set('region', nextRegion.toLowerCase());
+    setOffset(0);
+    navigate(localizedPath(pathname, language) + '?' + next, { replace: true });
+  }
+
+  function toggleClass(characterClass: CharacterClass) {
+    setOffset(0);
+    setClassFilters(current => current.includes(characterClass)
+      ? current.filter(value => value !== characterClass)
+      : [...current, characterClass]);
+  }
 
   useEffect(() => {
     const term = search.trim();
@@ -252,19 +274,36 @@ function RatedLeaderboard() {
     <div className="leaderboard-heading"><div><h1>{t('leaderboardHeading')}</h1><p>{t('leaderboardIntro')}</p></div>
       {localStandings && <span className="demo-badge">{t('leaderboardLocal')}</span>}</div>
     <div className="leaderboard-toolbar">
-      <QueueSwitch queue={queue} onChange={value => { setQueue(value); setOffset(0); }} />
-      <SeasonPicker seasons={loaded?.page.seasons ?? []} selected={selected}
-        upcoming={!localStandings && !!loaded && loaded.page.seasons.every(item => item.id === preseasonId)}
-        onChange={id => { setSeason(id); setOffset(0); }} />
-      <label className="player-search"><span className="sr-only">{t('leaderboardSearchName')}</span>
-        <input type="search" value={search} maxLength={100} placeholder={t('leaderboardSearchName')}
-          onChange={event => setSearch(event.target.value)} /></label>
+      <div className="leaderboard-filters">
+        <QueueSwitch queue={queue} onChange={value => { setQueue(value); setOffset(0); }} />
+        <div className="queue-switch" role="group" aria-label={t('profileRegion')}>
+          {(['EU', 'NA'] as const).map(option =>
+            <button key={option} type="button" aria-pressed={region === option} onClick={() => selectRegion(option)}>{option}</button>
+          )}
+        </div>
+      </div>
+      <div className="leaderboard-search-controls">
+        <label className="player-search"><span className="sr-only">{t('leaderboardSearchName')}</span>
+          <input type="search" value={search} maxLength={100} placeholder={t('leaderboardSearchName')}
+            onChange={event => setSearch(event.target.value)} /></label>
+        <SeasonPicker seasons={loaded?.page.seasons ?? []} selected={selected}
+          upcoming={!localStandings && !!loaded && loaded.page.seasons.every(item => item.id === preseasonId)}
+          onChange={id => { setSeason(id); setOffset(0); }} />
+        <div className="leaderboard-class-filters" role="group" aria-label={t('leaderboardFilterClass')}>
+          {characterClasses.map(characterClass =>
+            <button key={characterClass} type="button" aria-label={characterClass} title={characterClass}
+              aria-pressed={classFilters.includes(characterClass)} onClick={() => toggleClass(characterClass)}>
+              <img src={`/media/character/class_${characterClass.toLowerCase()}.jpg`} alt="" width="28" height="28" />
+            </button>
+          )}
+        </div>
+      </div>
     </div>
     {selected && <p className="demo-note">{t(selected.subjectType === 'ACCOUNT' ? 'leaderboardAccountSeason' : 'leaderboardCharacterSeason')}</p>}
     <StandingsTable entries={entries} queue={queue} showDraws busy={busy} caption={selected?.name ?? t('leaderboardHeading')}
       seasonId={loaded?.scope === scope ? loaded.page.seasonId : undefined}
       empty={t(busy ? 'leaderboardLoading' : failedRequest ? 'leaderboardLoadError'
-        : searchTerm ? 'leaderboardEmpty' : 'leaderboardNoRatedPlayers')} />
+        : searchTerm || classFilters.length ? 'leaderboardEmpty' : 'leaderboardNoRatedPlayers')} />
     <div className="standings-pagination">
       <button type="button" className="standings-page-button" aria-label={t('leaderboardPrevious')} title={t('leaderboardPrevious')}
         disabled={busy || !page || offset === 0} onClick={() => setOffset(value => Math.max(0, value - pageSize))}>

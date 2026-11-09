@@ -7,5 +7,5 @@
 .season-picker-options button, .season-picker-upcoming { display: flex; align-items: center; justify-content: space-between; gap: .6rem; width: 100%; min-height: 36px; padding: .5rem .55rem; border: 0; border-radius: .3rem; background: transparent; color: #fafaf6; text-align: left; font-size: .8rem; font-weight: 500; }
 .season-picker-options button:hover, .season-picker-options button:focus-visible { background: #ffffff0c; }
 .season-picker-options button[aria-pressed=true] { color: #facc15; }
-.season-picker-upcoming { color: #aeb5ad; }
+.season-picker-upcoming { color: #aeb5ad; white-space: nowrap; }
 .coming-soon-label { font-size: .6rem; font-weight: 400; white-space: nowrap; color: #8f9992; }
