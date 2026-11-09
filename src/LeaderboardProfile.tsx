@@ -22,8 +22,10 @@ type ProfileMatch = {
   outcome: 'WIN' | 'LOSS' | 'DRAW';
   rating: number;
 };
+type Season = { id: string; name: string; subjectType: 'ACCOUNT' | 'CHARACTER' };
 type Profile = {
-  season: { id: string; name: string; subjectType: 'ACCOUNT' | 'CHARACTER' };
+  season: Season;
+  seasons?: Season[];
   name: string;
   realm: string;
   appearance: { characterClass: string | null; race: string | null; gender: string | null; region: string };
@@ -46,12 +48,17 @@ function validRating(value: QueueRating | null) {
       && typeof point.playedAt === 'string' && Number.isFinite(Date.parse(point.playedAt)));
 }
 
+function validSeason(season: Season) {
+  return typeof season?.id === 'string' && uuid.test(season.id) && typeof season.name === 'string'
+    && (season.subjectType === 'ACCOUNT' || season.subjectType === 'CHARACTER');
+}
+
 function validProfile(value: unknown, season: string): value is Profile {
   if (!value || typeof value !== 'object') return false;
   const profile = value as Profile;
-  return typeof profile.season?.id === 'string' && uuid.test(profile.season.id)
-    && (!season || profile.season.id === season) && typeof profile.season.name === 'string'
-    && (profile.season.subjectType === 'ACCOUNT' || profile.season.subjectType === 'CHARACTER')
+  return validSeason(profile.season) && (!season || profile.season.id === season)
+    && (profile.seasons === undefined || Array.isArray(profile.seasons) && profile.seasons.length <= 51
+      && profile.seasons.every(validSeason) && profile.seasons.some(option => option.id === profile.season.id))
     && typeof profile.name === 'string' && typeof profile.realm === 'string'
     && profile.appearance && [profile.appearance.characterClass, profile.appearance.race, profile.appearance.gender]
       .every(value => value === null || typeof value === 'string')
@@ -129,18 +136,25 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
       request.set('character', character);
     }
   }
-  if (request.size && season) request.set('season', season);
+  const identity = request.toString();
+  if (identity && season) request.set('season', season);
   const query = request.toString();
-  const [loaded, setLoaded] = useState<{ query: string; profile: Profile | null }>();
-  const profile = loaded?.query === query ? loaded.profile : undefined;
+  const [loaded, setLoaded] = useState<{ identity: string; query: string; profile: Profile }>();
+  const [failedQuery, setFailedQuery] = useState('');
+  const profile = loaded?.query === query && failedQuery !== query ? loaded.profile : undefined;
+  const lastProfile = loaded?.identity === identity ? loaded.profile : undefined;
+  const isLoading = !!query && !profile && failedQuery !== query;
+  const loadMessage = isLoading ? 'leaderboardProfileLoading'
+    : query && !profile && (!selected || !!season) ? 'leaderboardProfileUnavailable' : 'leaderboardProfileNoRating';
   const requestedQueue = params.get('queue');
   const queue = requestedQueue === 'premade' || (!requestedQueue && !profile?.solo && profile?.premade) ? 'premade' : 'solo';
 
   useEffect(() => {
     if (!query) return;
+    setFailedQuery('');
     const controller = new AbortController();
     const timeout = window.setTimeout(() => {
-      setLoaded({ query, profile: null });
+      setFailedQuery(query);
       controller.abort();
     }, 10000);
     async function load() {
@@ -149,37 +163,50 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
         if (!response.ok) throw Error();
         const payload: unknown = await response.json();
         if (!validProfile(payload, season)) throw Error();
-        if (!controller.signal.aborted) setLoaded({ query, profile: payload });
+        if (!controller.signal.aborted) setLoaded({ identity, query, profile: payload });
       } catch {
-        if (!controller.signal.aborted) setLoaded({ query, profile: null });
+        if (!controller.signal.aborted) setFailedQuery(query);
       } finally {
         window.clearTimeout(timeout);
       }
     }
     void load();
     return () => { controller.abort(); window.clearTimeout(timeout); };
-  }, [query, season]);
+  }, [identity, query, season]);
 
   const locale = languageLocales[language];
   const date = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
-  const bannerCharacter = selected ? { ...selected.character, name: selected.name } : profile && {
-    name: profile.name,
-    playable_class: playableClassFromToken(profile.appearance.characterClass),
-    playable_race: profile.appearance.race ? { name: profile.appearance.race } : undefined,
-    gender: { type: profile.appearance.gender },
+  const bannerProfile = profile ?? lastProfile;
+  const bannerCharacter = selected ? { ...selected.character, name: selected.name } : bannerProfile && {
+    name: bannerProfile.name,
+    playable_class: playableClassFromToken(bannerProfile.appearance.characterClass),
+    playable_race: bannerProfile.appearance.race ? { name: bannerProfile.appearance.race } : undefined,
+    gender: { type: bannerProfile.appearance.gender },
   };
+  const availableSeasons = bannerProfile?.seasons ?? (bannerProfile ? [bannerProfile.season] : []);
+  const selectedSeason = availableSeasons.find(option => option.id === (season || profile?.season.id));
   const selectedRating = profile?.[queue];
   const recentMatches = profile?.matches.filter(match => match.queue === (queue === 'solo' ? 'SOLO' : 'PREMADE')) ?? [];
   return <main className="content leaderboard-page info-page leaderboard-player-profile">
     {!bannerCharacter ? <>
       <h1>{t('leaderboardViewProfile')}</h1>
-      <p role="status">{t(query && profile === undefined ? 'leaderboardProfileLoading' : 'leaderboardProfileUnavailable')}</p>
+      <p role="status">{t(isLoading ? 'leaderboardProfileLoading' : 'leaderboardProfileUnavailable')}</p>
     </> : <>
       <ProfileBanner key={query} character={bannerCharacter} owner={!!selected}
-        region={selected?.region ?? profile?.appearance.region ?? ''} realm={selected?.realm ?? profile?.realm ?? ''} profile={profile} />
-      {profile && <div className="leaderboard-profile-season">
-        <strong>{profile.season.name}</strong>
-        <span className="demo-note">{t(profile.season.subjectType === 'ACCOUNT' ? 'leaderboardAccountSeason' : 'leaderboardCharacterSeason')}</span>
+        region={selected?.region ?? bannerProfile?.appearance.region ?? ''} realm={selected?.realm ?? bannerProfile?.realm ?? ''} profile={profile} />
+      {availableSeasons.length > 0 && <div className="leaderboard-profile-season">
+        <div className="player-search">
+          <select aria-label={t('leaderboardSeason')} value={selectedSeason?.id ?? ''} disabled={availableSeasons.length === 1 && !!selectedSeason}
+            onChange={event => {
+              const next = new URLSearchParams(params);
+              next.set('season', event.target.value);
+              navigate(localizedPath(pathname, language) + '?' + next, { preventScrollReset: true });
+            }}>
+            {!selectedSeason && <option value="" disabled>{t('leaderboardSeason')}</option>}
+            {availableSeasons.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
+          </select>
+        </div>
+        {selectedSeason && <span className="demo-note">{t(selectedSeason.subjectType === 'ACCOUNT' ? 'leaderboardAccountSeason' : 'leaderboardCharacterSeason')}</span>}
         {localStandings && <span className="demo-badge">{t('leaderboardLocal')}</span>}
       </div>}
       <div className="leaderboard-profile-details">
@@ -207,7 +234,7 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
                   {' - '}
                   <span className="leaderboard-rating-losses">{record.losses.toLocaleString(locale)}</span>
                 </span>
-              </span> : <span className="leaderboard-rating-record">{t('leaderboardProfileNoRating')}</span>}
+              </span> : <span className="leaderboard-rating-record">{t(profile ? 'leaderboardProfileNoRating' : loadMessage)}</span>}
               <span className="leaderboard-rating-stat">
                 <span>{t('leaderboardProfilePeak')}</span>
                 <strong data-rating-tier={ratingTier(record?.peak)}>{record?.peak.toLocaleString(locale) ?? '—'}</strong>
@@ -224,7 +251,7 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
           {selectedRating
             ? <RatingChart key={query + queue} record={selectedRating} locale={locale} />
             : <p className="leaderboard-chart-empty" role="status">
-              {t(query && profile === undefined ? 'leaderboardProfileLoading' : 'leaderboardProfileNoRating')}
+              {t(profile ? 'leaderboardProfileNoRating' : loadMessage)}
             </p>}
           {recentMatches.length > 0 && <div className="leaderboard-profile-history">
             <h2 id="profile-history-heading">{t('leaderboardProfileMatches')}</h2>
