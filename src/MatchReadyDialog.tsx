@@ -58,8 +58,9 @@ export function MatchReadyDialog({ room, accountId, serverTime, busy, onRespond,
   const seconds = Math.ceil(remainingSeconds);
   const ringOffset = 60 - Math.min(60, remainingSeconds);
   const responding = busy || !active || warpRoom?.id === room?.id;
+  const canRespond = !responding && !!own && !own.accepted && seconds > 0;
   function accept() {
-    if (!active || responding || !own || own.accepted || seconds === 0) return;
+    if (!active || !canRespond) return;
     onRespond(true);
     if (warp.current?.()) setWarpRoom(room);
   }
@@ -89,8 +90,8 @@ export function MatchReadyDialog({ room, accountId, serverTime, busy, onRespond,
       {members.length > 1 && <p className="match-ready-count" role="status">{t('matchReadyCount').replace('{count}',String(count))}</p>}
       {members.length > 1 && <div className="match-ready-slots" aria-hidden="true">{members.map(m=><span key={m.accountId} data-accepted={m.accepted} data-own={m.accountId===accountId} />)}</div>}
       <div className="match-ready-actions">
-        <button type="button" className="match-ready-accept" disabled={responding||!own||!!own.accepted||seconds===0} onClick={accept} autoFocus>{t(own?.accepted?'matchReadyAccepted':'matchReadyAccept')}</button>
-        <button type="button" disabled={responding} onClick={()=>onRespond(false)}>{t('matchReadyDecline')}</button>
+        <button type="button" className="match-ready-accept" disabled={!canRespond} onClick={accept} autoFocus>{t(own?.accepted?'matchReadyAccepted':'matchReadyAccept')}</button>
+        <button type="button" disabled={!canRespond} onClick={()=>{ if (canRespond) onRespond(false); }}>{t('matchReadyDecline')}</button>
       </div>
       {seconds===0&&<p role="status">{t('matchReadyExpired')}</p>}
       {error&&<p role="alert">{error}</p>}
