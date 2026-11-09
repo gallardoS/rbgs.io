@@ -177,6 +177,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
   const matchTooltipId = useId();
   const [matchTooltipOpen, setMatchTooltipOpen] = useState(false);
   const [matchTooltipDismissed, setMatchTooltipDismissed] = useState(false);
+  const preseasonPreview = context?.matchmakingAvailable === true;
   const canFind = !!character && !queueChecking && !seasonMessage && !queueActive && !loading && !saving && !queueBusy && !lobby.loading && !lobby.busy && !lobby.error && (premade
     ? premadeCount === 10 && !!lobby.captain
     : canSave && !lobby.group);
@@ -347,7 +348,8 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
           </span>
         </div>
         {!seasonMessage && !incompletePremade && <p id="queue-availability" className="availability" role={saved ? 'status' : undefined}>
-          {t(!premade && lobby.group ? 'playLeaveForSolo' : premade && !lobby.captain ? 'playLeaderStartsMatch' : saved ? 'selectionSavedQueuePending' : 'queuePending')}
+          {t(!premade && lobby.group ? 'playLeaveForSolo' : premade && !lobby.captain ? 'playLeaderStartsMatch'
+            : preseasonPreview ? 'preseasonQueueHelp' : saved ? 'selectionSavedQueuePending' : 'queuePending')}
         </p>}
         <MessageNotification message={premade ? lobby.error : null} />
         {premade && lobby.error && <button type="button" onClick={() => void lobby.reload(true)}>{t('groupRefresh')}</button>}

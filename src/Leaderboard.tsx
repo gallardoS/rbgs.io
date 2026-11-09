@@ -9,6 +9,7 @@ import { ArrowIcon } from './ArrowIcon';
 import { localStandings, standingsApi, standingsEnabled } from './leaderboard-config';
 import { ratingTier } from './rating-tier';
 import { playerProfilePath } from './player-profile-path';
+import { preseasonId, SeasonPicker, type StandingsSeason } from './SeasonPicker';
 
 const classColors = {
   Druid: '#ff9c45',
@@ -50,7 +51,7 @@ export function Leaderboard({ preview = false }: { preview?: boolean }) {
 type Queue = 'solo' | 'premade';
 type Entry = { rank: number; name: string; rating: number; wins: number; losses: number; draws?: number; realm?: string; profileRef?: string;
   className?: keyof typeof classColors; raceIcon?: string; raceLabel?: string; region?: string; uniqueName?: boolean };
-type Season = { id: string; name: string; subjectType: 'ACCOUNT' | 'CHARACTER' };
+type Season = StandingsSeason;
 type RatedEntry = Omit<Entry, 'className' | 'raceIcon' | 'raceLabel'> & {
   draws: number; characterClass?: string | null; race?: string | null; gender?: string | null;
 };
@@ -252,13 +253,9 @@ function RatedLeaderboard() {
       {localStandings && <span className="demo-badge">{t('leaderboardLocal')}</span>}</div>
     <div className="leaderboard-toolbar">
       <QueueSwitch queue={queue} onChange={value => { setQueue(value); setOffset(0); }} />
-      <div className="player-search">
-        <select aria-label={t('leaderboardSeason')} value={selected?.id ?? ''} disabled={!loaded?.page.seasons.length}
-          onChange={event => { setSeason(event.target.value); setOffset(0); }}>
-          {!loaded?.page.seasons.length && <option value="">{t('leaderboardSeason')}</option>}
-          {loaded?.page.seasons.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-        </select>
-      </div>
+      <SeasonPicker seasons={loaded?.page.seasons ?? []} selected={selected}
+        upcoming={!localStandings && !!loaded && loaded.page.seasons.every(item => item.id === preseasonId)}
+        onChange={id => { setSeason(id); setOffset(0); }} />
       <label className="player-search"><span className="sr-only">{t('leaderboardSearchName')}</span>
         <input type="search" value={search} maxLength={100} placeholder={t('leaderboardSearchName')}
           onChange={event => setSearch(event.target.value)} /></label>

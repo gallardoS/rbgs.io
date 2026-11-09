@@ -85,7 +85,7 @@ export function LobbyMemberMenu({ id, anchorRef, member, lobby, onOpenChange }: 
         <MemberMenuIcon kind="profile" /><span>{t('playViewProfile')}</span>
       </button>}
     <button type="button" role="menuitem" tabIndex={-1} aria-disabled="true">
-      <MemberMenuIcon kind="friend" /><span>{t('playAddFriend')}</span><small>{t('playComingSoon')}</small>
+      <MemberMenuIcon kind="friend" /><span>{t('playAddFriend')}</span><small className="coming-soon-label">{t('playComingSoon')}</small>
     </button>
     {lobby.captain && member.accountId !== lobby.accountId && <>
       <span className="lobby-member-menu-divider" role="separator" />

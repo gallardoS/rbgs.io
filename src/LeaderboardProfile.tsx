@@ -9,6 +9,7 @@ import { localStandings, standingsApi, standingsEnabled } from './leaderboard-co
 import { useLobbySession } from './LobbySession';
 import { playerProfilePath } from './player-profile-path';
 import { ratingTier } from './rating-tier';
+import { preseasonId, SeasonPicker, type StandingsSeason } from './SeasonPicker';
 import './LeaderboardProfile.css';
 
 type RatingPoint = { rating: number; playedAt: string };
@@ -24,7 +25,7 @@ type ProfileMatch = {
   outcome: 'WIN' | 'LOSS' | 'DRAW';
   rating: number;
 };
-type Season = { id: string; name: string; subjectType: 'ACCOUNT' | 'CHARACTER' };
+type Season = StandingsSeason;
 type Profile = {
   season: Season;
   seasons?: Season[];
@@ -153,14 +154,29 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
   const query = request.toString();
   const [loaded, setLoaded] = useState<{ identity: string; query: string; profile: Profile }>();
   const [failedQuery, setFailedQuery] = useState('');
+  const [publicSeasons, setPublicSeasons] = useState<Season[]>();
+  const preseason = publicSeasons?.find(option => option.id === preseasonId);
   const profile = loaded?.query === query && failedQuery !== query ? loaded.profile : undefined;
   const lastProfile = loaded?.identity === identity ? loaded.profile : undefined;
   const isLoading = !!query && !profile && failedQuery !== query;
   const isWaitingForLobby = !!namedPath && lobby?.loading;
   const loadMessage = isLoading ? 'leaderboardProfileLoading'
-    : query && !profile && (!(selected || rosterCharacter) || !!season) ? 'leaderboardProfileUnavailable' : 'leaderboardProfileNoRating';
+    : query && !profile && (!(selected || rosterCharacter) || !!season && season !== preseason?.id)
+      ? 'leaderboardProfileUnavailable' : 'leaderboardProfileNoRating';
   const requestedQueue = params.get('queue');
   const queue = requestedQueue === 'premade' || (!requestedQueue && !profile?.solo && profile?.premade) ? 'premade' : 'solo';
+
+  useEffect(() => {
+    if (!standingsEnabled || localStandings) return;
+    const controller = new AbortController();
+    fetch(standingsApi + '?queue=SOLO&limit=1', { signal: controller.signal, cache: 'no-store' })
+      .then(response => response.ok ? response.json() : null)
+      .then(payload => {
+        if (!controller.signal.aborted && Array.isArray(payload?.seasons) && payload.seasons.every(validSeason))
+          setPublicSeasons(payload.seasons);
+      }).catch(() => { /* The profile's own season list still works. */ });
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     if (!query) return;
@@ -197,8 +213,11 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
     playable_race: bannerProfile.appearance.race ? { name: bannerProfile.appearance.race } : undefined,
     gender: { type: bannerProfile.appearance.gender },
   };
-  const availableSeasons = bannerProfile?.seasons ?? (bannerProfile ? [bannerProfile.season] : []);
-  const selectedSeason = availableSeasons.find(option => option.id === (season || profile?.season.id));
+  const ratedSeasons = bannerProfile?.seasons ?? (bannerProfile ? [bannerProfile.season] : []);
+  const availableSeasons = preseason && !ratedSeasons.some(option => option.id === preseason.id)
+    ? [...ratedSeasons, preseason] : ratedSeasons;
+  const upcomingSeason = publicSeasons?.every(option => option.id === preseasonId) === true;
+  const selectedSeason = availableSeasons.find(option => option.id === (season || profile?.season.id || preseason?.id));
   const selectedRating = profile?.[queue];
   const recentMatches = profile?.matches.filter(match => match.queue === (queue === 'solo' ? 'SOLO' : 'PREMADE')) ?? [];
   return <main className="content leaderboard-page info-page leaderboard-player-profile">
@@ -208,18 +227,13 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
     </> : <>
       <ProfileBanner key={query} character={bannerCharacter} ownerAvatar={!!bannerSelection}
         region={bannerSelection?.region ?? bannerProfile?.appearance.region ?? ''} realm={bannerSelection?.realm ?? bannerProfile?.realm ?? ''} profile={profile} />
-      {availableSeasons.length > 0 && <div className="leaderboard-profile-season">
-        <div className="player-search">
-          <select aria-label={t('leaderboardSeason')} value={selectedSeason?.id ?? ''} disabled={availableSeasons.length === 1 && !!selectedSeason}
-            onChange={event => {
-              const next = new URLSearchParams(params);
-              next.set('season', event.target.value);
-              navigate(localizedPath(pathname, language) + '?' + next, { preventScrollReset: true });
-            }}>
-            {!selectedSeason && <option value="" disabled>{t('leaderboardSeason')}</option>}
-            {availableSeasons.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
-          </select>
-        </div>
+      {(availableSeasons.length > 0 || upcomingSeason) && <div className="leaderboard-profile-season">
+        <SeasonPicker seasons={availableSeasons} selected={selectedSeason} upcoming={upcomingSeason}
+          onChange={id => {
+            const next = new URLSearchParams(params);
+            next.set('season', id);
+            navigate(localizedPath(pathname, language) + '?' + next, { preventScrollReset: true });
+          }} />
         {selectedSeason && <span className="demo-note">{t(selectedSeason.subjectType === 'ACCOUNT' ? 'leaderboardAccountSeason' : 'leaderboardCharacterSeason')}</span>}
         {localStandings && <span className="demo-badge">{t('leaderboardLocal')}</span>}
       </div>}

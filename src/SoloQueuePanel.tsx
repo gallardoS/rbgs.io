@@ -29,12 +29,14 @@ export function SoloQueuePanel({premade=false,roomDetails,showRoom=true}:{premad
     {status.ticket?.state==='QUEUED'&&<div className="solo-queue-search" role="status"><p>{t('soloQueueSearching')} · {elapsed}s</p>
       <button disabled={queue.busy || premade && !status.canControl} onClick={()=>void queue.cancel()}>{t('soloQueueCancel')}</button>{premade&&!status.canControl&&<p>{t('playLeaderStartsMatch')}</p>}</div>}
     {showRoom&&status.room&&<QueueRoomCard room={status.room}>
-      {status.room.status==='PREPARING'&&!roomDetails&&<p>{t(status.simulation?'premadeLabPrepared':'soloQueuePreparingHelp')}</p>}
+      {status.room.status==='PREPARING'&&!roomDetails&&<p>{t(status.room.preseasonPreview ? 'preseasonRoomHelp'
+        : status.simulation ? 'premadeLabPrepared' : 'soloQueuePreparingHelp')}</p>}
       {status.room.status==='PREPARING'&&!status.simulation&&status.matchId&&<p>
         <Link to={'/match-history?match='+encodeURIComponent(status.matchId)}>{t('premadeOpenMatch')}</Link>{' · '}
         <a href="rbgs-companion://matches">{t('premadeOpenCompanion')}</a>
       </p>}
-      {status.room.status==='CANCELLED'&&<p>{t('soloQueueCancelledHelp')}</p>}
+      {status.room.status==='CANCELLED'&&<p>{t(status.room.cancellationReason === 'PRESEASON_PREVIEW_COMPLETE'
+        ? 'preseasonCompleteHelp' : 'soloQueueCancelledHelp')}</p>}
       {roomDetails}
     </QueueRoomCard>}
   </section>;
@@ -43,7 +45,8 @@ export function SoloQueuePanel({premade=false,roomDetails,showRoom=true}:{premad
 export function QueueRoomCard({room,children}:{room:QueueRoom;children:ReactNode}) {
   const {t}=useLocale();
   return <div className="solo-queue-room">
-    <h2>{t(roomTitles[room.status])}</h2>
+    <h2>{t(room.cancellationReason === 'PRESEASON_PREVIEW_COMPLETE' ? 'preseasonComplete'
+      : room.preseasonPreview && room.status === 'PREPARING' ? 'preseasonRoomTitle' : roomTitles[room.status])}</h2>
     {children}
     <div className="solo-queue-teams">{[room.teamA,room.teamB].map((team,index)=><div key={index}><h3>{t('soloQueueTeam')} {index?'B':'A'}</h3>
       <ul>{team.map(m=><li key={m.accountId}><span>{m.captain?'♛ ':''}{m.name}</span><span>{m.role}</span><span>{m.accepted?'✓':'—'}</span></li>)}</ul></div>)}</div>

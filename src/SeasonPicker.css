@@ -1,0 +1,11 @@
+.season-picker { position: relative; min-width: 10rem; }
+.season-picker summary { display: flex; align-items: center; justify-content: space-between; gap: .7rem; padding: .4rem .65rem; min-height: 2.25rem; border: 1px solid #596060; border-radius: .4rem; background: #111414; color: #fafaf6; cursor: pointer; list-style: none; }
+.season-picker summary::-webkit-details-marker { display: none; }
+.season-picker summary::after { content: ""; width: .4rem; height: .4rem; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-.12rem) rotate(45deg); }
+.season-picker[open] summary::after { transform: translateY(.12rem) rotate(225deg); }
+.season-picker .season-picker-options { position: absolute; top: calc(100% + .25rem); left: 0; z-index: 5; width: max-content; min-width: 100%; max-width: calc(100vw - 2rem); margin: 0; padding: .35rem; list-style: none; border: 1px solid #596060; border-radius: .5rem; background: #111414; color: #fafaf6; box-shadow: 0 12px 36px #0008; }
+.season-picker-options button, .season-picker-upcoming { display: flex; align-items: center; justify-content: space-between; gap: .6rem; width: 100%; min-height: 36px; padding: .5rem .55rem; border: 0; border-radius: .3rem; background: transparent; color: #fafaf6; text-align: left; font-size: .8rem; font-weight: 500; }
+.season-picker-options button:hover, .season-picker-options button:focus-visible { background: #ffffff0c; }
+.season-picker-options button[aria-pressed=true] { color: #facc15; }
+.season-picker-upcoming { color: #aeb5ad; }
+.coming-soon-label { font-size: .6rem; font-weight: 400; white-space: nowrap; color: #8f9992; }

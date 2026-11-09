@@ -6,7 +6,7 @@ import { playMatchReadySound, prepareMatchReadySound } from './match-ready-sound
 export type QueueMember = { accountId: string; name: string; role: 'FC' | 'HEALER' | 'DPS'; captain: boolean; accepted: boolean };
 export type QueueRoom = { id: string; source: 'SIMULATION' | 'FOREVER'; status: 'PROPOSED' | 'PREPARING' | 'CANCELLED' | 'PLAYING' | 'AWAITING_EVIDENCE' | 'UNDER_REVIEW' | 'RESOLVED';
   acceptanceDeadline: string; preparationDeadline: string | null; cancellationReason: string | null;
-  version: number; teamA: QueueMember[]; teamB: QueueMember[] };
+  version: number; teamA: QueueMember[]; teamB: QueueMember[]; preseasonPreview?: boolean };
 
 export function MatchReadyDialog({ room, accountId, serverTime, busy, onRespond, testControls, error }: {
   room: QueueRoom | null; accountId: string | null; serverTime: string; busy: boolean;
@@ -42,6 +42,7 @@ export function MatchReadyDialog({ room, accountId, serverTime, busy, onRespond,
     onCancel={event=>event.preventDefault()}>
     <h2 id={id + "-title"}>{t('matchReadyTitle')}</h2>
     <p id={id + "-description"}>{t(members.length === 1 ? 'testerConfirmIndividual' : own?.accepted ? 'matchReadyWaiting' : 'matchReadyConfirm')}</p>
+    {room?.preseasonPreview && <p>{t('preseasonQueueHelp')}</p>}
     <div className="match-ready-clock">
       <svg className="match-ready-ring" viewBox="0 0 128 128" aria-hidden="true">
         <circle className="match-ready-ring-track" cx="64" cy="64" r="62.5" />
