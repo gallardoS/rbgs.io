@@ -6,6 +6,8 @@ import { languageLocales, localizedPath } from './locale-routing';
 import { CharacterAvatar, CharacterIcons, PlayerCard, playableClassFromToken, type Character } from './PlayerCard';
 import { PlayerCardPopover } from './PlayerCardPopover';
 import { localStandings, standingsApi, standingsEnabled } from './leaderboard-config';
+import { useLobbySession } from './LobbySession';
+import { playerProfilePath } from './player-profile-path';
 import { ratingTier } from './rating-tier';
 import './LeaderboardProfile.css';
 
@@ -120,6 +122,16 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
   const { region, realm, name } = useParams();
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const lobby = useLobbySession();
+  const group = lobby?.group;
+  const namedPath = playerProfilePath(region, realm, name)?.toLowerCase();
+  // A character with no public rating can still be viewed by their current lobby.
+  const lobbyMatches = namedPath && group?.members.filter(member =>
+    playerProfilePath(group.region, member.realm, member.characterName)?.toLowerCase() === namedPath);
+  const lobbyMember = lobbyMatches && lobbyMatches.length === 1 ? lobbyMatches[0] : undefined;
+  const rosterCharacter = group && lobbyMember?.characterName && lobbyMember.realm ? {
+    name: lobbyMember.characterName, region: group.region, realm: lobbyMember.realm, character: lobbyMember.character ?? null,
+  } : undefined;
   const season = params.get('season')?.toLowerCase() ?? '';
   const character = params.get('character') ?? '';
   const request = new URLSearchParams();
@@ -144,8 +156,9 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
   const profile = loaded?.query === query && failedQuery !== query ? loaded.profile : undefined;
   const lastProfile = loaded?.identity === identity ? loaded.profile : undefined;
   const isLoading = !!query && !profile && failedQuery !== query;
+  const isWaitingForLobby = !!namedPath && lobby?.loading;
   const loadMessage = isLoading ? 'leaderboardProfileLoading'
-    : query && !profile && (!selected || !!season) ? 'leaderboardProfileUnavailable' : 'leaderboardProfileNoRating';
+    : query && !profile && (!(selected || rosterCharacter) || !!season) ? 'leaderboardProfileUnavailable' : 'leaderboardProfileNoRating';
   const requestedQueue = params.get('queue');
   const queue = requestedQueue === 'premade' || (!requestedQueue && !profile?.solo && profile?.premade) ? 'premade' : 'solo';
 
@@ -177,7 +190,8 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
   const locale = languageLocales[language];
   const date = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
   const bannerProfile = profile ?? lastProfile;
-  const bannerCharacter = selected ? { ...selected.character, name: selected.name } : bannerProfile && {
+  const bannerSelection = selected ?? (bannerProfile ? undefined : rosterCharacter);
+  const bannerCharacter = bannerSelection ? { ...bannerSelection.character, name: bannerSelection.name } : bannerProfile && {
     name: bannerProfile.name,
     playable_class: playableClassFromToken(bannerProfile.appearance.characterClass),
     playable_race: bannerProfile.appearance.race ? { name: bannerProfile.appearance.race } : undefined,
@@ -190,10 +204,10 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
   return <main className="content leaderboard-page info-page leaderboard-player-profile">
     {!bannerCharacter ? <>
       <h1>{t('leaderboardViewProfile')}</h1>
-      <p role="status">{t(isLoading ? 'leaderboardProfileLoading' : 'leaderboardProfileUnavailable')}</p>
+      <p role="status">{t(isLoading || isWaitingForLobby ? 'leaderboardProfileLoading' : 'leaderboardProfileUnavailable')}</p>
     </> : <>
-      <ProfileBanner key={query} character={bannerCharacter} owner={!!selected}
-        region={selected?.region ?? bannerProfile?.appearance.region ?? ''} realm={selected?.realm ?? bannerProfile?.realm ?? ''} profile={profile} />
+      <ProfileBanner key={query} character={bannerCharacter} ownerAvatar={!!bannerSelection}
+        region={bannerSelection?.region ?? bannerProfile?.appearance.region ?? ''} realm={bannerSelection?.realm ?? bannerProfile?.realm ?? ''} profile={profile} />
       {availableSeasons.length > 0 && <div className="leaderboard-profile-season">
         <div className="player-search">
           <select aria-label={t('leaderboardSeason')} value={selectedSeason?.id ?? ''} disabled={availableSeasons.length === 1 && !!selectedSeason}
@@ -274,9 +288,9 @@ export function LeaderboardProfile({ selected }: { selected?: SelectedCharacter 
   </main>;
 }
 
-function ProfileBanner({ character, region, realm, profile, owner }: {
+function ProfileBanner({ character, region, realm, profile, ownerAvatar }: {
   character: Pick<Character, 'name'> & Partial<Character>; region: string; realm: string;
-  profile?: Profile | null; owner: boolean;
+  profile?: Profile | null; ownerAvatar: boolean;
 }) {
   const { t } = useLocale();
   region = region === 'US' ? 'NA' : region;
@@ -284,7 +298,7 @@ function ProfileBanner({ character, region, realm, profile, owner }: {
   const games = (profile?.solo?.games ?? 0) + (profile?.premade?.games ?? 0);
   const wins = (profile?.solo?.wins ?? 0) + (profile?.premade?.wins ?? 0);
   return <header className="leaderboard-profile-banner">
-    <CharacterAvatar character={character} ownerAvatar={owner} />
+    <CharacterAvatar character={character} ownerAvatar={ownerAvatar} />
     <div className="leaderboard-banner-identity">
       <h1>{character.name}</h1>
       <p className="leaderboard-banner-realm">{realm}</p>
@@ -293,7 +307,7 @@ function ProfileBanner({ character, region, realm, profile, owner }: {
     <CharacterIcons character={character} />
     <PlayerCardPopover triggerClassName="leaderboard-banner-trigger" placement="pointer"
       triggerLabel={t('leaderboardShowCard').replace('{name}', character.name)}
-      card={<PlayerCard compact tilt character={character} ownerAvatar={owner} locationLabel={`${region} · ${realm}`}
+      card={<PlayerCard compact tilt character={character} ownerAvatar={ownerAvatar} locationLabel={`${region} · ${realm}`}
         competitive={{
           solo: profile?.solo?.rating,
           premade: profile?.premade?.rating,

@@ -53,13 +53,12 @@ for (const [path, title] of Object.entries(titles)) {
 // Valid app routes need their own entry points once 404.html disables SPA fallback.
 for (const language of languages) {
   const prefix = language === 'en' ? '' : `/${language}`;
-  if (publicLeaderboard) {
-    const shell = template.replace('<html lang="en">', `<html lang="${language}">`)
-      .replace('content="index, follow"', 'content="noindex, follow"');
-    await writeFile(new URL(`../dist${prefix}/profile-shell.html`, import.meta.url), shell);
-    await appendFile(new URL('../dist/_redirects', import.meta.url),
-      `\n${prefix}/player/:region/:realm/:name ${prefix}/profile-shell 200\n${prefix}/leaderboard/player ${prefix}/profile-shell 200\n`);
-  }
+  const shell = template.replace('<html lang="en">', `<html lang="${language}">`)
+    .replace('content="index, follow"', 'content="noindex, follow"');
+  await writeFile(new URL(`../dist${prefix}/profile-shell.html`, import.meta.url), shell);
+  await appendFile(new URL('../dist/_redirects', import.meta.url),
+    `\n${prefix}/player/:region/:realm/:name ${prefix}/profile-shell 200\n`
+      + (publicLeaderboard ? `${prefix}/leaderboard/player ${prefix}/profile-shell 200\n` : ''));
   for (const route of internalRoutes) {
     const path = prefix + route;
     const html = template

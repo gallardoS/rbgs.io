@@ -1,13 +1,16 @@
 import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { CaptainCrown } from './CaptainConsent';
 import type { GroupLobby, GroupMember } from './GroupPage';
+import { Link } from './LocalizedLink';
 import { useLocale } from './locales';
+import { playerProfilePath } from './player-profile-path';
 
 export function LobbyMemberMenu({ id, anchorRef, member, lobby, onOpenChange }: {
   id: string; anchorRef: RefObject<HTMLButtonElement | null>; member: GroupMember;
   lobby: GroupLobby; onOpenChange: (open: boolean) => void;
 }) {
   const { t } = useLocale();
+  const profilePath = playerProfilePath(lobby.group?.region, member.realm, member.characterName);
   const titleId = useId();
   const menuRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -33,7 +36,7 @@ export function LobbyMemberMenu({ id, anchorRef, member, lobby, onOpenChange }: 
   }, [open, anchorRef, lobby.captain, lobby.busy, lobby.error, attempted, member.characterName, member.displayName]);
 
   useLayoutEffect(() => {
-    if (open && positioned) menuRef.current?.querySelector<HTMLButtonElement>('[role=menuitem]')?.focus({ preventScroll: true });
+    if (open && positioned) menuRef.current?.querySelector<HTMLElement>('[role=menuitem]')?.focus({ preventScroll: true });
   }, [open, positioned]);
 
   function close() {
@@ -45,7 +48,7 @@ export function LobbyMemberMenu({ id, anchorRef, member, lobby, onOpenChange }: 
     if (event.key === 'Tab') { close(); return; }
     if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
-    const items = [...event.currentTarget.querySelectorAll<HTMLButtonElement>('[role=menuitem]:not(:disabled)')];
+    const items = [...event.currentTarget.querySelectorAll<HTMLElement>('[role=menuitem]:not(:disabled)')];
     if (!items.length) return;
     const current = items.findIndex(item => item === document.activeElement);
     const index = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1
@@ -74,9 +77,13 @@ export function LobbyMemberMenu({ id, anchorRef, member, lobby, onOpenChange }: 
       if (!visible) { setPosition(null); setAttempted(false); }
     }}>
     <strong id={titleId} className="lobby-member-menu-title">{member.characterName ?? member.displayName}</strong>
-    <button type="button" role="menuitem" tabIndex={-1} aria-disabled="true">
-      <MemberMenuIcon kind="profile" /><span>{t('playViewProfile')}</span><small>{t('playComingSoon')}</small>
-    </button>
+    {profilePath
+      ? <Link to={profilePath + '?queue=premade'} role="menuitem" tabIndex={-1} onClick={close}>
+        <MemberMenuIcon kind="profile" /><span>{t('playViewProfile')}</span>
+      </Link>
+      : <button type="button" role="menuitem" tabIndex={-1} aria-disabled="true">
+        <MemberMenuIcon kind="profile" /><span>{t('playViewProfile')}</span>
+      </button>}
     <button type="button" role="menuitem" tabIndex={-1} aria-disabled="true">
       <MemberMenuIcon kind="friend" /><span>{t('playAddFriend')}</span><small>{t('playComingSoon')}</small>
     </button>

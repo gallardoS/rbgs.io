@@ -8,6 +8,7 @@ import { useSearchParams } from 'react-router-dom';
 import { ArrowIcon } from './ArrowIcon';
 import { localStandings, standingsApi, standingsEnabled } from './leaderboard-config';
 import { ratingTier } from './rating-tier';
+import { playerProfilePath } from './player-profile-path';
 
 const classColors = {
   Druid: '#ff9c45',
@@ -139,11 +140,8 @@ function StandingIdentity({ player }: { player: Entry }) {
 function playerProfileHref(player: Entry, queue: Queue, season?: string | null) {
   if (!season || !player.profileRef) return undefined;
   const params = new URLSearchParams({ season, queue });
-  if (player.uniqueName && player.region && player.realm
-    && [player.realm, player.name].every(segment => segment !== '.' && segment !== '..' && !/[%/\\]/.test(segment))) {
-    const path = [player.region.toLowerCase(), player.realm, player.name].map(encodeURIComponent).join('/');
-    return '/player/' + path + '?' + params;
-  }
+  const path = player.uniqueName && playerProfilePath(player.region, player.realm, player.name);
+  if (path) return path + '?' + params;
   params.set('character', player.profileRef);
   return '/leaderboard/player?' + params;
 }

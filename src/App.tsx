@@ -179,8 +179,8 @@ function AppContent() {
     const homepage = localizedPath('/', language) as keyof typeof pageTitles;
     const isPublicPage = Object.hasOwn(pageTitles, pathname);
     const isKnownRoute = Object.hasOwn(pageTitles, pathname) || internalRoutes.includes(basePath(pathname)) || basePath(pathname) === '/how-it-works';
-    const isPlayerProfile = standingsEnabled && (basePath(pathname) === '/leaderboard/player'
-      || /^\/player\/[^/]+\/[^/]+\/[^/]+$/.test(basePath(pathname)));
+    const isPlayerProfile = /^\/player\/[^/]+\/[^/]+\/[^/]+$/.test(basePath(pathname))
+      || (standingsEnabled && basePath(pathname) === '/leaderboard/player');
     const title = isPlayerProfile ? `${t('leaderboardViewProfile')} | rbgs.io`
       : basePath(pathname) === '/account' ? `${t('navigationProfile')} | rbgs.io`
       : basePath(pathname) === '/match-history' ? `${t('navigationHistory')} | rbgs.io`
@@ -266,7 +266,7 @@ function AppContent() {
       <Routes location={{ ...location, pathname: basePath(location.pathname) }}><Route path="/" element={<Home {...session} />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         {standingsEnabled && <Route path="/leaderboard/player" element={<LeaderboardProfile />} />}
-        {standingsEnabled && <Route path="/player/:region/:realm/:name" element={<LeaderboardProfile />} />}
+        <Route path="/player/:region/:realm/:name" element={<LeaderboardProfile />} />
         <Route path="/downloads" element={<InfoPage heading="navigationDownloads" introduction="downloadsIntro"><div className="info-grid">
           <article><h2>{t('companionHeading')}</h2><p>{t('companionDescription')}</p>
             {session.profile && ['TESTER', 'MODERATOR', 'ADMIN'].includes(session.profile.role)
