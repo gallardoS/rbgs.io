@@ -91,6 +91,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
   const soloQueue = useSoloQueueSession(), premadeQueue = usePremadeQueueSession();
   const queue = premade ? premadeQueue : soloQueue;
   const queuedTicket = queue?.status?.ticket?.state === 'QUEUED' ? queue.status.ticket : null;
+  const canCancelSearch = !premade || queue?.status?.canControl === true;
   const queueBusy = !!soloQueue?.busy || !!premadeQueue?.busy;
   const queueActive = !!soloQueue?.active || !!premadeQueue?.active;
   const queueChecking = !soloQueue?.status || !premadeQueue?.status;
@@ -326,7 +327,16 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
       <div className="play-match-action">
         <div className="play-match-control">
           <CompanionStatus accountId={accountId} matchAction onLinkedDeviceChange={setCompanionDeviceId} />
-          {queuedTicket ? <button type="button" className="find-match is-queued" disabled>{t('playInQueue')}</button>
+          {queuedTicket && queue?.status ? <div className="play-queue-action">
+            {canCancelSearch && <button type="button" className="play-queue-cancel" disabled={queue.busy}
+              aria-label={t('soloQueueCancel')} title={t('soloQueueCancel')} onClick={() => void queue.cancel()}>
+              <span aria-hidden="true">×</span>
+            </button>}
+            <div className="find-match is-queued">
+              <span>{t('playInQueue')}</span>
+              <QueueElapsed key={queuedTicket.id} enteredAt={queuedTicket.enteredAt} serverTime={queue.status.serverTime} />
+            </div>
+          </div>
             : <span className="find-match-tooltip-trigger" data-tooltip-dismissed={matchTooltipDismissed} data-tooltip-open={matchTooltipOpen}
             tabIndex={hasMatchTooltip && !canFind ? 0 : undefined} aria-label={hasMatchTooltip && !canFind ? t('findMatch') : undefined}
             aria-describedby={hasMatchTooltip ? matchTooltipId : undefined}
@@ -349,12 +359,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
             </span>}
           </span>}
         </div>
-        {queuedTicket && queue?.status && <div className="play-queue-search">
-          <QueueElapsed key={queuedTicket.id} enteredAt={queuedTicket.enteredAt} serverTime={queue.status.serverTime} />
-          {(!premade || queue.status.canControl)
-            ? <button type="button" disabled={queue.busy} onClick={() => void queue.cancel()}>{t('soloQueueCancel')}</button>
-            : <p>{t('playLeaderStartsMatch')}</p>}
-        </div>}
+        {queuedTicket && !canCancelSearch && <p className="play-queue-captain-note">{t('playLeaderStartsMatch')}</p>}
         {!queuedTicket && !seasonMessage && !incompletePremade && <p id="queue-availability" className="availability" role={saved ? 'status' : undefined}>
           {t(!premade && lobby.group ? 'playLeaveForSolo' : premade && !lobby.captain ? 'playLeaderStartsMatch'
             : preseasonPreview ? 'preseasonQueueHelp' : saved ? 'selectionSavedQueuePending' : 'queuePending')}
