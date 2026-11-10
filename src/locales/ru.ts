@@ -78,6 +78,7 @@ export const messages = {
   soloQueueSeasonPending: "Сейчас нет активного соревновательного сезона.",
   soloQueueChecking: "Проверка очереди…",
   soloQueueSearching: "Поиск матча",
+  playInQueue: "В очереди...",
   soloQueueCancel: "Отменить поиск",
   soloQueuePreparing: "Подготовка матча",
   soloQueueCancelled: "Матч отменён",

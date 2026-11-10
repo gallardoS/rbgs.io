@@ -78,6 +78,7 @@ export const messages = {
   soloQueueSeasonPending: "Derzeit ist keine Wettkampfsaison aktiv.",
   soloQueueChecking: "Warteschlange wird geprüft…",
   soloQueueSearching: "Match wird gesucht",
+  playInQueue: "In der Warteschlange...",
   soloQueueCancel: "Suche abbrechen",
   soloQueuePreparing: "Matchvorbereitung",
   soloQueueCancelled: "Match abgebrochen",

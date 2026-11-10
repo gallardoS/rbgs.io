@@ -76,6 +76,7 @@ export const messages = {
   soloQueueSeasonPending: "There's no competitive season active right now.",
   soloQueueChecking: "Checking queue status…",
   soloQueueSearching: "Searching for a match",
+  playInQueue: "In queue...",
   soloQueueCancel: "Cancel search",
   soloQueuePreparing: "Preparing match",
   soloQueueCancelled: "Match cancelled",

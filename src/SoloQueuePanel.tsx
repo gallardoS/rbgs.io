@@ -16,17 +16,23 @@ export const roomTitles: Record<QueueRoom['status'], MessageKey> = {
   RESOLVED: 'premadeLabResolved',
 };
 
-export function SoloQueuePanel({premade=false,roomDetails,showRoom=true}:{premade?:boolean;roomDetails?:ReactNode;showRoom?:boolean}) {
+export function SoloQueuePanel({premade=false,roomDetails,showRoom=true,showSearch=true}:{premade?:boolean;roomDetails?:ReactNode;showRoom?:boolean;showSearch?:boolean}) {
   const solo=useSoloQueueSession(),group=usePremadeQueueSession();const queue=premade?group:solo;const {t}=useLocale();const [now,setNow]=useState(Date.now());
-  useEffect(()=>{const timer=window.setInterval(()=>setNow(Date.now()),1000);return()=>window.clearInterval(timer);},[]);
+  const searching = showSearch && queue?.status?.ticket?.state === 'QUEUED';
+  useEffect(()=>{
+    if (!searching) return;
+    setNow(Date.now());
+    const timer=window.setInterval(()=>setNow(Date.now()),1000);
+    return()=>window.clearInterval(timer);
+  },[searching]);
   if(!queue)return null;const status=queue.status;
   if(!status)return null;
   const lobbyChanged=premade&&status.ticket?.state==='CANCELLED'&&status.ticket.cancellationReason==='LOBBY_CHANGED';
-  if (!status.room && status.ticket?.state !== 'QUEUED' && !lobbyChanged) return null;
+  if (!status.room && !searching && !lobbyChanged) return null;
   const elapsed=status.ticket?Math.max(0,Math.floor((now-Date.parse(status.ticket.enteredAt))/1000)):0;
   return <section className="solo-queue-panel" aria-label={t(premade?'premadeHeading':'soloHeading')}>
     {lobbyChanged&&<p role="status" data-testid="premade-lobby-changed">{t('premadeQueueLobbyChanged')}</p>}
-    {status.ticket?.state==='QUEUED'&&<div className="solo-queue-search" role="status"><p>{t('soloQueueSearching')} · {elapsed}s</p>
+    {searching&&<div className="solo-queue-search" role="status"><p>{t('soloQueueSearching')} · {elapsed}s</p>
       <button disabled={queue.busy || premade && !status.canControl} onClick={()=>void queue.cancel()}>{t('soloQueueCancel')}</button>{premade&&!status.canControl&&<p>{t('playLeaderStartsMatch')}</p>}</div>}
     {showRoom&&status.room&&<QueueRoomCard room={status.room}>
       {status.room.status==='PREPARING'&&!roomDetails&&<p>{t(status.room.preseasonPreview ? 'preseasonRoomHelp'

@@ -90,6 +90,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
   const [saved, setSaved] = useState(false);
   const soloQueue = useSoloQueueSession(), premadeQueue = usePremadeQueueSession();
   const queue = premade ? premadeQueue : soloQueue;
+  const queuedTicket = queue?.status?.ticket?.state === 'QUEUED' ? queue.status.ticket : null;
   const queueBusy = !!soloQueue?.busy || !!premadeQueue?.busy;
   const queueActive = !!soloQueue?.active || !!premadeQueue?.active;
   const queueChecking = !soloQueue?.status || !premadeQueue?.status;
@@ -313,7 +314,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
       <LobbyActions lobby={lobby} onJoined={onJoined} characterReady={!!character} />
     </div>
     <PlayLobbyStage premade={premade} lobby={lobby} ownRole={lobby.me?.role ?? premadeRole} onSlot={openSlot}>{content}</PlayLobbyStage>
-    <SoloQueuePanel premade={premade} />
+    <SoloQueuePanel premade={premade} showSearch={false} />
     {context && <div className="play-selection-feedback">
     <MessageNotification message={error} attempt={attempt} />
     {premade && error === 'selectionSaveError' && <button type="button" disabled={!canSave} onClick={() => void saveSelection()}>{t('charactersRetry')}</button>}
@@ -321,11 +322,12 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
     <MessageNotification message={contextStale && !error ? 'selectionConflict' : null} />
     {contextStale && !error && <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('selectionReload')}</button>}
     </div>}
-    {!queueActive && <>
+    {(!queueActive || queuedTicket) && <>
       <div className="play-match-action">
         <div className="play-match-control">
           <CompanionStatus accountId={accountId} matchAction onLinkedDeviceChange={setCompanionDeviceId} />
-          <span className="find-match-tooltip-trigger" data-tooltip-dismissed={matchTooltipDismissed} data-tooltip-open={matchTooltipOpen}
+          {queuedTicket ? <button type="button" className="find-match is-queued" disabled>{t('playInQueue')}</button>
+            : <span className="find-match-tooltip-trigger" data-tooltip-dismissed={matchTooltipDismissed} data-tooltip-open={matchTooltipOpen}
             tabIndex={hasMatchTooltip && !canFind ? 0 : undefined} aria-label={hasMatchTooltip && !canFind ? t('findMatch') : undefined}
             aria-describedby={hasMatchTooltip ? matchTooltipId : undefined}
             onPointerEnter={() => setMatchTooltipDismissed(false)} onFocusCapture={() => setMatchTooltipDismissed(false)}
@@ -345,9 +347,15 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
             {hasMatchTooltip && <span id={matchTooltipId} className="captain-tooltip find-match-steps" role="tooltip">
               {matchMessages.map(message => <span key={message}>{t(message)}</span>)}
             </span>}
-          </span>
+          </span>}
         </div>
-        {!seasonMessage && !incompletePremade && <p id="queue-availability" className="availability" role={saved ? 'status' : undefined}>
+        {queuedTicket && queue?.status && <div className="play-queue-search">
+          <QueueElapsed key={queuedTicket.id} enteredAt={queuedTicket.enteredAt} serverTime={queue.status.serverTime} />
+          {(!premade || queue.status.canControl)
+            ? <button type="button" disabled={queue.busy} onClick={() => void queue.cancel()}>{t('soloQueueCancel')}</button>
+            : <p>{t('playLeaderStartsMatch')}</p>}
+        </div>}
+        {!queuedTicket && !seasonMessage && !incompletePremade && <p id="queue-availability" className="availability" role={saved ? 'status' : undefined}>
           {t(!premade && lobby.group ? 'playLeaveForSolo' : premade && !lobby.captain ? 'playLeaderStartsMatch'
             : preseasonPreview ? 'preseasonQueueHelp' : saved ? 'selectionSavedQueuePending' : 'queuePending')}
         </p>}
@@ -358,4 +366,20 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
     </>}
     {dialogs}
   </>;
+}
+
+function QueueElapsed({ enteredAt, serverTime }: { enteredAt: string; serverTime: string }) {
+  const elapsedAtSnapshot = Date.parse(serverTime) - Date.parse(enteredAt);
+  const [seconds, setSeconds] = useState(() => Math.max(0, Math.floor(elapsedAtSnapshot / 1000)));
+
+  useEffect(() => {
+    const receivedAt = performance.now();
+    const tick = () => setSeconds(previous => Math.max(previous,
+      Math.floor((elapsedAtSnapshot + performance.now() - receivedAt) / 1000)));
+    tick();
+    const timer = window.setInterval(tick, 250);
+    return () => window.clearInterval(timer);
+  }, [elapsedAtSnapshot]);
+
+  return <time role="timer" dateTime={`PT${seconds}S`}>{Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, '0')}</time>;
 }

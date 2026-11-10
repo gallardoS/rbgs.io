@@ -78,6 +78,7 @@ export const messages = {
   soloQueueSeasonPending: "Não há nenhuma temporada competitiva ativa no momento.",
   soloQueueChecking: "Verificando a fila…",
   soloQueueSearching: "Buscando partida",
+  playInQueue: "Na fila...",
   soloQueueCancel: "Cancelar busca",
   soloQueuePreparing: "Preparando partida",
   soloQueueCancelled: "Partida cancelada",

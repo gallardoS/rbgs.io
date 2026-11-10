@@ -78,6 +78,7 @@ export const messages: Record<MessageKey, string> = {
   soloQueueSeasonPending: "Aucune saison compétitive n’est active pour le moment.",
   soloQueueChecking: "Vérification de la file…",
   soloQueueSearching: "Recherche de match",
+  playInQueue: "En file d’attente...",
   soloQueueCancel: "Annuler la recherche",
   soloQueuePreparing: "Préparation du match",
   soloQueueCancelled: "Match annulé",

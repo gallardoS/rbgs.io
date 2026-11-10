@@ -270,15 +270,19 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .play-lobby .profile-card { margin-top: 0; border-color: #e6cc7750; box-shadow: 0 20px 60px #0006, 0 0 35px #facc1508; }
 .play-lobby .character-selection { width: 100%; }
 .play-match-action { max-width: 100%; text-align: center; }
-.play-match-control { display: flex; flex-direction: column; align-items: center; max-width: 100%; }
-.play-match-control .find-match { margin-top: -1px; border-top-left-radius: 0; border-top-right-radius: 0; }
+.play-match-control { display: flex; flex-direction: column; width: 220px; max-width: 100%; margin-inline: auto; }
+.play-match-control .find-match { width: 100%; margin-top: -1px; border-top-left-radius: 0; border-top-right-radius: 0; }
 .play-mode-info { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; width: min(100%, 36rem); }
 .play-mode-info details { border-top: 1px solid #ffffff20; padding: .8rem; }
 .play-mode-info summary { cursor: pointer; font-size: .85rem; color: #b6b7bb; }
 .play-mode-info p { font-size: .8rem; line-height: 1.6; color: #b6b7bb; }
 @media (max-width: 600px) { .play-lobby { padding: 2rem 0; } .play-mode-info { grid-template-columns: 1fr; gap: .25rem; } }
-.play-match-action .find-match { min-width: 220px; background: #facc15; color: #151408; border-color: transparent; font-size: 1.1rem; }
+.play-match-action .find-match { background: #facc15; color: #151408; border-color: transparent; font-size: 1.1rem; }
 .play-match-action .find-match:disabled { opacity: .45; cursor: not-allowed; }
+.play-match-action .find-match.is-queued:disabled { opacity: 1; cursor: default; }
+.play-queue-search { display: grid; justify-items: center; gap: .55rem; margin-top: .55rem; }
+.play-queue-search time { color: #e6cc77; font-variant-numeric: tabular-nums; }
+.play-queue-search p { margin: 0; }
 .play-match-action .availability { display: block; margin: .8rem 0 0; }
 .character-option-details { display: grid; gap: .2rem; min-width: 0; overflow-wrap: anywhere; }
 .character-option-details > span { font-size: .85rem; font-weight: 400; color: #b6b7bb; }

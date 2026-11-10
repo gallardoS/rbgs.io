@@ -78,6 +78,7 @@ export const messages: Record<MessageKey, string> = {
   soloQueueSeasonPending: "No hay ninguna temporada competitiva activa en este momento.",
   soloQueueChecking: "Comprobando la cola…",
   soloQueueSearching: "Buscando partida",
+  playInQueue: "En cola...",
   soloQueueCancel: "Cancelar búsqueda",
   soloQueuePreparing: "Preparando partida",
   soloQueueCancelled: "Partida cancelada",
