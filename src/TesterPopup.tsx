@@ -1,5 +1,6 @@
 import { useId, useRef, useState } from 'react';
 import { CaptureTestAdmin } from './CaptureTestAdmin';
+import { PreseasonBotTools } from './PreseasonBotTools';
 import { useLocale } from './locales';
 import './TesterPopup.css';
 
@@ -21,7 +22,7 @@ export function TesterPopup({ accountId }: { accountId: string }) {
         <h2 id={title}>{t('testerTools')}</h2>
         <button type="button" aria-label={t('notificationDismiss')} onClick={() => dialog.current?.close()}>×</button>
       </header>
-      {open && <CaptureTestAdmin accountId={accountId} tester />}
+      {open && <><PreseasonBotTools /><CaptureTestAdmin accountId={accountId} tester /></>}
     </dialog>
   </>;
 }

@@ -10,7 +10,7 @@ const Galaxy = memo(lazy<ComponentType<GalaxyProps>>(
 const starColors = ['#facc15'];
 const acceptWarpMs = 320;
 
-export type QueueMember = { accountId: string; name: string; role: 'FC' | 'HEALER' | 'DPS'; captain: boolean; accepted: boolean };
+export type QueueMember = { accountId: string; name: string; role: 'FC' | 'HEALER' | 'DPS'; captain: boolean; accepted: boolean; testBot?: boolean };
 export type QueueRoom = { id: string; source: 'SIMULATION' | 'FOREVER'; status: 'PROPOSED' | 'PREPARING' | 'CANCELLED' | 'PLAYING' | 'AWAITING_EVIDENCE' | 'UNDER_REVIEW' | 'RESOLVED';
   acceptanceDeadline: string; preparationDeadline: string | null; cancellationReason: string | null;
   version: number; teamA: QueueMember[]; teamB: QueueMember[]; preseasonPreview?: boolean };
@@ -47,6 +47,7 @@ export function MatchReadyDialog({ room, accountId, serverTime, busy, onRespond,
   const shownRoom = visibleRoom ?? room;
   const members = shownRoom ? [...shownRoom.teamA,...shownRoom.teamB] : [];
   const count = members.filter(m=>m.accepted).length;
+  const testBots = members.filter(member => member.testBot).length;
   const own = members.find(m=>m.accountId===accountId);
   useEffect(prepareMatchReadySound, []);
   useEffect(() => {
@@ -79,6 +80,7 @@ export function MatchReadyDialog({ room, accountId, serverTime, busy, onRespond,
       <h2 id={id + "-title"}>{t('matchReadyTitle')}</h2>
       <p id={id + "-description"}>{t(members.length === 1 ? 'testerConfirmIndividual' : own?.accepted ? 'matchReadyWaiting' : 'matchReadyConfirm')}</p>
       {shownRoom?.preseasonPreview && <p>{t('preseasonQueueHelp')}</p>}
+      {testBots > 0 && <p>{t('testerPreseasonBotsInMatch').replace('{count}', String(testBots))}</p>}
       <div className="match-ready-clock">
         <svg className="match-ready-ring" viewBox="0 0 128 128" aria-hidden="true">
           <circle className="match-ready-ring-track" cx="64" cy="64" r="62.5" />
