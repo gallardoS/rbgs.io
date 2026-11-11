@@ -1,4 +1,4 @@
-import { useEffect,useState,type ReactNode } from 'react';
+import { useEffect,useRef,useState,type ReactNode } from 'react';
 import { useLocale } from './locales';
 import { usePremadeQueueSession, useSoloQueueSession } from './SoloQueueSession';
 import './SoloQueuePanel.css';
@@ -19,6 +19,23 @@ export const roomTitles: Record<QueueRoom['status'], MessageKey> = {
 export function SoloQueuePanel({premade=false,roomDetails,showRoom=true,showSearch=true}:{premade?:boolean;roomDetails?:ReactNode;showRoom?:boolean;showSearch?:boolean}) {
   const solo=useSoloQueueSession(),group=usePremadeQueueSession();const queue=premade?group:solo;const {t}=useLocale();const [now,setNow]=useState(Date.now());
   const searching = showSearch && queue?.status?.ticket?.state === 'QUEUED';
+  const room = queue?.status?.room;
+  const roomId = room?.id;
+  const roomStatus = room?.status;
+  const completed = room?.status === 'CANCELLED' && room.cancellationReason === 'PRESEASON_PREVIEW_COMPLETE';
+  const preparingRoom = useRef<string | undefined>(undefined);
+  const [completionNotice, setCompletionNotice] = useState<string>();
+  useEffect(() => {
+    const previous = preparingRoom.current;
+    preparingRoom.current = roomStatus === 'PREPARING' ? roomId : undefined;
+    if (!completed || !roomId || previous !== roomId) {
+      setCompletionNotice(undefined);
+      return;
+    }
+    setCompletionNotice(roomId);
+    const timer = window.setTimeout(() => setCompletionNotice(undefined), 15_000);
+    return () => window.clearTimeout(timer);
+  }, [completed, roomId, roomStatus]);
   useEffect(()=>{
     if (!searching) return;
     setNow(Date.now());
@@ -28,21 +45,26 @@ export function SoloQueuePanel({premade=false,roomDetails,showRoom=true,showSear
   if(!queue)return null;const status=queue.status;
   if(!status)return null;
   const lobbyChanged=premade&&status.ticket?.state==='CANCELLED'&&status.ticket.cancellationReason==='LOBBY_CHANGED';
-  if (!status.room && !searching && !lobbyChanged) return null;
+  const showCompletion = showRoom && completed && completionNotice === roomId;
+  const displayedRoom = showRoom && !completed ? room : null;
+  if (!displayedRoom && !showCompletion && !searching && !lobbyChanged) return null;
   const elapsed=status.ticket?Math.max(0,Math.floor((now-Date.parse(status.ticket.enteredAt))/1000)):0;
   return <section className="solo-queue-panel" aria-label={t(premade?'premadeHeading':'soloHeading')}>
     {lobbyChanged&&<p role="status" data-testid="premade-lobby-changed">{t('premadeQueueLobbyChanged')}</p>}
     {searching&&<div className="solo-queue-search" role="status"><p>{t('soloQueueSearching')} · {elapsed}s</p>
       <button disabled={queue.busy || premade && !status.canControl} onClick={()=>void queue.cancel()}>{t('soloQueueCancel')}</button>{premade&&!status.canControl&&<p>{t('playLeaderStartsMatch')}</p>}</div>}
-    {showRoom&&status.room&&<QueueRoomCard room={status.room}>
-      {status.room.status==='PREPARING'&&!roomDetails&&<p>{t(status.room.preseasonPreview ? 'preseasonRoomHelp'
+    {showCompletion&&<div className="solo-queue-room" role="status">
+      <h2>{t('preseasonComplete')}</h2>
+      <p>{t('preseasonCompleteHelp')}</p>
+    </div>}
+    {displayedRoom&&<QueueRoomCard room={displayedRoom}>
+      {displayedRoom.status==='PREPARING'&&!roomDetails&&<p>{t(displayedRoom.preseasonPreview ? 'preseasonRoomHelp'
         : status.simulation ? 'premadeLabPrepared' : 'soloQueuePreparingHelp')}</p>}
-      {status.room.status==='PREPARING'&&!status.simulation&&status.matchId&&<p>
+      {displayedRoom.status==='PREPARING'&&!status.simulation&&status.matchId&&<p>
         <Link to={'/match-history?match='+encodeURIComponent(status.matchId)}>{t('premadeOpenMatch')}</Link>{' · '}
         <a href="rbgs-companion://matches">{t('premadeOpenCompanion')}</a>
       </p>}
-      {status.room.status==='CANCELLED'&&<p>{t(status.room.cancellationReason === 'PRESEASON_PREVIEW_COMPLETE'
-        ? 'preseasonCompleteHelp' : 'soloQueueCancelledHelp')}</p>}
+      {displayedRoom.status==='CANCELLED'&&<p>{t('soloQueueCancelledHelp')}</p>}
       {roomDetails}
     </QueueRoomCard>}
   </section>;
