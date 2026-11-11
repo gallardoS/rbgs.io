@@ -539,6 +539,7 @@ export const messages: Record<MessageKey, string> = {
   navigationHistory: 'Historique des matchs',
   navigationGroup: 'Mon groupe',
   navigationSettings: 'Paramètres',
+  navigationCustomizeCard: 'Personnaliser la carte',
   historyIntro: 'Vos matchs SoloQ et en groupe prédéfini, leurs résultats et l’évolution de votre cote.',
   historyPending: "En attente",
   groupIntro: 'Organisez votre groupe prédéfini de dix joueurs et désignez un capitaine.',

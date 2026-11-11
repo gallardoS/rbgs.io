@@ -539,6 +539,7 @@ export const messages = {
   navigationHistory: "Spielverlauf",
   navigationGroup: "Meine Gruppe",
   navigationSettings: "Einstellungen",
+  navigationCustomizeCard: 'Karte anpassen',
   historyIntro: "Deine SoloQ- und Premade-Spiele, Ergebnisse und Wertungsänderungen.",
   historyPending: "Ausstehend",
   groupIntro: "Organisiere dein Premade mit zehn Spielern und bestimme einen Kapitän.",

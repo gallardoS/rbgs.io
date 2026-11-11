@@ -537,6 +537,7 @@ export const messages = {
   navigationHistory: 'Match history',
   navigationGroup: 'My group',
   navigationSettings: 'Settings',
+  navigationCustomizeCard: 'Customize card',
   historyIntro: 'Your SoloQ and premade matches, results, and rating changes.',
   historyPending: "Pending",
   groupIntro: 'Organize your ten-player premade and designate a captain.',

@@ -539,6 +539,7 @@ export const messages = {
   navigationHistory: "История матчей",
   navigationGroup: "Моя группа",
   navigationSettings: "Настройки",
+  navigationCustomizeCard: 'Настроить карточку',
   historyIntro: "Ваши матчи SoloQ и готовых групп, результаты и изменения рейтинга.",
   historyPending: "В ожидании",
   groupIntro: "Организуйте готовую группу из десяти игроков и назначьте капитана.",

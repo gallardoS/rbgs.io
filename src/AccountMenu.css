@@ -17,8 +17,10 @@
 .account-menu-links { display: grid; gap: .15rem; padding-block: .5rem; }
 .account-menu .account-menu-item { display: flex; align-items: center; gap: .75rem; padding: .7rem .75rem; border-radius: .45rem; color: #d5dbd3; font-size: .85rem; line-height: 1.4; text-decoration: none; }
 .account-menu-item svg { flex-shrink: 0; color: #9ca797; }
-.account-menu .account-menu-item:hover { color: #fafaf6; background: #facc150b; }
-.account-menu-item:hover svg { color: #facc15; }
+.account-menu .account-menu-item:hover:not(:disabled) { color: #fafaf6; background: #facc150b; }
+.account-menu-item:hover:not(:disabled) svg { color: #facc15; }
+.account-menu .account-menu-item:disabled { border: 0; background: transparent; color: #aeb5ad; box-shadow: none; cursor: default; text-align: start; }
+.account-menu-item .coming-soon-label { margin-inline-start: auto; }
 .account-menu .account-menu-item:focus-visible, .account-menu .account-menu-logout:focus-visible { outline: 2px solid #facc15; outline-offset: -2px; }
 .account-menu-footer { display: flex; justify-content: flex-end; padding: .5rem 0 0; border-top: 1px solid #ffffff12; }
 .account-menu .account-menu-logout { display: inline-flex; align-items: center; gap: .5rem; min-height: 38px; padding: .55rem .75rem; border: 0; border-radius: .45rem; background: transparent; color: #f07c7c; font-size: .8rem; font-weight: 600; box-shadow: none; }

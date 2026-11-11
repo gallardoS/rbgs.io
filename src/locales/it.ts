@@ -539,6 +539,7 @@ export const messages = {
   navigationHistory: "Cronologia partite",
   navigationGroup: "Il mio gruppo",
   navigationSettings: "Impostazioni",
+  navigationCustomizeCard: 'Personalizza scheda',
   historyIntro: "Le tue partite SoloQ e Premade, i risultati e le variazioni della valutazione.",
   historyPending: "In attesa",
   groupIntro: "Organizza il tuo Premade di dieci giocatori e designa un capitano.",

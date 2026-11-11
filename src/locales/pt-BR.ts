@@ -539,6 +539,7 @@ export const messages = {
   navigationHistory: "Histórico de partidas",
   navigationGroup: "Meu grupo",
   navigationSettings: "Configurações",
+  navigationCustomizeCard: 'Personalizar cartão',
   historyIntro: "Suas partidas SoloQ e de grupo fechado, resultados e alterações na pontuação.",
   historyPending: "Pendente",
   groupIntro: "Organize seu grupo fechado de dez jogadores e escolha um capitão.",

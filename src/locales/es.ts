@@ -597,6 +597,7 @@ export const messages: Record<MessageKey, string> = {
   navigationHistory: 'Historial de partidas',
   navigationGroup: 'Mi grupo',
   navigationSettings: 'Ajustes',
+  navigationCustomizeCard: 'Personalizar tarjeta',
   historyIntro: 'Tus partidas de SoloQ y Premades, resultados y cambios de puntuación.',
   historyPending: "Pendiente",
   groupIntro: 'Organiza tu grupo de diez jugadores y elige un capitán.',

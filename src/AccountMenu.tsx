@@ -72,6 +72,11 @@ export function AccountMenu({ accountId, displayName, onLogout }: {
       <div className="account-menu-links">
         <Link className="account-menu-item" to="/account"><MenuIcon>{profileIcon}</MenuIcon><span>{t('navigationProfile')}</span></Link>
         <Link className="account-menu-item" to="/match-history"><MenuIcon><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7M12 7v5l3 2" /></MenuIcon><span>{t('navigationHistory')}</span></Link>
+        <button type="button" className="account-menu-item" disabled>
+          <MenuIcon><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="8.5" cy="10" r="1.5" /><path d="M6 15h5m3-5h4m-4 4h4" /></MenuIcon>
+          <span>{t('navigationCustomizeCard')}</span>
+          <small className="coming-soon-label">{t('playComingSoon')}</small>
+        </button>
         <Link className="account-menu-item" to="/settings"><MenuIcon><path d="M4 7h16M4 17h16" /><circle cx="9" cy="7" r="3" fill="currentColor" stroke="none" /><circle cx="15" cy="17" r="3" fill="currentColor" stroke="none" /></MenuIcon><span>{t('navigationSettings')}</span></Link>
       </div>
       <div className="account-menu-footer">
