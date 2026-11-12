@@ -341,10 +341,6 @@ p { color: #b5b5ab; font-size: 1.125rem; line-height: 1.6; }
 .profile-section-heading h2 { margin: 0 0 .65rem; font-size: 1.2rem; }
 .profile-section-heading p { margin: 0; max-width: 24rem; font-size: .9rem; line-height: 1.7; color: #b6b7bb; }
 .profile-section-heading .profile-character-notice { margin-top: 1rem; color: #e6cc77; font-size: .8rem; }
-.profile-account-details { margin: 0; display: grid; gap: 1.2rem; }
-.profile-account-details div { display: grid; gap: .4rem; }
-.profile-account-details dt { font-size: .8rem; color: #b6b7bb; }
-.profile-account-details dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 .profile-settings .character-selection { margin: 0; }
 .profile-settings .profile-card { margin-top: 0; }
 .profile-settings-note { text-align: center; font-size: .75rem; color: #b6b7bb; margin: 1rem 0 0; }

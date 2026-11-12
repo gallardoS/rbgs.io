@@ -83,42 +83,44 @@ export function DeviceSettings({accountId}:{accountId:string}) {
   const active = devices?.filter(device => device.revokedAt === null && Date.parse(device.expiresAt) > Date.now()) ?? [];
   const selected = active.find(device => device.id === preferred) ?? (active.length === 1 && !preferred ? active[0] : undefined);
   const online = selected?.connected === true;
-  return <section className="device-settings profile-settings-section" aria-labelledby={`${id}-title`}>
-    <div className="profile-section-heading"><h2 id={`${id}-title`}>{t('devicesHeading')}</h2><p>{t('devicesDescription')}</p></div>
-    <div>
-      <BrowserPairing accountId={accountId} ready={devices!==null} onConnected={()=>setAttempt(value=>value+1)} />
+  return <section className="device-settings" aria-label={t('devicesHeading')}>
+    <BrowserPairing accountId={accountId} ready={devices!==null} onConnected={()=>setAttempt(value=>value+1)} />
+    <div className="settings-row">
+      <h2>{t('devicesHeading')}</h2>
       {online ? <p className="device-connection-status" role="status">
         <span className="companion-presence-dot is-connected" aria-hidden="true" />{t('companionPresenceConnected')}
-      </p> : devices === null && !loadFailed ? <p role="status">{t('companionPresenceChecking')}</p> : <>
-      <OpenCompanion accountId={accountId} />
-      <details className="device-manual-pairing"><summary>
+      </p> : devices === null && !loadFailed ? <p className="settings-message" role="status">{t('companionPresenceChecking')}</p>
+        : <OpenCompanion accountId={accountId} />}
+    </div>
+    {!online && (devices !== null || loadFailed) &&
+      <details className="device-manual-pairing"><summary className="settings-row">
         <span>{t('companionManualCode')}</span>
         <svg className="device-manual-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
       </summary>
       <form className="device-pair-form" onSubmit={event => { event.preventDefault(); if (/^[A-HJ-NP-Z2-9]{10}$/.test(code)) void mutate('/api/v1/device-pairings/approve', 'POST', { code, acceptCapturePermissions: true }); }}>
-        <label htmlFor={`${id}-code`}>{t('devicesCode')}</label>
-        <input id={`${id}-code`} value={code} onChange={event => setCode(event.target.value.toUpperCase().replace(/[\s-]/g, '').slice(0, 10))}
+        <div className="settings-row">
+          <label htmlFor={`${id}-code`}>{t('devicesCode')}</label>
+          <input id={`${id}-code`} value={code} onChange={event => setCode(event.target.value.toUpperCase().replace(/[\s-]/g, '').slice(0, 10))}
           maxLength={24} autoComplete="off" spellCheck={false} disabled={busy || !devices} aria-describedby={`${id}-warning`} />
+        </div>
         <p id={`${id}-warning`}>{t('devicesWarning')}</p>
         <button type="submit" disabled={busy || !devices || !/^[A-HJ-NP-Z2-9]{10}$/.test(code)}>{t('devicesApprove')}</button>
       </form>
-      </details>
-      </>}
-      {loadFailed && <p role="alert">{t('devicesLoadError')}</p>}
-      {message && <p role={error ? 'alert' : 'status'}>{t(message)}</p>}
-      {(active.length > 1 || active.length === 1 && !selected) && <label className="device-preference">
-        {t('companionDevice')}
-        <select value={selected?.id ?? ''} onChange={event => selectCompanion(accountId, event.target.value)}>
-          <option value="">{t('companionChooseDevice')}</option>
-          {active.map(device => <option key={device.id} value={device.id}>{new Date(device.createdAt).toLocaleString(language)}</option>)}
-        </select>
-      </label>}
-      {!devices ? loadFailed && <button type="button" disabled={busy} onClick={() => { setMessage(null); setAttempt(v => v + 1); }}>{t('devicesRefresh')}</button>
-        : active.length === 0 ? <p>{t('devicesEmpty')}</p>
-        : <ul className="device-list">{active.map(device => <li key={device.id}>
-          <div><strong>{t('devicesPaired')}</strong><p>{new Date(device.createdAt).toLocaleString(language)}</p></div>
-          <button className="device-disconnect" type="button" disabled={busy} onClick={() => void mutate(`/api/v1/devices/${encodeURIComponent(device.id)}`, 'DELETE', undefined, device.id)}>{t('devicesRevoke')}</button>
-        </li>)}</ul>}
-    </div>
+      </details>}
+    {loadFailed && <p role="alert">{t('devicesLoadError')}</p>}
+    {message && <p role={error ? 'alert' : 'status'}>{t(message)}</p>}
+    {(active.length > 1 || active.length === 1 && !selected) && <label className="device-preference settings-row">
+      <span>{t('companionDevice')}</span>
+      <select value={selected?.id ?? ''} onChange={event => selectCompanion(accountId, event.target.value)}>
+        <option value="">{t('companionChooseDevice')}</option>
+        {active.map(device => <option key={device.id} value={device.id}>{new Date(device.createdAt).toLocaleString(language)}</option>)}
+      </select>
+    </label>}
+    {!devices ? loadFailed && <button type="button" disabled={busy} onClick={() => { setMessage(null); setAttempt(v => v + 1); }}>{t('devicesRefresh')}</button>
+      : active.length === 0 ? <p>{t('devicesEmpty')}</p>
+      : <ul className="device-list">{active.map(device => <li className="settings-row" key={device.id}>
+        <div><strong>{t('devicesPaired')}</strong><p>{new Date(device.createdAt).toLocaleString(language)}</p></div>
+        <button className="device-disconnect" type="button" disabled={busy} onClick={() => void mutate(`/api/v1/devices/${encodeURIComponent(device.id)}`, 'DELETE', undefined, device.id)}>{t('devicesRevoke')}</button>
+      </li>)}</ul>}
   </section>;
 }

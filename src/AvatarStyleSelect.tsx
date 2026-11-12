@@ -34,11 +34,8 @@ export function AvatarStyleSelect({ accountId }: { accountId: string }) {
     return () => controller.abort();
   }, [accountId, attempt]);
 
-  return <section className="profile-settings-section" aria-labelledby={`${id}-title`}>
-    <div className="profile-section-heading">
-      <h2 id={`${id}-title`}>{t('settingsAvatar')}</h2>
-      <p>{t('settingsAvatarDescription')}</p>
-    </div>
+  return <section className="settings-row" aria-labelledby={`${id}-title`}>
+    <h2 id={`${id}-title`}>{t('settingsAvatar')}</h2>
     <div>
       <fieldset className="fc-icon-options avatar-style-options" disabled={preferenceLoading || saving}>
         <legend className="fc-icon-legend">{t('settingsAvatar')}</legend>

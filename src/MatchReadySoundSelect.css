@@ -1,7 +1,6 @@
-.match-ready-sound-select { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; margin: 1rem 0; width: 11rem; max-width: 100%; }
-.match-ready-sound-select > span { color: #d5d7cd; font-size: .9rem; }
+.match-ready-sound-select { position: relative; width: 11rem; max-width: 100%; }
 .match-ready-sound-select button { min-height: 44px; font: inherit; color: #f5f2e8; background: #171d18; cursor: pointer; }
-.match-ready-sound-select .match-ready-sound-trigger { display: flex; align-items: center; justify-content: space-between; gap: 2rem; width: 100%; box-sizing: border-box; padding: .55rem .85rem; border: 1px solid #ffffff40; border-radius: .4rem; }
+.match-ready-sound-select .match-ready-sound-trigger { display: flex; align-items: center; justify-content: space-between; gap: .5rem; width: 100%; box-sizing: border-box; padding: .55rem .85rem; border: 1px solid #ffffff40; border-radius: .4rem; }
 .match-ready-sound-menu { position: absolute; z-index: 20; top: 100%; left: 0; width: 100%; margin-top: .35rem; padding: .3rem; box-sizing: border-box; background: #171d18; border: 1px solid #ffffff40; border-radius: .5rem; box-shadow: 0 .5rem 1.5rem #0008; }
 .match-ready-sound-option { display: flex; align-items: center; gap: .4rem; border-radius: .3rem; }
 .match-ready-sound-select .match-ready-sound-preview { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; padding: .4rem; border: 0; border-radius: .3rem; background: transparent; }

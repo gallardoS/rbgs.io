@@ -4,27 +4,28 @@
 .settings-navigation a:hover { color: #fafaf6; background: #ffffff0a; }
 .settings-navigation a[aria-current="page"] { border-color: #facc1540; color: #fde047; background: #facc1510; }
 .settings-navigation a:focus-visible { outline-offset: 1px; }
-.settings-panel > .profile-settings-section:first-child { padding-top: 0; border-top: 0; }
-@media (max-width: 900px) {
-  .settings-layout .profile-settings-section { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
-}
+.settings-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); align-items: center; gap: clamp(.75rem, 2vw, 1.5rem); min-height: 4rem; padding: .75rem 0; border-bottom: 1px solid #ffffff20; }
+.settings-row > :first-child { overflow-wrap: anywhere; }
+.settings-row > :last-child { justify-self: end; min-width: 0; max-width: 100%; }
+.settings-row > h2, .settings-row > span, .settings-row > dt, .settings-row > label { margin: 0; font-size: .95rem; font-weight: 600; }
+.settings-row > input[type="checkbox"] { margin: 0; accent-color: #facc15; }
+label.settings-row { cursor: pointer; }
+.settings-account-details { margin: 0; }
+.settings-account-details dd { margin: 0; overflow-wrap: anywhere; text-align: right; }
+.settings-panel .settings-message, .settings-row p { margin: .5rem 0 0; font-size: .85rem; }
+.settings-row > p.settings-message { margin: 0; }
 @media (max-width: 700px) {
   .settings-layout { grid-template-columns: minmax(0, 1fr); }
   .settings-navigation { grid-template-columns: repeat(auto-fit, minmax(min(8rem, 100%), 1fr)); }
 }
-.profile-account-options { display: grid; gap: 1.2rem; justify-items: start; }
-.profile-privacy-options { display: grid; gap: .85rem; }
-.profile-privacy-options label { display: flex; justify-content: space-between; align-items: center; gap: 1rem; cursor: pointer; }
-.profile-privacy-options input { flex-shrink: 0; accent-color: #facc15; margin: 0; }
-.profile-privacy-options p { margin: 0; color: #e6cc77; font-size: .85rem; }
-.profile-account-options h3 { margin: 0 0 .4rem; font-size: 1rem; }
-.fc-icon-options { display: flex; flex-wrap: wrap; gap: .75rem; border: 0; padding: 0; margin: 0; min-width: 0; }
+.fc-icon-options { display: flex; justify-content: flex-end; gap: .5rem; border: 0; padding: 0; margin: 0; min-width: 0; }
 .fc-icon-legend { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.fc-icon-option { display: flex; align-items: center; gap: .65rem; padding: .75rem; border: 1px solid #ffffff30; border-radius: .75rem; cursor: pointer; }
+.fc-icon-option { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; min-width: 0; min-height: 44px; padding: .5rem; border: 1px solid #ffffff30; border-radius: .5rem; cursor: pointer; font-size: .85rem; }
+.fc-icon-option span { overflow-wrap: anywhere; }
 .fc-icon-option:has(input:checked) { border-color: #facc15; background: #facc1510; }
 .fc-icon-option:has(input:focus-visible) { outline: 2px solid #facc15; outline-offset: 3px; }
 .fc-icon-option input { accent-color: #facc15; margin: 0; }
 .fc-icon-option img { flex-shrink: 0; }
-.avatar-style-option .character-avatar { width: 64px; height: 64px; border-radius: 50%; }
+.avatar-style-option .character-avatar { width: 32px; height: 32px; border-radius: 50%; }
 .avatar-style-option .character-avatar img { width: 100%; height: 100%; }
 .avatar-style-option .character-avatar.is-class-icon img { width: 18px; height: 18px; }

@@ -308,7 +308,7 @@ function AppContent() {
           ? <MatchHistory key={session.profile.id} />
           : <InfoPage heading="navigationHistory" introduction="historyIntro"><p role={session.authError ? 'alert' : 'status'}>{t(session.loading ? 'authChecking' : session.authError ? 'authError' : 'historySignIn')}</p>{!session.loading && <BattleNetLoginButton />}</InfoPage>} />
         <Route path="/my-group" element={<GroupRedirect />} />
-        <Route path="/settings" element={<InfoPage heading="navigationSettings" introduction="settingsIntro">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
+        <Route path="/settings" element={<InfoPage heading="navigationSettings">{session.loading ? <p role="status">{t('authChecking')}</p> : session.profile
           ? <Settings key={session.profile.id} accountId={session.profile.id}
             displayName={session.profile.displayName} onLogout={session.logout} /> : <BattleNetLoginButton />}</InfoPage>} />
         <Route path="/moderator" element={session.loading
