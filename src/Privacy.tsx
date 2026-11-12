@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 const storageKey = 'rbgs.privacy.v1';
-const defaults = { own: false, others: false };
+const defaults = { own: true, others: false };
 type Preferences = typeof defaults;
 type Preference = keyof Preferences;
 type PrivacyState = { preferences: Preferences; error: 'read' | 'write' | null };
@@ -47,7 +47,7 @@ export function PrivacyProvider({ children }: { children: ReactNode }) {
   }
 
   return <PrivacyContext.Provider value={{ ...state, change,
-    formatBattleTag: (value, owner) => state.preferences[owner] ? value.replace(/#\d+$/, '#••••••••') : value,
+    formatBattleTag: (value, owner) => state.preferences[owner] ? value.replace(/#\d+$/, '') : value,
   }}>{children}</PrivacyContext.Provider>;
 }
 
