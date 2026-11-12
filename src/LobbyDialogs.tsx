@@ -1,5 +1,6 @@
 import { useId, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useLocale } from './locales';
+import { usePrivacy } from './Privacy';
 import { type GroupLobby } from './GroupPage';
 
 function LobbyPopup({ dialogRef, title, children, focusClose = true, className = '' }: {
@@ -21,6 +22,7 @@ function LobbyPopup({ dialogRef, title, children, focusClose = true, className =
 
 export function useLobbyDialogs(lobby: GroupLobby, onJoined: () => void) {
   const { t } = useLocale();
+  const { formatBattleTag } = usePrivacy();
   const inviteRef = useRef<HTMLDialogElement>(null);
   const [invited, setInvited] = useState<string | null>(null);
   const openSlot = () => {
@@ -51,20 +53,20 @@ export function useLobbyDialogs(lobby: GroupLobby, onJoined: () => void) {
             <button className="lobby-primary-action" disabled={lobby.busy || (lobby.group?.members.length ?? 0) >= 10 || !lobby.battleTag.trim()}>{t('groupInvite')}</button>
           </form>
           {(lobby.group?.members.length ?? 0) >= 10 && <p>{t('groupFull')}</p>}
-          {invited && <p className="lobby-success" role="status">{t('playInviteSent')} <strong>{invited}</strong>.</p>}
+          {invited && <p className="lobby-success" role="status">{t('playInviteSent')} <strong>{formatBattleTag(invited, 'others')}</strong>.</p>}
         </>}
       <section className="lobby-pending-invitations">
         <h3>{t('playInvitations')}</h3>
         {!lobby.incoming.length && !lobby.group?.invitations.length && <p>{t('playNoInvitations')}</p>}
         {lobby.incoming.length > 0 && <section><h3>{t('groupInvitations')}</h3><ul className="lobby-invitation-list">
-          {lobby.incoming.map(item => <li key={item.id}><div><strong>{item.captainName}</strong><span>{t('groupExpires')} <time dateTime={item.expiresAt}>{lobby.expires(item.expiresAt)}</time></span></div>
+          {lobby.incoming.map(item => <li key={item.id}><div><strong>{formatBattleTag(item.captainName, 'others')}</strong><span>{t('groupExpires')} <time dateTime={item.expiresAt}>{lobby.expires(item.expiresAt)}</time></span></div>
             <div className="group-member-actions"><button disabled={lobby.busy || !!lobby.group} onClick={async () => {
               if (await lobby.action(`/api/v1/me/group-invitations/${item.id}/accept`, {})) { onJoined(); inviteRef.current?.close(); }
             }}>{t('groupAccept')}</button>
               <button disabled={lobby.busy} onClick={() => void lobby.action(`/api/v1/me/group-invitations/${item.id}/decline`, {})}>{t('groupDecline')}</button></div></li>)}
         </ul></section>}
         {!!lobby.group?.invitations.length && <section><h3>{t('playSentInvitations')}</h3><ul className="lobby-invitation-list">
-          {lobby.group.invitations.map(item => <li key={item.id}><div><strong>{item.recipientName}</strong><span>{t('groupExpires')} <time dateTime={item.expiresAt}>{lobby.expires(item.expiresAt)}</time></span></div>
+          {lobby.group.invitations.map(item => <li key={item.id}><div><strong>{formatBattleTag(item.recipientName, 'others')}</strong><span>{t('groupExpires')} <time dateTime={item.expiresAt}>{lobby.expires(item.expiresAt)}</time></span></div>
             <button disabled={lobby.busy} onClick={() => void lobby.command(`invitations/${item.id}/cancel`)}>{t('groupCancelInvite')}</button></li>)}
         </ul></section>}
       </section>

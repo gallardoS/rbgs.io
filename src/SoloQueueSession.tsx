@@ -51,7 +51,7 @@ export function validSoloQueue(value: unknown, simulation = false): value is Sol
     &&(s.room===null||validQueueRoom(s.room,simulation)
       && (s.room.status !== 'PLAYING' && !isFinishedRoom(s.room.status) || !!match));
 }
-export type QueueSession = { status: SoloQueueStatus|null; busy: boolean; error: MessageKey|null; active: boolean;
+export type QueueSession = { accountId: string; status: SoloQueueStatus|null; busy: boolean; error: MessageKey|null; active: boolean;
   refresh: ()=>Promise<void>; enter: (request:{seasonId:string;seasonVersion:number;selectionVersion:number}|{groupId:string;groupRevision:number})=>Promise<void>;
   command:(path:string,method:string,body?:unknown)=>Promise<void>;
   cancel: ()=>Promise<void>; respond:(accept:boolean)=>Promise<void> };
@@ -129,7 +129,7 @@ function ConnectedQueue({accountId,children,premade=false,simulation=false}:{acc
     }catch{commandFailed.current=true;if(mounted.current)setError(statusError);}
     finally{window.clearTimeout(timeout);if(mutation.current===controller){mutation.current=null;if(mounted.current){setBusy(false);void refresh();}}}
   }
-  const session:QueueSession={status,busy,error,active,refresh,command,enter:request=>command('','POST',request),
+  const session:QueueSession={accountId,status,busy,error,active,refresh,command,enter:request=>command('','POST',request),
     cancel:()=>latest.current?.ticket?command('/'+latest.current.ticket.id,'DELETE'):Promise.resolve(),
     respond:accept=>latest.current?.room?command('/rooms/'+latest.current.room.id+'/response','POST',{accept}):Promise.resolve()};
   return <Provider value={session}>{children}

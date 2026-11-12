@@ -1,4 +1,8 @@
 .profile-account-options { display: grid; gap: 1.2rem; justify-items: start; }
+.profile-privacy-options { display: grid; gap: .85rem; }
+.profile-privacy-options label { display: flex; justify-content: space-between; align-items: center; gap: 1rem; cursor: pointer; }
+.profile-privacy-options input { flex-shrink: 0; accent-color: #facc15; margin: 0; }
+.profile-privacy-options p { margin: 0; color: #e6cc77; font-size: .85rem; }
 .profile-account-options h3 { margin: 0 0 .4rem; font-size: 1rem; }
 .fc-icon-options { display: flex; flex-wrap: wrap; gap: .75rem; border: 0; padding: 0; margin: 0; min-width: 0; }
 .fc-icon-legend { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

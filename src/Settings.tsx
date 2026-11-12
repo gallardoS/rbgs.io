@@ -6,11 +6,13 @@ import { DeviceSettings } from './DeviceSettings';
 import { MatchReadySoundSelect } from './MatchReadySoundSelect';
 import { AvatarStyleSelect } from './AvatarStyleSelect';
 import { ProfileRegions } from './ProfileRegions';
+import { usePrivacy } from './Privacy';
 
 export function Settings({ accountId, displayName, onLogout }: {
   accountId: string; displayName: string; onLogout: () => Promise<void>;
 }) {
   const { t } = useLocale();
+  const { preferences, error, change, formatBattleTag } = usePrivacy();
   const { icon, setIcon } = useFcIconPreference(accountId);
   const groupId = useId();
   return <div className="profile-settings">
@@ -21,7 +23,7 @@ export function Settings({ accountId, displayName, onLogout }: {
       </div>
       <div className="profile-account-options">
         <dl className="profile-account-details">
-          <div><dt>Battle.net</dt><dd>{displayName}</dd></div>
+          <div><dt>Battle.net</dt><dd>{formatBattleTag(displayName, 'own')}</dd></div>
           <div><dt>{t('profileRegion')}</dt><dd><ProfileRegions accountId={accountId} /></dd></div>
         </dl>
         <div className="profile-section-heading">
@@ -29,6 +31,23 @@ export function Settings({ accountId, displayName, onLogout }: {
           <p>{t('profileSessionDescription')}</p>
         </div>
         <button type="button" onClick={() => void onLogout()}>{t('logout')}</button>
+      </div>
+    </section>
+    <section className="profile-settings-section" aria-labelledby={`${groupId}-privacy`}>
+      <div className="profile-section-heading">
+        <h2 id={`${groupId}-privacy`}>{t('settingsPrivacy')}</h2>
+        <p>{t('settingsPrivacyDescription')}</p>
+      </div>
+      <div className="profile-privacy-options">
+        <label>
+          <span>{t('settingsPrivacyOwn')}</span>
+          <input type="checkbox" checked={preferences.own} onChange={event => change('own', event.target.checked)} />
+        </label>
+        <label>
+          <span>{t('settingsPrivacyOthers')}</span>
+          <input type="checkbox" checked={preferences.others} onChange={event => change('others', event.target.checked)} />
+        </label>
+        {error && <p role="alert">{t(error === 'read' ? 'settingsPrivacyReadError' : 'settingsPrivacyWriteError')}</p>}
       </div>
     </section>
     <section className="profile-settings-section" aria-labelledby={`${groupId}-title`}>

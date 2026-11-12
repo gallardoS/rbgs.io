@@ -3,6 +3,7 @@ import { CaptainCrown } from './CaptainConsent';
 import type { GroupLobby, GroupMember } from './GroupPage';
 import { Link } from './LocalizedLink';
 import { useLocale } from './locales';
+import { usePrivacy } from './Privacy';
 import { playerProfilePath } from './player-profile-path';
 
 export function LobbyMemberMenu({ id, anchorRef, member, lobby, onOpenChange }: {
@@ -10,6 +11,8 @@ export function LobbyMemberMenu({ id, anchorRef, member, lobby, onOpenChange }: 
   lobby: GroupLobby; onOpenChange: (open: boolean) => void;
 }) {
   const { t } = useLocale();
+  const { formatBattleTag } = usePrivacy();
+  const memberName = member.characterName ?? formatBattleTag(member.displayName, member.accountId === lobby.accountId ? 'own' : 'others');
   const profilePath = playerProfilePath(lobby.group?.region, member.realm, member.characterName);
   const titleId = useId();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -33,7 +36,7 @@ export function LobbyMemberMenu({ id, anchorRef, member, lobby, onOpenChange }: 
     window.addEventListener('resize', place);
     window.addEventListener('scroll', place, true);
     return () => { window.removeEventListener('resize', place); window.removeEventListener('scroll', place, true); };
-  }, [open, anchorRef, lobby.captain, lobby.busy, lobby.error, attempted, member.characterName, member.displayName]);
+  }, [open, anchorRef, lobby.captain, lobby.busy, lobby.error, attempted, memberName]);
 
   useLayoutEffect(() => {
     if (open && positioned) menuRef.current?.querySelector<HTMLElement>('[role=menuitem]')?.focus({ preventScroll: true });
@@ -76,7 +79,7 @@ export function LobbyMemberMenu({ id, anchorRef, member, lobby, onOpenChange }: 
       setOpen(visible); onOpenChange(visible);
       if (!visible) { setPosition(null); setAttempted(false); }
     }}>
-    <strong id={titleId} className="lobby-member-menu-title">{member.characterName ?? member.displayName}</strong>
+    <strong id={titleId} className="lobby-member-menu-title">{memberName}</strong>
     {profilePath
       ? <Link to={profilePath + '?queue=premade'} role="menuitem" tabIndex={-1} onClick={close}>
         <MemberMenuIcon kind="profile" /><span>{t('playViewProfile')}</span>

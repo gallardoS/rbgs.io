@@ -18,6 +18,7 @@ import { SeasonSelection } from './SeasonSelection';
 import { AuthenticatedLobby } from './LobbySession';
 import { AuthenticatedPremadeQueue, AuthenticatedSoloQueue } from './SoloQueueSession';
 import { Settings } from './Settings';
+import { PrivacyProvider } from './Privacy';
 import { AccountMenu } from './AccountMenu';
 import { AvatarPreferenceProvider } from './avatar-preference';
 import { ModeratorMatches } from './ModeratorMatches';
@@ -160,6 +161,10 @@ function NotFound() {
 }
 
 export function App() {
+  return <PrivacyProvider><AppRoutes /></PrivacyProvider>;
+}
+
+function AppRoutes() {
   const location = useLocation();
   if (import.meta.env.DEV && basePath(location.pathname) === '/premade-lab') return <FloatingNotificationsProvider><PremadeQueueLabPage /></FloatingNotificationsProvider>;
   if (import.meta.env.DEV && basePath(location.pathname) === '/soloq-lab') return <SoloQueueLabPage />;

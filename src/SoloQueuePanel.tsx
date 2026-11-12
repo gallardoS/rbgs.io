@@ -1,5 +1,6 @@
 import { useEffect,useRef,useState,type ReactNode } from 'react';
 import { useLocale } from './locales';
+import { usePrivacy } from './Privacy';
 import { usePremadeQueueSession, useSoloQueueSession } from './SoloQueueSession';
 import './SoloQueuePanel.css';
 import { Link } from './LocalizedLink';
@@ -57,7 +58,7 @@ export function SoloQueuePanel({premade=false,roomDetails,showRoom=true,showSear
       <h2>{t('preseasonComplete')}</h2>
       <p>{t('preseasonCompleteHelp')}</p>
     </div>}
-    {displayedRoom&&<QueueRoomCard room={displayedRoom}>
+    {displayedRoom&&<QueueRoomCard room={displayedRoom} accountId={queue.accountId}>
       {displayedRoom.status==='PREPARING'&&!roomDetails&&<p>{t(displayedRoom.preseasonPreview ? 'preseasonRoomHelp'
         : status.simulation ? 'premadeLabPrepared' : 'soloQueuePreparingHelp')}</p>}
       {displayedRoom.status==='PREPARING'&&!status.simulation&&status.matchId&&<p>
@@ -70,13 +71,14 @@ export function SoloQueuePanel({premade=false,roomDetails,showRoom=true,showSear
   </section>;
 }
 
-export function QueueRoomCard({room,children}:{room:QueueRoom;children:ReactNode}) {
+export function QueueRoomCard({room,accountId,children}:{room:QueueRoom;accountId:string;children:ReactNode}) {
   const {t}=useLocale();
+  const { formatBattleTag } = usePrivacy();
   return <div className="solo-queue-room">
     <h2>{t(room.cancellationReason === 'PRESEASON_PREVIEW_COMPLETE' ? 'preseasonComplete'
       : room.preseasonPreview && room.status === 'PREPARING' ? 'preseasonRoomTitle' : roomTitles[room.status])}</h2>
     {children}
     <div className="solo-queue-teams">{[room.teamA,room.teamB].map((team,index)=><div key={index}><h3>{t('soloQueueTeam')} {index?'B':'A'}</h3>
-      <ul>{team.map(m=><li key={m.accountId}><span>{m.captain?'♛ ':''}{m.name}</span><span>{m.role}</span><span>{m.accepted?'✓':'—'}</span></li>)}</ul></div>)}</div>
+      <ul>{team.map(m=><li key={m.accountId}><span>{m.captain?'♛ ':''}{room.source === 'SIMULATION' ? formatBattleTag(m.name, m.accountId === accountId ? 'own' : 'others') : m.name}</span><span>{m.role}</span><span>{m.accepted?'✓':'—'}</span></li>)}</ul></div>)}</div>
   </div>;
 }

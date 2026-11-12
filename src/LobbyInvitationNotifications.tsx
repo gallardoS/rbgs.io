@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { FloatingNotificationGroup } from './FloatingNotifications';
 import { useNavigate } from 'react-router-dom';
 import { useLocale } from './locales';
+import { usePrivacy } from './Privacy';
 import { localizedPath } from './locale-routing';
 import { LOBBY_REMOVAL_NOTICE_MS, type GroupLobby } from './GroupPage';
 import './LobbyInvitationNotifications.css';
@@ -37,6 +38,7 @@ function NotificationLifetime({ expiresAt, lifetimeMs = INVITATION_LIFETIME_MS }
 
 export function LobbyInvitationNotifications({ lobby }: { lobby: GroupLobby }) {
   const { t, language } = useLocale();
+  const { formatBattleTag } = usePrivacy();
   const navigate = useNavigate();
   const storageKey = `rbgs.lobby-invites.dismissed.${lobby.accountId}`;
   const [dismissed, setDismissed] = useState<string[]>(() => readDismissed(storageKey));
@@ -84,7 +86,7 @@ export function LobbyInvitationNotifications({ lobby }: { lobby: GroupLobby }) {
     <div className="sr-only" role="status" aria-live="polite" aria-atomic="false" aria-relevant="additions text">
       {removal && <span key={removal.expiresAt}>{t('lobbyRemovedMessage')}</span>}
       {idleWarning && <span key={idleKey}>{t('lobbyIdleWarning')}</span>}
-      {visible.slice(0, 3).map(invite => <span key={`${invite.id}:${invite.expiresAt}`}>{invite.captainName} {t('lobbyInviteMessage')}</span>)}
+      {visible.slice(0, 3).map(invite => <span key={`${invite.id}:${invite.expiresAt}`}>{formatBattleTag(invite.captainName, 'others')} {t('lobbyInviteMessage')}</span>)}
     </div>
     {(visible.length > 0 || removal || idleWarning) && <div className="lobby-notification-group">
     {idleWarning && <article key={idleKey} className="lobby-invite-notice" onKeyDown={event => {
@@ -119,7 +121,7 @@ export function LobbyInvitationNotifications({ lobby }: { lobby: GroupLobby }) {
           <strong>{t('lobbyInviteTitle')}</strong>
           <button type="button" className="lobby-invite-dismiss" aria-label={t('lobbyInviteDismiss')} onClick={() => dismiss(key)}>×</button>
         </div>
-        <p><strong>{invite.captainName}</strong> {t('lobbyInviteMessage')}</p>
+        <p><strong>{formatBattleTag(invite.captainName, 'others')}</strong> {t('lobbyInviteMessage')}</p>
         <span className="lobby-invite-expires">{t('groupExpires')} <time dateTime={invite.expiresAt}>{lobby.expires(invite.expiresAt)}</time></span>
         {lobby.group && <p className="lobby-invite-hint">{t('lobbyInviteLeaveFirst')}</p>}
         {failed === key && <p className="lobby-invite-error" role="alert">{t(lobby.error ?? 'groupActionError')}</p>}

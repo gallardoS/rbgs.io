@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from './LocalizedLink';
 import { useLocale } from './locales';
+import { usePrivacy } from './Privacy';
 import type { MessageKey } from './locales/en';
 import './GroupPage.css';
 import { useLobbyEvents } from './useLobbyEvents';
@@ -299,6 +300,7 @@ export function GroupControls({ lobby, showRoster = true, selectionDirty = false
   lobby: GroupLobby; showRoster?: boolean; selectionDirty?: boolean;
 }) {
   const { t } = useLocale();
+  const { formatBattleTag } = usePrivacy();
   const { accountId, group, incoming, loading, busy, error, battleTag, setBattleTag, joinCode, setJoinCode,
     copied, captain, reload, action, command, expires, copyCode } = lobby;
 
@@ -310,7 +312,7 @@ export function GroupControls({ lobby, showRoster = true, selectionDirty = false
     {loading ? <p role="status">{t('groupLoading')}</p> : <>
       {incoming.length > 0 && <section aria-labelledby="group-incoming"><h2 id="group-incoming">{t('groupInvitations')}</h2>
         <ul className="group-invitations">{incoming.map(invite => <li key={invite.id}>
-          <span>{invite.captainName} · {t('groupExpires')} <time dateTime={invite.expiresAt}>{expires(invite.expiresAt)}</time></span>
+          <span>{formatBattleTag(invite.captainName, 'others')} · {t('groupExpires')} <time dateTime={invite.expiresAt}>{expires(invite.expiresAt)}</time></span>
           <div><button disabled={busy || !!group} onClick={() => void action(`/api/v1/me/group-invitations/${invite.id}/accept`, {})}>{t('groupAccept')}</button>
             <button disabled={busy} onClick={() => void action(`/api/v1/me/group-invitations/${invite.id}/decline`, {})}>{t('groupDecline')}</button></div>
         </li>)}</ul></section>}
@@ -329,7 +331,7 @@ export function GroupControls({ lobby, showRoster = true, selectionDirty = false
         </section>
         {showRoster && <section aria-labelledby="group-roster"><h2 id="group-roster">{t('groupRoster')} · {group.members.length}/10</h2>
           <ul className="group-roster">{group.members.map(member => <li key={member.accountId}>
-            <div className="group-member-heading"><strong>{member.displayName}</strong>{member.captain && <span>{t('groupCaptain')}</span>}
+            <div className="group-member-heading"><strong>{formatBattleTag(member.displayName, member.accountId === accountId ? 'own' : 'others')}</strong>{member.captain && <span>{t('groupCaptain')}</span>}
               {member.accountId === accountId && <span>{t('groupYou')}</span>}</div>
             <p>{member.characterName ? `${member.characterName} · ${member.realm} · ${member.role}` : t('groupSelectionRequired')}</p>
             <details><summary>{t('groupSetupDetails')}</summary>
@@ -352,7 +354,7 @@ export function GroupControls({ lobby, showRoster = true, selectionDirty = false
             <p>{t('groupInviteHelp')}</p>
           </form>
           {group.invitations.length > 0 && <ul className="group-invitations">{group.invitations.map(invite => <li key={invite.id}>
-            <span>{invite.recipientName} · {t('groupExpires')} <time dateTime={invite.expiresAt}>{expires(invite.expiresAt)}</time></span>
+            <span>{formatBattleTag(invite.recipientName, 'others')} · {t('groupExpires')} <time dateTime={invite.expiresAt}>{expires(invite.expiresAt)}</time></span>
             <button disabled={busy} onClick={() => command(`invitations/${invite.id}/cancel`)}>{t('groupCancelInvite')}</button>
           </li>)}</ul>}
         </section>}

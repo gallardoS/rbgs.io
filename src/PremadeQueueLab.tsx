@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useLocale } from './locales';
+import { usePrivacy } from './Privacy';
 import { LanguageMenu } from './LanguageMenu';
 import { isFinishedRoom, PremadeQueueProvider, usePremadeQueueSession, validQueueRoom, validSimulatedMatch } from './SoloQueueSession';
 import { QueueRoomCard, roomTitles, SoloQueuePanel } from './SoloQueuePanel';
@@ -159,7 +160,7 @@ function PastRoom({id,accountId,busy,version,advance}: {
   },[id,accountId,version]);
   if(!state)return <p role="status">{t('soloQueueChecking')}</p>;
   if(state==='unavailable')return <p role="status">{t('premadeLabRoomUnavailable')}</p>;
-  return <div className="premade-past-room"><QueueRoomCard room={state.room}>
+  return <div className="premade-past-room"><QueueRoomCard room={state.room} accountId={accountId}>
     <SimulatedRoom room={state.room} match={state.simulatedMatch} accountId={accountId}
       serverTime={state.serverTime} busy={busy} advance={advance} />
   </QueueRoomCard></div>;
@@ -188,13 +189,14 @@ function SimulatedRoom({room,match,accountId,serverTime,busy,switchActor,cancel,
   const isCaptain=isCaptainA||captainB?.accountId===accountId;
   const ownReady=isCaptainA?match.captainAReady:match.captainBReady;
   const otherCaptain=isCaptainA?captainB:captainA;
+  const { formatBattleTag } = usePrivacy();
   return <div className="premade-simulated-room">
     <p className="premade-room-map">Warsong Gulch</p>
     {preparing&&<>
       <p>{t('premadeLabPrepareTeams')} <strong>{Math.floor(seconds/60)}:{String(seconds%60).padStart(2,'0')}</strong></p>
       <ul className="premade-room-captains">
         {[{team:'A',captain:captainA,ready:match.captainAReady},{team:'B',captain:captainB,ready:match.captainBReady}].map(({team,captain,ready})=>
-          <li key={team}><span>♛ {captain?.name}</span><strong data-ready={ready}>{t(ready?'premadeLabCaptainReady':'premadeLabCaptainWaiting')}</strong></li>)}
+          <li key={team}><span>♛ {captain && formatBattleTag(captain.name, captain.accountId === accountId ? 'own' : 'others')}</span><strong data-ready={ready}>{t(ready?'premadeLabCaptainReady':'premadeLabCaptainWaiting')}</strong></li>)}
       </ul>
     </>}
     {(preparing||room.status==='PLAYING')&&<p className="premade-room-assignment">

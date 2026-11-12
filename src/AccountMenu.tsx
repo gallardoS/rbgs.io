@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from './LocalizedLink';
 import { useLocale } from './locales';
+import { usePrivacy } from './Privacy';
 import { CharacterAvatar, type Character } from './PlayerCard';
 import { CharacterSelection } from './CharacterSelection';
 import { usePremadeQueueSession, useSoloQueueSession } from './SoloQueueSession';
@@ -15,6 +16,8 @@ export function AccountMenu({ accountId, displayName, onLogout }: {
   accountId: string; displayName: string; onLogout: () => Promise<void>;
 }) {
   const { t } = useLocale();
+  const { formatBattleTag } = usePrivacy();
+  const accountName = formatBattleTag(displayName, 'own');
   const menu = useRef<HTMLDetailsElement>(null);
   const [open, setOpen] = useState(false);
   const [character, setCharacter] = useState<Character | null>(null);
@@ -52,7 +55,7 @@ export function AccountMenu({ accountId, displayName, onLogout }: {
         event.preventDefault(); menu.current.open = false; menu.current.querySelector('summary')?.focus();
       }
     }}>
-    <summary><span className="user-icon"><MenuIcon>{profileIcon}</MenuIcon></span><span>{displayName}</span></summary>
+    <summary><span className="user-icon"><MenuIcon>{profileIcon}</MenuIcon></span><span>{accountName}</span></summary>
     <div className="account-menu-panel">
       <div className="account-menu-character" aria-busy={loading}>
         {loading ? <><span className="account-menu-avatar-skeleton skeleton-block" /><span className="account-menu-name-skeleton skeleton-block" /><span className="sr-only" role="status">{t('charactersLoading')}</span></>
@@ -64,7 +67,7 @@ export function AccountMenu({ accountId, displayName, onLogout }: {
               {character ? <CharacterAvatar character={character} /> : <span className="account-menu-avatar-empty"><MenuIcon>{profileIcon}</MenuIcon></span>}
               <span className="account-menu-avatar-edit" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m14 5 5 5M4 20l4-1L20 7a2.1 2.1 0 0 0-3-3L5 16Z" /></svg></span>
             </button>
-            <strong>{character?.name ?? displayName}</strong>
+            <strong>{character?.name ?? accountName}</strong>
             {failed ? <span className="account-menu-character-hint" role="status">{t('charactersError')}</span>
               : !character && <Link className="account-menu-character-hint" to="/play">{t('playChooseCharacter')}</Link>}
           </>}

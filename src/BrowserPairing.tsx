@@ -1,8 +1,10 @@
 import {useEffect,useState} from 'react';
 import {useLocale} from './locales';
+import { usePrivacy } from './Privacy';
 import {clearCompanionLink,pendingCompanionLink,selectCompanion} from './companion-link';
 type Request={scope:string;expiresAt:string;status:'PENDING'|'APPROVED'|'PAIRED';deviceId:string|null;accountName:string};
 export function BrowserPairing({accountId,ready,onConnected}:{accountId:string;ready:boolean;onConnected:()=>void}){
+ const { formatBattleTag } = usePrivacy();
  const {t}=useLocale();const [secret,setSecret]=useState(pendingCompanionLink);const [request,setRequest]=useState<Request|null>(null);const [error,setError]=useState(false);const [busy,setBusy]=useState(false);const [done,setDone]=useState(false);const [retry,setRetry]=useState(0);
  async function post(approve=false,signal?:AbortSignal){
   const csrf=document.cookie.split('; ').find(c=>c.startsWith('XSRF-TOKEN='))?.slice(11);if(!csrf)throw Error();
@@ -17,7 +19,7 @@ export function BrowserPairing({accountId,ready,onConnected}:{accountId:string;r
  async function approve(){setBusy(true);setError(false);try{setRequest(await post(true));}catch{setError(true);}finally{setBusy(false);}}
  return <section className="browser-pairing"><h3>{t('companionApproveHeading')}</h3>
   {error?<><p role="alert">{t('companionApprovalError')}</p><button onClick={()=>setRetry(value=>value+1)}>{t('companionRetry')}</button></>:!request?<p role="status">{t('companionPresenceChecking')}</p>:request.status==='PAIRED'?<p role="status">{t('companionLinked')}</p>:request.status==='APPROVED'?<p role="status">{t('companionApprovalWaiting')}</p>:<>
-   <p>{t('companionApproveAccount')} <strong>{request.accountName}</strong></p>
+   <p>{t('companionApproveAccount')} <strong>{formatBattleTag(request.accountName, 'own')}</strong></p>
    <p>{t(request.scope.includes('evidence:write')?'companionMatchAccess':'companionConnectionAccess')}</p><p>{t('companionApprovalWarning')}</p>
   </>}
   <div className="browser-pairing-actions">

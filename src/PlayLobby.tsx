@@ -1,5 +1,6 @@
 import { useId, useLayoutEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { useLocale } from './locales';
+import { usePrivacy } from './Privacy';
 import type { GroupLobby, GroupMember } from './GroupPage';
 import { PlayerCard, setPlayerCardTilt, resetPlayerCardTilt, type Character } from './PlayerCard';
 import { fcIconAsset, useFcIconPreference, type FcIcon } from './fc-icon-preference';
@@ -120,9 +121,11 @@ function PremadeSlot({ member, index, lobby, fcIcon, onInvite }: {
   member?: GroupMember; index: number; lobby: GroupLobby; fcIcon: FcIcon; onInvite: () => void;
 }) {
   const { t } = useLocale();
+  const { formatBattleTag } = usePrivacy();
   const menuId = useId();
   const anchorRef = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const memberName = member ? member.characterName ?? formatBattleTag(member.displayName, member.accountId === lobby.accountId ? 'own' : 'others') : '';
   return <>
     <button ref={anchorRef} type="button" className={`premade-slot${member ? ' is-occupied' : ' is-empty'}`}
       disabled={lobby.loading || lobby.busy || lobby.error === 'groupAccessError' || lobby.error === 'groupLoadError'}
@@ -131,8 +134,8 @@ function PremadeSlot({ member, index, lobby, fcIcon, onInvite }: {
       onClick={member ? undefined : onInvite}
       onPointerMove={event => { const card = event.currentTarget.querySelector<HTMLElement>('.premade-card-preview .player-card'); if (card) setPlayerCardTilt(card, event, card.parentElement); }}
       onPointerLeave={event => { const card = event.currentTarget.querySelector<HTMLElement>('.premade-card-preview .player-card'); if (card) resetPlayerCardTilt(card); }}
-      aria-label={member ? `${member.characterName ?? member.displayName} · ${t('playMemberOptions')}` : `${t('playOpenSlot')} ${index + 2}`}>
-      {member ? <LobbyPlayerCard member={member} fcIcon={fcIcon} /> : <>
+      aria-label={member ? `${memberName} · ${t('playMemberOptions')}` : `${t('playOpenSlot')} ${index + 2}`}>
+      {member ? <LobbyPlayerCard member={member} name={memberName} fcIcon={fcIcon} /> : <>
         <span className="premade-slot-plus" aria-hidden="true">+</span><span className="premade-slot-label">{t('groupInvite')}</span>
       </>}
     </button>
@@ -140,9 +143,9 @@ function PremadeSlot({ member, index, lobby, fcIcon, onInvite }: {
   </>;
 }
 
-function LobbyPlayerCard({ member, fcIcon }: { member: GroupMember; fcIcon: FcIcon }) {
+function LobbyPlayerCard({ member, name, fcIcon }: { member: GroupMember; name: string; fcIcon: FcIcon }) {
   const { t } = useLocale();
-  const character: Character = member.character ?? { id: 0, name: member.characterName ?? member.displayName, level: 0,
+  const character: Character = member.character ?? { id: 0, name, level: 0,
     realm: { id: 0, name: member.realm ?? t('playSelectionPending'), slug: '' } };
   const avatar = <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="16" cy="10" r="5" /><path d="M6 29v-3a10 10 0 0 1 20 0v3" /></svg>;
   const roleIcon = <LobbyRoleIcon role={member.role} fcIcon={fcIcon} />;
