@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react';
 import {useLocale} from './locales';
 import {Link} from './LocalizedLink';
-import {preferredCompanion,selectCompanion} from './companion-link';
+import {companionSettingsPath,preferredCompanion,selectCompanion} from './companion-link';
 import './CompanionStatus.css';
 import {OpenCompanion} from './OpenCompanion';
 type Device={id:string;createdAt:string;connected:boolean;expiresAt:string;revokedAt:string|null;lastSeenAt:string|null};
@@ -26,13 +26,13 @@ export function CompanionStatus({accountId,matchAction=false,onLinkedDeviceChang
  if(matchAction)return <aside className={`companion-match-status ${online?'is-connected':''}`} aria-label={t('devicesHeading')}>
   <span className="companion-match-message" role="status">
    <span className="companion-presence-dot" aria-hidden="true" />
-   <Link to="/settings" title={status}>{t(failed?'companionPresenceCheckFailed':devices===null?'companionPresenceCheckingShort':online?'companionPresenceConnected':!selected&&active.length>1?'companionChooseDevice':active.length===0?'companionPresenceNotLinked':'companionPresenceDisconnected')}</Link>
+   <Link to={companionSettingsPath} title={status}>{t(failed?'companionPresenceCheckFailed':devices===null?'companionPresenceCheckingShort':online?'companionPresenceConnected':!selected&&active.length>1?'companionChooseDevice':active.length===0?'companionPresenceNotLinked':'companionPresenceDisconnected')}</Link>
   </span>
   {!online&&<div className="companion-match-actions"><Link to="/downloads">{t('companionDownload')}</Link><OpenCompanion accountId={accountId} compact /></div>}
  </aside>;
  return <aside className={`companion-status ${online?'connected':''}`} aria-label={t('devicesHeading')}>
   <p role="status">{status}</p>
   {(active.length>1||active.length===1&&!selected)&&<label>{t('companionDevice')}<select value={selected?.id??''} onChange={e=>{selectCompanion(accountId,e.target.value);setPreferred(e.target.value);}}><option value="">{t('companionChooseDevice')}</option>{active.map(d=><option key={d.id} value={d.id}>{new Date(d.createdAt).toLocaleString(language)}</option>)}</select></label>}
-  {!online&&<div className="companion-status-actions"><OpenCompanion accountId={accountId} /><Link to="/settings">{t('companionConnect')}</Link><Link to="/downloads">{t('navigationDownloads')}</Link></div>}
+  {!online&&<div className="companion-status-actions"><OpenCompanion accountId={accountId} /><Link to={companionSettingsPath}>{t('companionConnect')}</Link><Link to="/downloads">{t('navigationDownloads')}</Link></div>}
  </aside>;
 }

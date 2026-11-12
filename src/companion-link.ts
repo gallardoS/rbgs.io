@@ -1,3 +1,5 @@
+export const companionSettingsPath = '/settings?section=companion';
+
 // A short-lived approval handle, never a polling secret or device credential.
 const pendingKey='rbgs-companion-approval';
 export function captureCompanionLink(){

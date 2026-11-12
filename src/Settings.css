@@ -1,3 +1,17 @@
+.settings-layout { display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3rem); align-items: start; }
+.settings-navigation { display: grid; gap: .25rem; padding: .375rem; border: 1px solid #ffffff20; border-radius: .75rem; background: #121514; }
+.settings-navigation a { display: flex; align-items: center; min-height: 44px; padding: .55rem .75rem; border: 1px solid transparent; border-radius: .4rem; color: #b6b7bb; font-size: .875rem; font-weight: 600; overflow-wrap: anywhere; }
+.settings-navigation a:hover { color: #fafaf6; background: #ffffff0a; }
+.settings-navigation a[aria-current="page"] { border-color: #facc1540; color: #fde047; background: #facc1510; }
+.settings-navigation a:focus-visible { outline-offset: 1px; }
+.settings-panel > .profile-settings-section:first-child { padding-top: 0; border-top: 0; }
+@media (max-width: 900px) {
+  .settings-layout .profile-settings-section { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+}
+@media (max-width: 700px) {
+  .settings-layout { grid-template-columns: minmax(0, 1fr); }
+  .settings-navigation { grid-template-columns: repeat(auto-fit, minmax(min(8rem, 100%), 1fr)); }
+}
 .profile-account-options { display: grid; gap: 1.2rem; justify-items: start; }
 .profile-privacy-options { display: grid; gap: .85rem; }
 .profile-privacy-options label { display: flex; justify-content: space-between; align-items: center; gap: 1rem; cursor: pointer; }

@@ -24,7 +24,7 @@ import { AvatarPreferenceProvider } from './avatar-preference';
 import { ModeratorMatches } from './ModeratorMatches';
 import { TesterPopup } from './TesterPopup';
 import { MatchHistory } from './MatchHistory';
-import {pendingCompanionLink} from './companion-link';
+import { companionSettingsPath, pendingCompanionLink } from './companion-link';
 import { BattleNetLoginButton } from './BattleNetLoginButton';
 import { SeasonNotificationsProvider, useSeasonNotice } from './SeasonNotifications';
 import pageTitles from './page-titles.json';
@@ -178,7 +178,11 @@ function AppContent() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  useEffect(()=>{if(session.profile&&pendingCompanionLink()&&basePath(location.pathname)!=='/settings')navigate(localizedPath('/settings',language),{replace:true});},[session.profile?.id]);
+  useEffect(() => {
+    if (!session.profile || !pendingCompanionLink()) return;
+    const target = localizedPath(companionSettingsPath, language);
+    if (location.pathname + location.search !== target) navigate(target, { replace: true });
+  }, [session.profile?.id]);
   useEffect(() => {
     const pathname = localizedPath(location.pathname, language);
     const homepage = localizedPath('/', language) as keyof typeof pageTitles;
