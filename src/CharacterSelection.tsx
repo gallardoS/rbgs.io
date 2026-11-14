@@ -167,17 +167,24 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
           </li>)}
         </ul>
   );
-  if (dialogOnly) return <dialog ref={dialog} className="character-selection-dialog" aria-labelledby="account-character-selection-title"
+  const headingId = dialogOnly ? 'account-character-selection-title' : 'character-selection-title';
+  const descriptionId = headingId + '-description';
+  const dialogHeading = <header className="character-selection-heading">
+    <div>
+      <h2 id={headingId}>{t('charactersChange')}</h2>
+      <p id={descriptionId} className="character-selection-subtitle">{t('charactersMinimumLevel')}</p>
+    </div>
+    <button type="button" className="character-selection-close" aria-label={t('charactersClose')} onClick={() => dialog.current?.close()} autoFocus>×</button>
+  </header>;
+
+  if (dialogOnly) return <dialog ref={dialog} className="character-selection-dialog" aria-labelledby={headingId} aria-describedby={descriptionId}
     onClose={() => { setDialogOpen(false); onPickerClose?.(); }}
     onClick={event => {
       if (event.target !== event.currentTarget) return;
       const bounds = event.currentTarget.getBoundingClientRect();
       if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.current?.close();
     }}>
-    <header className="character-selection-heading">
-      <h2 id="account-character-selection-title">{t('charactersChange')}</h2>
-      <button type="button" className="character-selection-close" aria-label={t('charactersClose')} onClick={() => dialog.current?.close()} autoFocus>×</button>
-    </header>
+    {dialogHeading}
     <MessageNotification message={choiceError} attempt={attempt} container={dialogOpen ? dialog.current : null}>
       {choiceError === 'charactersAuthorization' && <BattleNetLoginButton />}
     </MessageNotification>
@@ -206,17 +213,14 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
           {current && small && <span className="premade-card-preview own-card-preview" aria-hidden="true"><PlayerCard character={current} tilt headerIcon={previewHeaderIcon} footer={t('groupYou')} /></span>}
         </button>
       </div>
-      <dialog ref={dialog} className="character-selection-dialog" aria-labelledby="character-selection-title"
+      <dialog ref={dialog} className="character-selection-dialog" aria-labelledby={headingId} aria-describedby={descriptionId}
         onClose={() => setDialogOpen(false)}
         onClick={event => {
           if (event.target !== event.currentTarget) return;
           const bounds = event.currentTarget.getBoundingClientRect();
           if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.current?.close();
         }}>
-        <header className="character-selection-heading">
-          <div><h2 id="character-selection-title">{t('charactersChange')}</h2></div>
-          <button type="button" className="character-selection-close" aria-label={t('charactersClose')} onClick={() => dialog.current?.close()} autoFocus>×</button>
-        </header>
+        {dialogHeading}
         {choicesList}
       </dialog>
     </>}

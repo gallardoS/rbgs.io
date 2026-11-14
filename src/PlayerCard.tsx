@@ -20,7 +20,7 @@ export function characterRegion(character: Pick<Character, 'namespace'>): 'EU' |
   return character.namespace?.endsWith('-us') ? 'NA' : 'EU';
 }
 export function isPickerCharacter(character: Pick<Character, 'namespace' | 'level'>): boolean {
-  return /^profile-forever-(eu|us)$/.test(character.namespace ?? '') && character.level >= 1;
+  return /^profile-forever-(eu|us)$/.test(character.namespace ?? '') && character.level >= 10;
 }
 export function PlayerCardSkeleton({ small = false }: { small?: boolean }) {
   const { t } = useLocale();
