@@ -90,7 +90,7 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<MessageKey | null>(null);
-  const [battleTag, setBattleTag] = useState('');
+  const [inviteRecipient, setInviteRecipient] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [copied, setCopied] = useState(false);
   const copiedTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
@@ -117,6 +117,7 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
       : reason instanceof GroupError && reason.detail === 'This group already has ten players' ? 'groupFull'
       : reason instanceof GroupError && reason.detail === 'This player already belongs to a group' ? 'groupAlreadyMember'
       : reason instanceof GroupError && reason.detail === 'Could not invite this BattleTag. Check that the player has signed in to rbgs.io' ? 'groupInviteUnknown'
+      : reason instanceof GroupError && reason.detail === 'Could not find this selected Forever character online on rbgs.io' ? 'groupInviteCharacterUnavailable'
       : reason instanceof GroupError && reason.detail === 'This invitation has expired' ? 'groupInviteExpired'
       : reason instanceof GroupError && ['Resolve the current match before joining a group', 'Resolve your current match before preparing for another one'].includes(reason.detail) ? 'groupMatchBlocked'
       : reason instanceof GroupError && reason.detail === 'Finish or decline the proposed match before changing the lobby' ? 'premadeLobbyMatchLocked'
@@ -231,7 +232,7 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
           groupRef.current = response; lastSnapshotAt.current = Date.now(); setGroup(response);
         }
       } else await snapshot(current.signal);
-      if (mounted.current) { setBattleTag(''); setJoinCode(''); }
+      if (mounted.current) { setInviteRecipient(''); setJoinCode(''); }
       return !current.signal.aborted && mounted.current;
     } catch (reason) {
       if (path === '/api/v1/groups' && reason instanceof GroupError && reason.status === 409) {
@@ -257,6 +258,10 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
     const current = groupRef.current;
     return current ? action(`/api/v1/groups/${current.id}/${suffix}`, { expectedRevision: current.revision, ...body }) : Promise.resolve(false);
   };
+  const invite = (recipient: string) => {
+    const value = recipient.trim();
+    return command('invitations', value.includes('#') ? { battleTag: value } : { characterName: value });
+  };
   const updateRole = (role: 'FC' | 'HEALER' | 'DPS') => {
     const current = groupRef.current;
     const member = current?.members.find(item => item.accountId === accountId);
@@ -279,8 +284,8 @@ export function useGroupLobby(accountId: string, active = true, receiveInvitatio
     catch { if (mounted.current) setError('groupCopyError'); }
   }
 
-  return { accountId, group, incoming, context, loading, busy, error, battleTag, setBattleTag, joinCode, setJoinCode,
-    copied, me, captain, reload, action, command, updateRole, expires, copyCode,
+  return { accountId, group, incoming, context, loading, busy, error, inviteRecipient, setInviteRecipient, joinCode, setJoinCode,
+    copied, me, captain, reload, action, command, invite, updateRole, expires, copyCode,
     removalNotice, dismissRemovalNotice: () => setRemovalNotice(null) };
 }
 
@@ -301,7 +306,7 @@ export function GroupControls({ lobby, showRoster = true, selectionDirty = false
 }) {
   const { t } = useLocale();
   const { formatBattleTag } = usePrivacy();
-  const { accountId, group, incoming, loading, busy, error, battleTag, setBattleTag, joinCode, setJoinCode,
+  const { accountId, group, incoming, loading, busy, error, inviteRecipient, setInviteRecipient, joinCode, setJoinCode, invite,
     copied, captain, reload, action, command, expires, copyCode } = lobby;
 
   return <div className="group-page group-controls">
@@ -346,11 +351,11 @@ export function GroupControls({ lobby, showRoster = true, selectionDirty = false
           </li>)}</ul>
         </section>}
         {captain && <section aria-labelledby="group-invite"><h2 id="group-invite">{t('groupInvite')}</h2>
-          <form onSubmit={event => { event.preventDefault(); command('invitations', { battleTag: battleTag.trim() }); }}>
-            <label htmlFor="group-battletag">BattleTag</label>
-            <div className="group-invite-control"><input id="group-battletag" value={battleTag} onChange={event => setBattleTag(event.target.value)}
-              required maxLength={100} pattern="[^#]+#[0-9]+" placeholder="Player#1234" disabled={busy || group.members.length >= 10} />
-              <button disabled={busy || group.members.length >= 10 || !battleTag.trim()}>{t('groupInvite')}</button></div>
+          <form onSubmit={event => { event.preventDefault(); void invite(inviteRecipient); }}>
+            <label htmlFor="group-invite-recipient">{t('groupInviteRecipient')}</label>
+            <div className="group-invite-control"><input id="group-invite-recipient" value={inviteRecipient} onChange={event => setInviteRecipient(event.target.value)}
+              required maxLength={100} pattern="[^#]+(?:#[0-9]+)?" autoComplete="off" spellCheck={false} disabled={busy || group.members.length >= 10} />
+              <button disabled={busy || group.members.length >= 10 || !inviteRecipient.trim()}>{t('groupInvite')}</button></div>
             <p>{t('groupInviteHelp')}</p>
           </form>
           {group.invitations.length > 0 && <ul className="group-invitations">{group.invitations.map(invite => <li key={invite.id}>

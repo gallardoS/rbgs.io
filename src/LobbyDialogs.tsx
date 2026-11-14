@@ -31,13 +31,13 @@ export function useLobbyDialogs(lobby: GroupLobby, onJoined: () => void) {
     inviteRef.current?.querySelector<HTMLInputElement>('input')?.focus();
   };
   async function invite() {
-    const recipient = lobby.battleTag.trim();
+    const recipient = lobby.inviteRecipient.trim();
     setInvited(null);
     if (!lobby.group) {
       if (!await lobby.action('/api/v1/groups', {})) return;
-      lobby.setBattleTag(recipient);
+      lobby.setInviteRecipient(recipient);
     }
-    if (await lobby.command('invitations', { battleTag: recipient })) setInvited(recipient);
+    if (await lobby.invite(recipient)) setInvited(recipient);
   }
   const error = lobby.error && <p role="alert">{t(lobby.error)}</p>;
   const dialogs = <>
@@ -46,11 +46,11 @@ export function useLobbyDialogs(lobby: GroupLobby, onJoined: () => void) {
       {lobby.group && !lobby.captain ? <p>{t('playOnlyCaptainInvite')}</p> : <>
           <p>{t('groupInviteHelp')}</p>
           <form onSubmit={event => { event.preventDefault(); void invite(); }}>
-            <label htmlFor="play-invite-battletag">BattleTag</label>
-            <input id="play-invite-battletag" value={lobby.battleTag} onChange={event => { lobby.setBattleTag(event.target.value); setInvited(null); }}
-              autoFocus required maxLength={100} pattern="[^#]+#[0-9]+" placeholder="Player#1234" autoComplete="off" spellCheck={false}
+            <label htmlFor="play-invite-recipient">{t('groupInviteRecipient')}</label>
+            <input id="play-invite-recipient" value={lobby.inviteRecipient} onChange={event => { lobby.setInviteRecipient(event.target.value); setInvited(null); }}
+              autoFocus required maxLength={100} pattern="[^#]+(?:#[0-9]+)?" autoComplete="off" spellCheck={false}
               disabled={lobby.busy || (lobby.group?.members.length ?? 0) >= 10} />
-            <button className="lobby-primary-action" disabled={lobby.busy || (lobby.group?.members.length ?? 0) >= 10 || !lobby.battleTag.trim()}>{t('groupInvite')}</button>
+            <button className="lobby-primary-action" disabled={lobby.busy || (lobby.group?.members.length ?? 0) >= 10 || !lobby.inviteRecipient.trim()}>{t('groupInvite')}</button>
           </form>
           {(lobby.group?.members.length ?? 0) >= 10 && <p>{t('groupFull')}</p>}
           {invited && <p className="lobby-success" role="status">{t('playInviteSent')} <strong>{formatBattleTag(invited, 'others')}</strong>.</p>}
