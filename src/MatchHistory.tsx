@@ -26,7 +26,11 @@ function useDate() {
 }
 function ResultBadge({ item }: { item: HistoryItem }) {
   const { t } = useLocale();
-  return <span className={`mh-result is-${item.result.toLowerCase()}`}><span aria-hidden="true" className="mh-result-dot" />{t(outcomes[item.result])}</span>;
+  const score = item.flagScore;
+  return <span className={`mh-result is-${item.result.toLowerCase()}`}>
+    <span aria-hidden="true" className="mh-result-dot" />{t(outcomes[item.result])}
+    {score && <span className="mh-flag-score" title={t('historyFlagsCaptured')}>{score.own}–{score.opponent}</span>}
+  </span>;
 }
 
 export function MatchHistory() {

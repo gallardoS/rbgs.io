@@ -46,6 +46,7 @@
 .mh-result.is-loss { color: #e9a295; }
 .mh-result.is-review { color: #ebc578; }
 .mh-result.is-draw { color: #b0c5e3; }
+.mh-flag-score { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .mh-result-dot { width: .35rem; height: .35rem; border-radius: 50%; background: currentColor; flex-shrink: 0; }
 .mh-row-kind { font-size: .72rem; color: #949c91; font-weight: 400; }
 .mh-row-identity > strong { color: #edeee7; font-size: .84rem; overflow-wrap: anywhere; }

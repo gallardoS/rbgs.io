@@ -4,7 +4,8 @@ export type Verification = { status: MatchState; reason: string | null; version:
   winningTeam: 'A' | 'B' | null; reportsA: number; reportsB: number; requiredPerTeam: number; explanation: string | null; resolvedAt: string | null };
 export type HistoryItem = { matchId: string; createdAt: string; mode: 'CONTROLLED_TEST' | 'MATCHMADE'; evidencePolicy: 'CAPTURE_ONLY' | 'FULL_ROSTER';
   map: string | null; character: { name: string; realm: string | null }; team: 'A' | 'B' | null; result: Outcome; verification: Verification;
-  disputeStatus: 'OPEN' | 'WAITING_PLAYER' | 'RESOLVED' | null; unread: boolean; cancelled: boolean };
+  disputeStatus: 'OPEN' | 'WAITING_PLAYER' | 'RESOLVED' | null; unread: boolean; cancelled: boolean;
+  flagScore?: { own: number; opponent: number } | null };
 export type HistoryPage = { items: HistoryItem[]; nextCursor: string | null };
 export type Conversation = { id: string; status: 'OPEN' | 'WAITING_PLAYER' | 'RESOLVED'; version: number; openedAt: string; updatedAt: string;
   unread: boolean; olderMessages: boolean; messages: { id: string; author: 'PLAYER' | 'MODERATOR' | 'SYSTEM'; kind: string; body: string; at: string }[] };
@@ -29,6 +30,7 @@ export function validHistoryItem(v: any): v is HistoryItem {
     ? r.outcome === 'DRAW' ? 'DRAW' : v.team === null ? 'REVIEW' : v.team === r.winningTeam ? 'WIN' : 'LOSS' : r?.status;
   return v && uuid(v.matchId) && date(v.createdAt) && ['CONTROLLED_TEST', 'MATCHMADE'].includes(v.mode)
     && ['CAPTURE_ONLY', 'FULL_ROSTER'].includes(v.evidencePolicy) && nullableText(v.map, 128)
+    && (v.flagScore == null || (count(v.flagScore.own) && count(v.flagScore.opponent)))
     && v.character && text(v.character.name, 512) && nullableText(v.character.realm, 128) && [null, 'A', 'B'].includes(v.team)
     && ['WIN', 'LOSS', 'DRAW', 'PENDING', 'REVIEW', 'VOIDED', 'CANCELLED'].includes(v.result)
     && [null, ...threadStates].includes(v.disputeStatus) && typeof v.unread === 'boolean' && typeof v.cancelled === 'boolean'
