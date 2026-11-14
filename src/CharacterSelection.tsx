@@ -10,22 +10,22 @@ type Reference = { namespace: string; wowAccountId: number; realmId: number; cha
 type SavedCharacter = Reference & { region: 'EU' | 'NA'; name: string; realm: string; character?: Character | null };
 type Choice = { key: string; character: Character; reference: Reference };
 const sameReference = (a: Reference, b: Reference) => a.namespace === b.namespace && a.wowAccountId === b.wowAccountId && a.realmId === b.realmId && a.characterId === b.characterId;
-class ChoiceError extends Error { constructor(public messageKey: MessageKey) { super(messageKey); } }
+class ChoiceError extends Error { constructor(public messageKey: MessageKey, public status?: number) { super(messageKey); } }
 async function persistChoice(choice: Choice, signal: AbortSignal) {
   const token = document.cookie.split('; ').find(c => c.startsWith('XSRF-TOKEN='))?.slice(11);
   if (!token) throw new ChoiceError('playCharacterSaveError');
   const response = await fetch('/api/v1/me/play-character', { method: 'PUT', credentials: 'same-origin', cache: 'no-store', signal,
     headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': decodeURIComponent(token) }, body: JSON.stringify(choice.reference) });
-  if (!response.ok) throw new ChoiceError(response.status === 409 ? 'playCharacterRegionMismatch' : response.status === 401 || response.status === 403 ? 'charactersAuthorization' : 'playCharacterSaveError');
+  if (!response.ok) throw new ChoiceError(response.status === 409 ? 'playCharacterRegionMismatch' : response.status === 401 || response.status === 403 ? 'charactersAuthorization' : 'playCharacterSaveError', response.status);
   const saved = await response.json() as SavedCharacter;
   if (!saved || !sameReference(saved, choice.reference) || saved.region !== characterRegion(choice.character)) throw new ChoiceError('playCharacterSaveError');
 }
 
 
-export function CharacterSelection({ accountId, onChange, preferred, disabled = false, small = false, smallFooter, previewHeaderIcon, dialogOnly = false, onPickerClose }: {
+export function CharacterSelection({ accountId, onChange, preferred, disabled = false, small = false, smallFooter, previewHeaderIcon, dialogOnly = false, onPickerClose, onUnauthorized }: {
   accountId: string; onChange?: (character: Character | null) => void;
   preferred?: { name: string; realm: string }; disabled?: boolean; small?: boolean; smallFooter?: ReactNode; previewHeaderIcon?: ReactNode;
-  dialogOnly?: boolean; onPickerClose?: () => void;
+  dialogOnly?: boolean; onPickerClose?: () => void; onUnauthorized?: () => void;
 }) {
   const { t } = useLocale();
   const [characters, setCharacters] = useState<Choice[]>([]);
@@ -71,6 +71,11 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
       fetch('/api/v1/characters/me', { credentials: 'same-origin', signal: controller.signal }),
       fetch('/api/v1/me/play-character', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal }),
     ]).then(async ([response, preference]) => {
+        if (controller.signal.aborted) return;
+        if ((response.status === 401 || preference.status === 401) && onUnauthorized) {
+          onUnauthorized();
+          return;
+        }
         if (!response.ok || !preference.ok) {
           const status = !response.ok ? response.status : preference.status;
           throw new ChoiceError(status === 401 || status === 403 ? 'charactersAuthorization' : status === 404 ? 'charactersUnavailable' : 'charactersError');
@@ -107,13 +112,15 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
           persistedKey.current = chosen.key;
           changeListener.current?.(chosen.character);
         } catch (reason) {
-          if (!controller.signal.aborted) setChoiceError(reason instanceof ChoiceError ? reason.messageKey : 'playCharacterSaveError');
+          if (controller.signal.aborted) return;
+          if (reason instanceof ChoiceError && reason.status === 401 && onUnauthorized) onUnauthorized();
+          else setChoiceError(reason instanceof ChoiceError ? reason.messageKey : 'playCharacterSaveError');
         }
       })
       .catch(reason => { if (!controller.signal.aborted) setError(reason instanceof ChoiceError ? reason.messageKey : 'charactersError'); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => { controller.abort(); writeController.current?.abort(); };
-  }, [storageKey, attempt]);
+  }, [storageKey, attempt, onUnauthorized]);
 
   async function select(key: string) {
     if (choosingRef.current) return;
@@ -131,7 +138,10 @@ export function CharacterSelection({ accountId, onChange, preferred, disabled = 
       dialog.current?.close();
       try { localStorage.setItem(storageKey, key); } catch { /* Keep the accepted choice in memory. */ }
     } catch (reason) {
-      if (writeController.current === controller) setChoiceError(reason instanceof ChoiceError ? reason.messageKey : 'playCharacterSaveError');
+      if (writeController.current === controller) {
+        if (reason instanceof ChoiceError && reason.status === 401 && onUnauthorized) onUnauthorized();
+        else setChoiceError(reason instanceof ChoiceError ? reason.messageKey : 'playCharacterSaveError');
+      }
     } finally {
       window.clearTimeout(timeout); choosingRef.current = false;
       if (writeController.current === controller) { setChoosing(false); writeController.current = null; }

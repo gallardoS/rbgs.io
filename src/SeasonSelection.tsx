@@ -57,16 +57,18 @@ function storedPremadeRole(accountId: string): Role {
   } catch { return 'DPS'; }
 }
 
-export function SeasonSelection({ accountId }: { accountId: string }) {
+type SeasonSelectionProps = { accountId: string; onUnauthorized?: () => void };
+
+export function SeasonSelection(props: SeasonSelectionProps) {
   const shared = useLobbySession();
-  return shared ? <SeasonSelectionContent accountId={accountId} lobby={shared} /> : <StandaloneSeasonSelection accountId={accountId} />;
+  return shared ? <SeasonSelectionContent {...props} lobby={shared} /> : <StandaloneSeasonSelection {...props} />;
 }
-function StandaloneSeasonSelection({ accountId }: { accountId: string }) {
+function StandaloneSeasonSelection(props: SeasonSelectionProps) {
   const [params] = useSearchParams();
-  const lobby = useGroupLobby(accountId, params.get('mode') === 'premade', true);
-  return <><SeasonSelectionContent accountId={accountId} lobby={lobby} /><LobbyInvitationNotifications lobby={lobby} /></>;
+  const lobby = useGroupLobby(props.accountId, params.get('mode') === 'premade', true);
+  return <><SeasonSelectionContent {...props} lobby={lobby} /><LobbyInvitationNotifications lobby={lobby} /></>;
 }
-function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby: GroupLobby }) {
+function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSelectionProps & { lobby: GroupLobby }) {
   const { t } = useLocale();
   const [params, setParams] = useSearchParams();
   const premade = params.get('mode') === 'premade';
@@ -114,6 +116,11 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
     setLoading(true); setError(null); setSaved(false); setCharacter(null);
     fetch('/api/v1/play/context', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
       .then(async response => {
+        if (disposed || controller.signal.aborted) return;
+        if (response.status === 401 && onUnauthorized) {
+          onUnauthorized();
+          return;
+        }
         if (!response.ok) throw new Error('Context unavailable');
         const data: unknown = await response.json();
         if (!validContext(data)) throw new Error('Invalid context');
@@ -125,7 +132,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
       .catch(() => { if (!disposed) { setContext(null); setError('selectionLoadError'); } })
       .finally(() => { window.clearTimeout(timeout); if (!disposed) setLoading(false); });
     return () => { disposed = true; controller.abort(); window.clearTimeout(timeout); };
-  }, [accountId, attempt]);
+  }, [accountId, attempt, onUnauthorized]);
 
   const contextStale = !!context && (!!lobby.context && (lobby.context.season?.id !== context.season?.id
     || lobby.context.season?.version !== context.season?.version)
@@ -299,7 +306,7 @@ function SeasonSelectionContent({ accountId, lobby }: { accountId: string; lobby
   </>;
   else content = <section className="season-selection" aria-label={t('selectionHeading')}>
     {captainControl}
-    <CharacterSelection small={premade && premadeCount >= 9} accountId={accountId} preferred={context.selection ?? undefined} disabled={saving || queueBusy || queueActive}
+    <CharacterSelection small={premade && premadeCount >= 9} accountId={accountId} preferred={context.selection ?? undefined} disabled={saving || queueBusy || queueActive} onUnauthorized={onUnauthorized}
       previewHeaderIcon={premade ? <LobbyRoleIcon role={lobby.me?.role ?? premadeRole} fcIcon={fcIcon} /> : undefined}
       smallFooter={premade ? <span className="premade-member-role"><span>{t('groupYou')}</span><LobbyRoleIcon role={lobby.me?.role ?? premadeRole} fcIcon={fcIcon} /></span> : undefined}
       onChange={value => { setCharacter(value); setSaved(false); }} />

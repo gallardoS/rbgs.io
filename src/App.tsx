@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Link, NavLink } from './LocalizedLink';
 import { basePath, languages, languageLocales, localizedPath } from './locale-routing';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocale } from './locales';
 import type { MessageKey } from './locales/en';
 import { HeroBackground } from './HeroBackground';
@@ -25,7 +25,7 @@ import { ModeratorMatches } from './ModeratorMatches';
 import { TesterPopup } from './TesterPopup';
 import { MatchHistory } from './MatchHistory';
 import { companionSettingsPath, pendingCompanionLink } from './companion-link';
-import { BattleNetLoginButton } from './BattleNetLoginButton';
+import { BattleNetLoginButton, battleNetLoginPath } from './BattleNetLoginButton';
 import { SeasonNotificationsProvider, useSeasonNotice } from './SeasonNotifications';
 import pageTitles from './page-titles.json';
 import pageDescriptions from './page-descriptions.json';
@@ -35,13 +35,15 @@ import { PremadeQueueLabPage } from './PremadeQueueLab';
 import { FloatingNotificationsProvider } from './FloatingNotifications';
 
 function useSession() {
+  const navigate = useNavigate();
+  const { language } = useLocale();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
   useEffect(() => {
     if (new URLSearchParams(window.location.search).has('auth')) setAuthError(true);
     const controller = new AbortController();
-    fetch('/api/v1/auth/me', { credentials: 'same-origin', signal: controller.signal })
+    fetch('/api/v1/auth/me', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
       .then(async (response) => {
         if (response.ok && response.status !== 204) setProfile(await response.json() as Profile);
         else if (response.status !== 204) setAuthError(true);
@@ -59,8 +61,10 @@ function useSession() {
       const response = await fetch('/api/v1/auth/logout', {
         method: 'POST', credentials: 'same-origin', headers: token ? { 'X-XSRF-TOKEN': decodeURIComponent(token) } : {},
       });
-      if (response.ok) setProfile(null);
-      else setAuthError(true);
+      if (response.ok) {
+        if (basePath(window.location.pathname) === '/play') navigate(localizedPath('/', language), { replace: true });
+        setProfile(null);
+      } else setAuthError(true);
     } catch {
       setAuthError(true);
     }
@@ -70,6 +74,34 @@ function useSession() {
 }
 
 type Session = ReturnType<typeof useSession>;
+
+function PlayPage({ profile, loading, authError }: Session) {
+  const { t } = useLocale();
+  const redirecting = useRef(false);
+  const [leaving, setLeaving] = useState(false);
+  const redirectToLogin = useCallback(() => {
+    if (redirecting.current) return;
+    redirecting.current = true;
+    setLeaving(true);
+    window.location.replace(battleNetLoginPath);
+  }, []);
+
+  useEffect(() => {
+    if (!loading && !profile && !authError) redirectToLogin();
+  }, [loading, profile, authError, redirectToLogin]);
+
+  return <main className="content play-page">
+    <header className="play-heading"><h1>{t('navigationPlay')}</h1></header>
+    <div className="play-lobby">{profile && !leaving
+      ? <SeasonSelection key={profile.id} accountId={profile.id} onUnauthorized={redirectToLogin} />
+      : <div className="play-character-stage">
+          {!loading && authError
+            ? <><p role="alert">{t('authError')}</p><BattleNetLoginButton /></>
+            : <p role="status">{t('authChecking')}</p>}
+        </div>}
+    </div>
+  </main>;
+}
 
 function Home({ profile, loading, authError }: Session) {
   const openSeasonNotice = useSeasonNotice();
@@ -264,10 +296,10 @@ function AppContent() {
         <Link to="/#how-it-works">{t('navigationGuide')}</Link>
         <a className="nav-community" href="https://discord.gg/RfBgfszUPM" target="_blank" rel="noopener noreferrer">{t('navigationCommunity')}<img src="/external-link.svg" width="14" height="14" alt="" aria-hidden="true" /></a>
         {(session.profile?.role === 'MODERATOR' || session.profile?.role === 'ADMIN') && <NavLink className="nav-moderator" to="/moderator">{t('navigationModerator')}</NavLink>}
-        <NavLink className="nav-play" to="/play" onClick={event => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) openSeasonNotice(); }}>{t('navigationPlay')}</NavLink>
+        <NavLink className="nav-play" to="/play" onClick={event => { if (session.profile && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) openSeasonNotice(); }}>{t('navigationPlay')}</NavLink>
         {session.loading ? <span role="status">{t('authChecking')}</span> : session.profile
           ? <AccountMenu key={`${session.profile.id}:${location.pathname}`} accountId={session.profile.id} displayName={session.profile.displayName} onLogout={session.logout} />
-          : <a className="nav-login" href="/oauth2/authorization/battle-net"><img src="/battle-net.svg" width="20" height="20" alt="" />{t('navigationLogin')}</a>}
+          : <a className="nav-login" href={battleNetLoginPath}><img src="/battle-net.svg" width="20" height="20" alt="" />{t('navigationLogin')}</a>}
         <LanguageMenu />
       </nav>
     </header>
@@ -289,15 +321,7 @@ function AppContent() {
           </article>
         </div><Link className="button" to="/#how-it-works">{t('navigationGuide')}</Link></InfoPage>} />
         <Route path="/how-it-works" element={<Navigate to={`${localizedPath('/', language)}#how-it-works`} replace />} />
-        <Route path="/play" element={<main className="content play-page">
-          <header className="play-heading"><h1>{t('navigationPlay')}</h1></header>
-          <div className="play-lobby">{!session.loading && session.profile
-            ? <SeasonSelection key={session.profile.id} accountId={session.profile.id} />
-            : <div className="play-character-stage">
-                {session.loading ? <p role="status">{t('authChecking')}</p> : <BattleNetLoginButton />}
-                {session.authError && <p role="alert">{t('authError')}</p>}
-              </div>}
-          </div></main>} />
+        <Route path="/play" element={<PlayPage {...session} />} />
         <Route path="/account" element={session.profile
           ? <MyProfile key={session.profile.id} accountId={session.profile.id} />
           : <InfoPage heading="navigationProfile">
