@@ -28,6 +28,9 @@
 .floating-notifications { pointer-events: none; }
 .floating-notifications .lobby-invite-notice { pointer-events: auto; }
 .lobby-notification-group { display: contents; }
+.play-activity-notice { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .6rem; }
+.play-activity-notice > strong { font-size: .85rem; line-height: 1.4; }
+.play-activity-notice .button { min-height: 38px; padding: .45rem .75rem; font-size: .8rem; }
 .message-notification .lobby-invite-notice-icon { color: #f07c7c; flex-shrink: 0; }
 .message-notification .lobby-invite-notice-heading { align-items: flex-start; }
 .message-notification .lobby-invite-notice-heading > strong { min-width: 0; line-height: 1.5; overflow-wrap: anywhere; }

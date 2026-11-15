@@ -33,6 +33,7 @@ import internalRoutes from './internal-routes.json';
 import { SoloQueueLabPage } from './SoloQueueLab';
 import { PremadeQueueLabPage } from './PremadeQueueLab';
 import { FloatingNotificationsProvider } from './FloatingNotifications';
+import { PlayActivityNotice } from './PlayActivityNotice';
 
 function useSession() {
   const navigate = useNavigate();
@@ -346,7 +347,7 @@ function AppContent() {
       <footer className="footer"><span className="brand">{t('appName')}</span><Link to="/status">{t('navigationStatus')}</Link></footer>
     </div>
     <BackToTop />
-  </div></AuthenticatedLobby></AuthenticatedPremadeQueue></AuthenticatedSoloQueue></AvatarPreferenceProvider>;
+  </div><PlayActivityNotice /></AuthenticatedLobby></AuthenticatedPremadeQueue></AuthenticatedSoloQueue></AvatarPreferenceProvider>;
 }
 
 function GroupRedirect() {
