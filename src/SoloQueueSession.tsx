@@ -51,7 +51,8 @@ export function validSoloQueue(value: unknown, simulation = false): value is Sol
     &&(s.room===null||validQueueRoom(s.room,simulation)
       && (s.room.status !== 'PLAYING' && !isFinishedRoom(s.room.status) || !!match));
 }
-export type QueueSession = { accountId: string; status: SoloQueueStatus|null; busy: boolean; error: MessageKey|null; active: boolean;
+type QueueSnapshot = SoloQueueStatus & { receivedAt: number };
+export type QueueSession = { accountId: string; status: QueueSnapshot|null; busy: boolean; error: MessageKey|null; active: boolean;
   refresh: ()=>Promise<void>; enter: (request:{seasonId:string;seasonVersion:number;selectionVersion:number}|{groupId:string;groupRevision:number})=>Promise<void>;
   command:(path:string,method:string,body?:unknown)=>Promise<void>;
   cancel: ()=>Promise<void>; respond:(accept:boolean)=>Promise<void> };
@@ -75,7 +76,7 @@ function ConnectedQueue({accountId,children,premade=false,simulation=false}:{acc
   const blockedError:MessageKey=premade?'premadeQueueBlocked':'soloQueueBlocked';
   const validate=(value:unknown):value is SoloQueueStatus=>validSoloQueue(value,simulation)&&(!premade||typeof value.canControl==='boolean'&&value.simulation===simulation&&(value.groupId===null||typeof value.groupId==='string')&&(value.groupRevision===null||Number.isSafeInteger(value.groupRevision)));
   const {t}=useLocale();
-  const [status,setStatus]=useState<SoloQueueStatus|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState<MessageKey|null>(null);
+  const [status,setStatus]=useState<QueueSnapshot|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState<MessageKey|null>(null);
   const [visible,setVisible]=useState(!document.hidden),[connected,setConnected]=useState(false);
   const mounted=useRef(false),mutation=useRef<AbortController|null>(null),read=useRef<AbortController|null>(null);
   const commandFailed=useRef(false);
@@ -90,7 +91,7 @@ function ConnectedQueue({accountId,children,premade=false,simulation=false}:{acc
       const response=await fetch(endpoint,{credentials:'same-origin',cache:'no-store',signal:controller.signal});
       if(!response.ok)throw Error();const body:unknown=await response.json();
       if(!validate(body)||body.room&&![...body.room.teamA,...body.room.teamB].some(m=>m.accountId===accountId))throw Error();
-      if(mounted.current&&read.current===controller&&!controller.signal.aborted){setStatus(body);if(!commandFailed.current)setError(null);}
+      if(mounted.current&&read.current===controller&&!controller.signal.aborted){setStatus({...body,receivedAt:performance.now()});if(!commandFailed.current)setError(null);}
     }catch{if(mounted.current&&read.current===controller&&!controller.signal.aborted)setError(statusError);}
     finally{window.clearTimeout(timeout);if(mounted.current&&read.current===controller&&controller.signal.aborted)setError(statusError);}
   },[accountId,endpoint,simulation,premade,statusError]);
@@ -125,7 +126,7 @@ function ConnectedQueue({accountId,children,premade=false,simulation=false}:{acc
       if(response.status===204)return;
       const snapshot:unknown=await response.json();
       if(![200,409].includes(response.status)||!validate(snapshot))throw Error();
-      if(mounted.current&&!controller.signal.aborted){setStatus(snapshot);if(response.status===409)setError(blockedError);}
+      if(mounted.current&&!controller.signal.aborted){setStatus({...snapshot,receivedAt:performance.now()});if(response.status===409)setError(blockedError);}
     }catch{commandFailed.current=true;if(mounted.current)setError(statusError);}
     finally{window.clearTimeout(timeout);if(mutation.current===controller){mutation.current=null;if(mounted.current){setBusy(false);void refresh();}}}
   }

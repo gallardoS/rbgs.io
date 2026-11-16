@@ -344,7 +344,8 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
             </button>}
             <div className="find-match is-queued">
               <span>{t('playInQueue')}</span>
-              <QueueElapsed key={queuedTicket.id} enteredAt={queuedTicket.enteredAt} serverTime={queue.status.serverTime} />
+              <QueueElapsed key={queuedTicket.id} enteredAt={queuedTicket.enteredAt}
+                serverTime={queue.status.serverTime} receivedAt={queue.status.receivedAt} />
             </div>
           </div>
             : <span className="find-match-tooltip-trigger" data-tooltip-dismissed={matchTooltipDismissed} data-tooltip-open={matchTooltipOpen}
@@ -383,18 +384,17 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
   </>;
 }
 
-function QueueElapsed({ enteredAt, serverTime }: { enteredAt: string; serverTime: string }) {
-  const elapsedAtSnapshot = Date.parse(serverTime) - Date.parse(enteredAt);
-  const [seconds, setSeconds] = useState(() => Math.max(0, Math.floor(elapsedAtSnapshot / 1000)));
+function QueueElapsed({ enteredAt, serverTime, receivedAt }: { enteredAt: string; serverTime: string; receivedAt: number }) {
+  const enteredAtOnClientClock = receivedAt - (Date.parse(serverTime) - Date.parse(enteredAt));
+  const [seconds, setSeconds] = useState(() => Math.max(0, Math.floor((performance.now() - enteredAtOnClientClock) / 1000)));
 
   useEffect(() => {
-    const receivedAt = performance.now();
     const tick = () => setSeconds(previous => Math.max(previous,
-      Math.floor((elapsedAtSnapshot + performance.now() - receivedAt) / 1000)));
+      Math.floor((performance.now() - enteredAtOnClientClock) / 1000)));
     tick();
     const timer = window.setInterval(tick, 250);
     return () => window.clearInterval(timer);
-  }, [elapsedAtSnapshot]);
+  }, [enteredAtOnClientClock]);
 
   return <time role="timer" dateTime={`PT${seconds}S`}>{Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, '0')}</time>;
 }
