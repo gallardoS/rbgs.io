@@ -149,6 +149,7 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
   const { openSlot, dialogs } = useLobbyDialogs(lobby, onJoined);
   const premadeCount = lobby.group?.members.length ?? 1;
   const incompletePremade = premade && premadeCount < 10;
+  const soloBlockedByLobby = !premade && !!lobby.group;
   const queueBlockers = queue?.status?.blockers ?? [];
   const seasonMessage = queueBlockers.includes('SEASON_NOT_STARTED') ? 'soloQueueSeasonPending'
     : queueBlockers.includes('SEASON_UNAVAILABLE') ? 'groupSeasonUnavailable' : null;
@@ -170,14 +171,16 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
       if (reason !== 'ADDON_STATUS_UNVERIFIED' && groupBlockerMessages[reason]) matchSteps.push(reason === 'SELECTION_REQUIRED' ? 'playChooseCharacter' : groupBlockerMessages[reason]);
     }
   } else {
+    if (soloBlockedByLobby) matchSteps.push('playLeaveForSolo');
     const soloBlockerMessages: Record<string, MessageKey> = {
       ...groupBlockerMessages,
-      GROUP_MEMBERSHIP_EXISTS: 'playLeaveForSolo',
       GAME_PRESENCE_UNVERIFIED: 'soloQueueGamePending',
       COMPETITIVE_DATA_UNAVAILABLE: 'soloQueueDataPending',
       MATCH_ROOM_UNAVAILABLE: 'soloQueueRoomPending',
     };
     for (const reason of queueBlockers) {
+      // Lobby membership can change before the next queue status update.
+      if (reason === 'GROUP_MEMBERSHIP_EXISTS') continue;
       matchSteps.push(reason === 'SELECTION_REQUIRED' ? 'playChooseCharacter' : soloBlockerMessages[reason] ?? 'queuePending');
     }
   }
@@ -189,7 +192,7 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
   const preseasonPreview = context?.matchmakingAvailable === true;
   const canFind = !!character && !queueChecking && !seasonMessage && !queueActive && !loading && !saving && !queueBusy && !lobby.loading && !lobby.busy && !lobby.error && (premade
     ? premadeCount === 10 && !!lobby.captain
-    : canSave && !lobby.group);
+    : canSave && !soloBlockedByLobby);
   async function findMatch() {
     if (!canFind) return;
     if (canSave) {
@@ -368,7 +371,7 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
         </div>
         {queuedTicket && !canCancelSearch && <p className="play-queue-captain-note">{t('playLeaderStartsMatch')}</p>}
         {!queuedTicket && !seasonMessage && !incompletePremade && <p id="queue-availability" className="availability" role={saved ? 'status' : undefined}>
-          {t(!premade && lobby.group ? 'playLeaveForSolo' : premade && !lobby.captain ? 'playLeaderStartsMatch'
+          {t(premade && !lobby.captain ? 'playLeaderStartsMatch'
             : preseasonPreview ? 'preseasonQueueHelp' : saved ? 'selectionSavedQueuePending' : 'queuePending')}
         </p>}
         <MessageNotification message={premade ? lobby.error : null} />
