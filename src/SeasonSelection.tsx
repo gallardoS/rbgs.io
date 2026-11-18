@@ -361,7 +361,7 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
             }}>
             <button type="button" className={`find-match${premade ? ' is-premade' : ''}`} disabled={!canFind} onClick={() => void findMatch()}
               aria-describedby={hasMatchTooltip ? matchTooltipId : 'queue-availability'}>
-              {t(saving ? 'selectionSaving' : 'findMatch')}
+              {t('findMatch')}
             </button>
             {hasMatchTooltip && <span id={matchTooltipId} className="captain-tooltip find-match-steps" role="tooltip">
               {matchMessages.map(message => <span key={message}>{t(message)}</span>)}
