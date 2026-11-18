@@ -143,6 +143,7 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
   const selectionDirty = contextStale || !context?.selection || !character || context.selection.name !== character.name
     || context.selection.realm !== (character.realm.name || character.realm.slug)
     || (!premade && (context.selection.role !== role || context.selection.captainConsent !== captainConsent));
+  const selectionReady = !selectionDirty && lastSavedDevice.current === companionDeviceId;
   const onJoined = () => {
     modeChosen.current = true;
     setParams(previous => { const next = new URLSearchParams(previous); next.set('mode', 'premade'); return next; }, { replace: true });
@@ -152,6 +153,8 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
   const incompletePremade = premade && premadeCount < 10;
   const soloBlockedByLobby = !premade && !!lobby.group;
   const queueBlockers = queue?.status?.blockers ?? [];
+  const companionDisconnected = !companionConnected || queueBlockers.includes('COMPANION_DISCONNECTED')
+    || premade && !!lobby.group?.members.some(member => !member.companionConnected || member.blockers.includes('COMPANION_DISCONNECTED'));
   const seasonMessage = queueBlockers.includes('SEASON_NOT_STARTED') ? 'soloQueueSeasonPending'
     : queueBlockers.includes('SEASON_UNAVAILABLE') ? 'groupSeasonUnavailable' : null;
   const matchSteps: MessageKey[] = [];
@@ -185,29 +188,20 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
       matchSteps.push(reason === 'SELECTION_REQUIRED' ? 'playChooseCharacter' : soloBlockerMessages[reason] ?? 'queuePending');
     }
   }
-  if (!companionConnected) matchSteps.push('companionPresenceDisconnected');
+  if (companionDisconnected) matchSteps.push('companionPresenceDisconnected');
   const matchMessages = [...new Set(matchSteps)];
   const hasMatchTooltip = matchMessages.length > 0;
   const matchTooltipId = useId();
   const [matchTooltipOpen, setMatchTooltipOpen] = useState(false);
   const [matchTooltipDismissed, setMatchTooltipDismissed] = useState(false);
   const preseasonPreview = context?.matchmakingAvailable === true;
-  const canFind = companionConnected && !!character && !queueChecking && !seasonMessage && !queueActive && !loading && !saving && !queueBusy && !lobby.loading && !lobby.busy && !lobby.error && (premade
+  const canFind = canSave && selectionReady && !companionDisconnected && !queueChecking && !seasonMessage && !lobby.loading && !lobby.busy && !lobby.error && (premade
     ? premadeCount === 10 && !!lobby.captain
-    : canSave && !soloBlockedByLobby);
+    : !soloBlockedByLobby);
   async function findMatch() {
-    if (!canFind) return;
-    if (canSave) {
-      const selection = await saveSelection();
-      if (selection && context?.season && queue) {
-        if(premade && lobby.group) await queue.enter({groupId:lobby.group.id,groupRevision:lobby.group.revision});
-        else if(!premade) await queue.enter({seasonId: context.season.id, seasonVersion: context.season.version, selectionVersion: selection.version});
-      }
-    }
-    else if (contextStale || error === 'selectionConflict') setError('selectionConflict');
-    else if (!context?.season) setError('groupSeasonUnavailable');
-    else if (!character || (!premade && !role)) setError('groupSelectionRequired');
-    else if (!companionDeviceId) setError('selectionCompanionRequired');
+    if (!canFind || !context?.season || !context.selection || !queue) return;
+    if (premade && lobby.group) await queue.enter({groupId:lobby.group.id,groupRevision:lobby.group.revision});
+    else if (!premade) await queue.enter({seasonId: context.season.id, seasonVersion: context.season.version, selectionVersion: context.selection.version});
   }
   async function saveSelection() {
     if (!canSave || !context?.season || !character || (!premade && !role) || saveController.current) return;
@@ -278,12 +272,13 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
     else rememberPremadeRole(lobby.me?.role ?? 'DPS');
   }, [premade, lobby.group?.id, lobby.loading, lobby.busy, premadeRole]);
   useEffect(() => {
-    if (!premade || !canSave || lobby.busy || (!selectionDirty && lastSavedDevice.current === companionDeviceId)) return;
-    const key = JSON.stringify([accountId, context?.season, context?.selection?.version, character?.name, character?.realm, companionDeviceId]);
+    if (!canSave || lobby.busy || selectionReady) return;
+    const key = JSON.stringify([accountId, premade, context?.season, context?.selection?.version,
+      character?.name, character?.realm, premade ? null : role, premade ? null : captainConsent, companionDeviceId]);
     if (autoSaveAttempt.current === key) return;
     const timer = window.setTimeout(() => { autoSaveAttempt.current = key; void saveSelection(); }, 350);
     return () => window.clearTimeout(timer);
-  }, [premade, canSave, lobby.busy, selectionDirty, accountId, context, character, companionDeviceId]);
+  }, [premade, canSave, lobby.busy, selectionReady, accountId, context, character, role, captainConsent, companionDeviceId]);
 
   const captainControl = <CaptainConsent selected={premade ? !!lobby.captain : captainConsent}
     disabled={loading || !character || saving || queueBusy || queueActive}
@@ -330,7 +325,7 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
     <SoloQueuePanel premade={premade} showSearch={false} />
     {context && <div className="play-selection-feedback">
     <MessageNotification message={error} attempt={attempt} />
-    {premade && error === 'selectionSaveError' && <button type="button" disabled={!canSave} onClick={() => void saveSelection()}>{t('charactersRetry')}</button>}
+    {error === 'selectionSaveError' && <button type="button" disabled={!canSave} onClick={() => void saveSelection()}>{t('charactersRetry')}</button>}
     {error === 'selectionConflict' && <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('selectionReload')}</button>}
     <MessageNotification message={contextStale && !error ? 'selectionConflict' : null} />
     {contextStale && !error && <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('selectionReload')}</button>}
@@ -366,7 +361,7 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
             }}>
             <button type="button" className={`find-match${premade ? ' is-premade' : ''}`} disabled={!canFind} onClick={() => void findMatch()}
               aria-describedby={hasMatchTooltip ? matchTooltipId : 'queue-availability'}>
-              {t(saving || queueBusy ? 'selectionSaving' : 'findMatch')}
+              {t(saving ? 'selectionSaving' : 'findMatch')}
             </button>
             {hasMatchTooltip && <span id={matchTooltipId} className="captain-tooltip find-match-steps" role="tooltip">
               {matchMessages.map(message => <span key={message}>{t(message)}</span>)}
