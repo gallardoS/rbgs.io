@@ -106,6 +106,7 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
   const autoSaveAttempt = useRef<string | null>(null);
   const [captainConsent, setCaptainConsent] = useState(false);
   const [companionDeviceId, setCompanionDeviceId] = useState<string | null>(null);
+  const [companionConnected, setCompanionConnected] = useState(false);
   const saveController = useRef<AbortController | null>(null);
 
   useEffect(() => () => { saveController.current?.abort(); saveController.current = null; }, []);
@@ -184,13 +185,14 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
       matchSteps.push(reason === 'SELECTION_REQUIRED' ? 'playChooseCharacter' : soloBlockerMessages[reason] ?? 'queuePending');
     }
   }
+  if (!companionConnected) matchSteps.push('companionPresenceDisconnected');
   const matchMessages = [...new Set(matchSteps)];
   const hasMatchTooltip = matchMessages.length > 0;
   const matchTooltipId = useId();
   const [matchTooltipOpen, setMatchTooltipOpen] = useState(false);
   const [matchTooltipDismissed, setMatchTooltipDismissed] = useState(false);
   const preseasonPreview = context?.matchmakingAvailable === true;
-  const canFind = !!character && !queueChecking && !seasonMessage && !queueActive && !loading && !saving && !queueBusy && !lobby.loading && !lobby.busy && !lobby.error && (premade
+  const canFind = companionConnected && !!character && !queueChecking && !seasonMessage && !queueActive && !loading && !saving && !queueBusy && !lobby.loading && !lobby.busy && !lobby.error && (premade
     ? premadeCount === 10 && !!lobby.captain
     : canSave && !soloBlockedByLobby);
   async function findMatch() {
@@ -336,7 +338,8 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
     {(!queueActive || queuedTicket) && <>
       <div className="play-match-action">
         <div className="play-match-control">
-          <CompanionStatus accountId={accountId} matchAction onLinkedDeviceChange={setCompanionDeviceId} />
+          <CompanionStatus accountId={accountId} matchAction onLinkedDeviceChange={setCompanionDeviceId}
+            onConnectionChange={setCompanionConnected} />
           {queuedTicket && queue?.status ? <div className="play-queue-action">
             {canCancelSearch && <button type="button" className="play-queue-cancel" disabled={queue.busy}
               aria-label={t('soloQueueCancel')} title={t('soloQueueCancel')} onClick={() => void queue.cancel()}>

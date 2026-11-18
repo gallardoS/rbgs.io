@@ -6,7 +6,7 @@ import './CompanionStatus.css';
 import {OpenCompanion} from './OpenCompanion';
 type Device={id:string;createdAt:string;connected:boolean;expiresAt:string;revokedAt:string|null;lastSeenAt:string|null};
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-export function CompanionStatus({accountId,matchAction=false,onLinkedDeviceChange}:{accountId:string;matchAction?:boolean;onLinkedDeviceChange?:(deviceId:string|null)=>void}){
+export function CompanionStatus({accountId,matchAction=false,onLinkedDeviceChange,onConnectionChange}:{accountId:string;matchAction?:boolean;onLinkedDeviceChange?:(deviceId:string|null)=>void;onConnectionChange?:(connected:boolean)=>void}){
  const {t,language}=useLocale();const [devices,setDevices]=useState<Device[]|null>(null);const [failed,setFailed]=useState(false);const [preferred,setPreferred]=useState(()=>preferredCompanion(accountId));
  useEffect(()=>{let disposed=false;let timer:ReturnType<typeof setTimeout>;let controller:AbortController|null=null;
   async function read(){const current=new AbortController();controller=current;const timeout=setTimeout(()=>current.abort(),8000);try{
@@ -22,6 +22,7 @@ export function CompanionStatus({accountId,matchAction=false,onLinkedDeviceChang
  const online=selected?.connected===true;
  const linkedDeviceId=selected?.id??null;
  useEffect(()=>{onLinkedDeviceChange?.(linkedDeviceId);},[linkedDeviceId,onLinkedDeviceChange]);
+ useEffect(()=>{onConnectionChange?.(online);},[online,onConnectionChange]);
  const status=t(failed?'companionPresenceUnavailable':devices===null?'companionPresenceChecking':online?'companionPresenceConnected':!selected&&active.length>1?'companionChooseDevice':active.length===0?'companionPresenceUnpaired':'companionPresenceMissing');
  if(matchAction)return <aside className={`companion-match-status ${online?'is-connected':''}`} aria-label={t('devicesHeading')}>
   <span className="companion-match-message" role="status">
