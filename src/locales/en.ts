@@ -202,6 +202,8 @@ export const messages = {
   groupCreateHelp: 'Create a group and invite nine other players for a full premade.',
   groupCreate: 'Create group',
   groupNeedTen: 'A full premade requires ten distinct players.',
+  soloQueueLevelRequired: "Your character must be level 60 to join the queue.",
+  premadeQueueLevelRequired: "All premade members must be level 60 to join the queue.",
   groupNeedConfirmations: 'Every player must confirm preparation.',
   groupNeedSetup: 'Some players still have setup requirements.',
   groupForeverPending: 'Forever compatibility is still awaiting validation.',

@@ -204,6 +204,8 @@ export const messages: Record<MessageKey, string> = {
   groupCreateHelp: 'Créez un groupe et invitez neuf autres joueurs pour un premade complet.',
   groupCreate: 'Créer un groupe',
   groupNeedTen: 'Un premade complet nécessite dix joueurs distincts.',
+  soloQueueLevelRequired: "Votre personnage doit être de niveau 60 pour rejoindre la file.",
+  premadeQueueLevelRequired: "Tous les membres du groupe premade doivent être de niveau 60 pour rejoindre la file.",
   groupNeedConfirmations: 'Chaque joueur doit confirmer sa préparation.',
   groupNeedSetup: 'Certains joueurs doivent encore terminer leur configuration.',
   groupForeverPending: 'La compatibilité avec Forever attend encore sa validation.',

@@ -151,6 +151,12 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
   const { openSlot, dialogs } = useLobbyDialogs(lobby, onJoined);
   const premadeCount = lobby.group?.members.length ?? 1;
   const incompletePremade = premade && premadeCount < 10;
+  const characterBelowQueueLevel = !!character && character.level !== 60;
+  const premadeBelowQueueLevel = premade ? (lobby.group?.members ?? []).flatMap(member => {
+    const selected = member.accountId === accountId && character ? character : member.character;
+    return selected && selected.level !== 60 ? [selected.name] : [];
+  }) : [];
+  const queueLevelBlocked = characterBelowQueueLevel || premadeBelowQueueLevel.length > 0;
   const soloBlockedByLobby = !premade && !!lobby.group;
   const queueBlockers = queue?.status?.blockers ?? [];
   const companionDisconnected = !companionConnected || queueBlockers.includes('COMPANION_DISCONNECTED')
@@ -189,13 +195,14 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
     }
   }
   if (companionDisconnected) matchSteps.push('companionPresenceDisconnected');
+  if (queueLevelBlocked) matchSteps.push(premade ? 'premadeQueueLevelRequired' : 'soloQueueLevelRequired');
   const matchMessages = [...new Set(matchSteps)];
   const hasMatchTooltip = matchMessages.length > 0;
   const matchTooltipId = useId();
   const [matchTooltipOpen, setMatchTooltipOpen] = useState(false);
   const [matchTooltipDismissed, setMatchTooltipDismissed] = useState(false);
   const preseasonPreview = context?.matchmakingAvailable === true;
-  const canFind = canSave && selectionReady && !companionDisconnected && !queueChecking && !seasonMessage && !lobby.loading && !lobby.busy && !lobby.error && (premade
+  const canFind = canSave && selectionReady && !companionDisconnected && !queueLevelBlocked && !queueChecking && !seasonMessage && !lobby.loading && !lobby.busy && !lobby.error && (premade
     ? premadeCount === 10 && !!lobby.captain
     : !soloBlockedByLobby);
   async function findMatch() {
@@ -363,7 +370,11 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
               {t('findMatch')}
             </button>
             {hasMatchTooltip && <span id={matchTooltipId} className="captain-tooltip find-match-steps" role="tooltip">
-              {matchMessages.map(message => <span key={message}>{t(message)}</span>)}
+              {matchMessages.map(message => <span key={message}>
+                {t(message)}
+                {message === 'premadeQueueLevelRequired' && lobby.captain && premadeBelowQueueLevel.length > 0
+                  && ` (${premadeBelowQueueLevel.join(', ')})`}
+              </span>)}
             </span>}
           </span>}
         </div>

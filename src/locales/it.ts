@@ -204,6 +204,8 @@ export const messages = {
   groupCreateHelp: "Crea un gruppo e invita altri nove giocatori per un Premade completo.",
   groupCreate: "Crea gruppo",
   groupNeedTen: "Un Premade completo richiede dieci giocatori diversi.",
+  soloQueueLevelRequired: "Il tuo personaggio deve essere di livello 60 per entrare in coda.",
+  premadeQueueLevelRequired: "Tutti i membri del gruppo premade devono essere di livello 60 per entrare in coda.",
   groupNeedConfirmations: "Ogni giocatore deve confermare la preparazione.",
   groupNeedSetup: "Alcuni giocatori devono ancora completare la configurazione.",
   groupForeverPending: "La compatibilità con Forever è ancora in attesa di verifica.",

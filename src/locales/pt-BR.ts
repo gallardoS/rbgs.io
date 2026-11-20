@@ -204,6 +204,8 @@ export const messages = {
   groupCreateHelp: "Crie um grupo e convide outros nove jogadores para completar o grupo fechado.",
   groupCreate: "Criar grupo",
   groupNeedTen: "Um grupo fechado completo exige dez jogadores diferentes.",
+  soloQueueLevelRequired: "Seu personagem precisa estar no nível 60 para entrar na fila.",
+  premadeQueueLevelRequired: "Todos os integrantes do grupo fechado precisam estar no nível 60 para entrar na fila.",
   groupNeedConfirmations: "Todos os jogadores precisam confirmar a preparação.",
   groupNeedSetup: "Alguns jogadores ainda precisam concluir a configuração.",
   groupForeverPending: "A compatibilidade com Forever ainda aguarda validação.",
