@@ -234,7 +234,6 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
       if (controller.signal.aborted) return;
       if (!validSelection(selection)) throw new Error('Invalid saved selection');
       setContext({ ...context, selection });
-      if (!premade) setCaptainConsent(selection.captainConsent);
       lastSavedDevice.current = companionDeviceId;
       setSaved(true);
       await lobby.reload(true);
@@ -281,13 +280,13 @@ function SeasonSelectionContent({ accountId, lobby, onUnauthorized }: SeasonSele
   }, [premade, canSave, lobby.busy, selectionReady, accountId, context, character, role, captainConsent, companionDeviceId]);
 
   const captainControl = <CaptainConsent selected={premade ? !!lobby.captain : captainConsent}
-    disabled={loading || !character || saving || queueBusy || queueActive}
+    disabled={loading || !character || queueBusy || queueActive}
     readOnly={premade} label={premade ? t('playLobbyCaptain') : undefined}
     tooltip={premade ? t(lobby.captain ? 'playYouAreLobbyCaptain' : 'playLobbyCaptain') : undefined}
     onChange={value => { setCaptainConsent(value); setSaved(false); }} />;
   const roleControl = <RoleSelection fcIcon={fcIcon} legendLabel={premade ? 'playLobbyRole' : 'selectionRole'}
     value={premade ? lobby.me?.role ?? premadeRole : role}
-    disabled={loading || !character || saving || queueBusy || queueActive || (premade && (lobby.loading || lobby.busy))}
+    disabled={loading || !character || queueBusy || queueActive || (premade && (lobby.loading || lobby.busy))}
     onChange={value => { if (premade) void changePremadeRole(value); else { setRole(value); setSaved(false); } }} />;
   let content;
   if (loading) content = <section className="season-selection" aria-label={t('selectionHeading')}>
